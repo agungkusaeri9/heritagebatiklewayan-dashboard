@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
+import { AlertTriangle, Trash2 } from 'lucide-vue-next';
 import { useTemplateRef } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import {
     Dialog,
     DialogClose,
@@ -22,28 +29,25 @@ const passwordInput = useTemplateRef('passwordInput');
 </script>
 
 <template>
-    <div class="space-y-6">
-        <Heading
-            variant="small"
-            title="Delete account"
-            description="Delete your account and all of its resources"
-        />
-        <div
-            class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
-        >
-            <div class="relative space-y-0.5 text-red-600 dark:text-red-100">
-                <p class="font-medium">Warning</p>
-                <p class="text-sm">
-                    Please proceed with caution, this cannot be undone.
-                </p>
+    <Card class="w-full border-destructive/20 bg-destructive/5">
+        <CardHeader>
+            <div class="flex items-center gap-2 text-destructive">
+                <AlertTriangle class="h-5 w-5" />
+                <CardTitle class="text-destructive">Hapus Akun</CardTitle>
             </div>
+            <CardDescription class="text-destructive/80">
+                Tindakan ini akan menghapus akun Anda beserta seluruh data terkait secara permanen.
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
             <Dialog>
                 <DialogTrigger as-child>
-                    <Button variant="destructive" data-test="delete-user-button"
-                        >Delete account</Button
-                    >
+                    <Button variant="destructive" data-test="delete-user-button">
+                        <Trash2 class="mr-2 h-4 w-4" />
+                        Hapus Akun Saya
+                    </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent class="sm:max-w-[425px]">
                     <Form
                         v-bind="ProfileController.destroy.form()"
                         reset-on-success
@@ -54,37 +58,34 @@ const passwordInput = useTemplateRef('passwordInput');
                         class="space-y-6"
                         v-slot="{ errors, processing, reset, clearErrors }"
                     >
-                        <DialogHeader class="space-y-3">
-                            <DialogTitle
-                                >Are you sure you want to delete your
-                                account?</DialogTitle
-                            >
+                        <DialogHeader class="space-y-2">
+                            <div class="flex items-center gap-2 text-destructive">
+                                <AlertTriangle class="h-5 w-5" />
+                                <DialogTitle>Konfirmasi Hapus Akun</DialogTitle>
+                            </div>
                             <DialogDescription>
-                                Once your account is deleted, all of its
-                                resources and data will also be permanently
-                                deleted. Please enter your password to confirm
-                                you would like to permanently delete your
-                                account.
+                                Setelah akun Anda dihapus, semua sumber daya dan datanya akan dihapus secara permanen.
+                                Masukkan kata sandi Anda untuk mengonfirmasi penghapusan akun.
                             </DialogDescription>
                         </DialogHeader>
 
                         <div class="grid gap-2">
-                            <Label for="password" class="sr-only"
-                                >Password</Label
-                            >
+                            <Label for="password" class="text-xs font-semibold">Kata Sandi Anda</Label>
                             <PasswordInput
                                 id="password"
                                 name="password"
                                 ref="passwordInput"
-                                placeholder="Password"
+                                placeholder="Masukkan kata sandi untuk konfirmasi"
+                                class="text-sm"
                             />
                             <InputError :message="errors.password" />
                         </div>
 
-                        <DialogFooter class="gap-2">
+                        <DialogFooter class="gap-3 sm:gap-3">
                             <DialogClose as-child>
                                 <Button
-                                    variant="secondary"
+                                    variant="outline"
+                                    type="button"
                                     @click="
                                         () => {
                                             clearErrors();
@@ -92,7 +93,7 @@ const passwordInput = useTemplateRef('passwordInput');
                                         }
                                     "
                                 >
-                                    Cancel
+                                    Batal
                                 </Button>
                             </DialogClose>
 
@@ -102,12 +103,12 @@ const passwordInput = useTemplateRef('passwordInput');
                                 :disabled="processing"
                                 data-test="confirm-delete-user-button"
                             >
-                                Delete account
+                                {{ processing ? 'Menghapus...' : 'Ya, Hapus Akun' }}
                             </Button>
                         </DialogFooter>
                     </Form>
                 </DialogContent>
             </Dialog>
-        </div>
-    </div>
+        </CardContent>
+    </Card>
 </template>
