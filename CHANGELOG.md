@@ -8,6 +8,40 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ## [vx.x.x]
 
+Penambahan fitur **Kategori Produk** dan **Varian Produk** dengan CRUD lengkap, upload gambar untuk kategori, navigasi sidebar dropdown Produk, serta berbagai perbaikan UI.
+
+### ✨ Fitur Baru (Features)
+
+- **Manajemen Kategori Produk (Category CRUD)**:
+  - Pengelolaan data kategori produk: Nama, Slug URL (auto-generate), Deskripsi, Gambar, dan Status Aktif.
+  - Upload gambar dengan pratinjau langsung (*live preview*). Gambar otomatis terhapus saat update atau kategori dihapus.
+  - Thumbnail gambar pada tabel, filter status, pencarian real-time, paginasi bernomor, dan pengaturan jumlah data.
+- **Manajemen Varian Produk (Variant Mastering)**:
+  - Pengelolaan Tipe Varian dinamis (misal: Ukuran, Warna, Motif).
+  - Integrasi auto-generate slug dan filter status.
+  - Halaman khusus (nested route) untuk mengelola nilai-nilai varian (contoh: S, M, L, XL) dengan kemampuan input cepat.
+
+### 🏗️ Arsitektur & Backend
+
+- **Service & Repository Pattern** untuk modul Category:
+  - `CategoryRepositoryInterface` + `CategoryRepository` (Eloquent).
+  - `CategoryService` dengan pengelolaan transaksi database, upload/replace/delete file gambar via `Storage::disk('public')`, auto-generate slug, dan activity logging.
+  - Form Request: `IndexCategoryRequest`, `StoreCategoryRequest`, `UpdateCategoryRequest`.
+  - Route Resource: `categories` terdaftar di `routes/web.php`.
+- **Perbaikan Bug (Bug Fixes)**:
+  - Gambar kategori tidak hilang saat update tanpa mengganti gambar baru (`unset($data['image'])` pada `CategoryService::updateCategory`).
+  - Error `SelectItem value=""` pada reka-ui diatasi dengan sentinel `'all'` dan fungsi `buildQuery()`.
+  - Komponen `Textarea.vue` dibuat untuk mengatasi missing import `@/components/ui/textarea`.
+  - Error template parse Vue akibat `<textarea />` self-closing tag diperbaiki menjadi `></textarea>`.
+- **Navigasi Sidebar**: Menu dropdown **Produk** dengan sub-menu **Kategori Produk** ditambahkan ke `AppSidebar.vue`.
+- **Unit & Feature Testing**:
+  - `CategoryServiceTest` (Unit) — 3 test cases.
+  - `CategoryTest` (Feature) — 5 test cases mencakup CRUD lengkap dan upload gambar.
+
+---
+
+## [vx.x.x]
+
 Pembaruan fitur lupa & atur ulang kata sandi mandiri via email (Fortify integration), penambahan kolom email pada pengguna dan profil, serta perombakan antarmuka autentikasi dan pengaturan akun dengan desain modern dan segar.
 
 ### ✨ Fitur Baru (Features)

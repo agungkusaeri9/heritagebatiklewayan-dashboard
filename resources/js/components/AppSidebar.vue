@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import {
     Database,
     LayoutGrid,
+    Package,
     User,
     History,
     ShieldCheck,
@@ -27,6 +28,21 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Produk',
+        href: '#',
+        icon: Package,
+        items: [
+            {
+                title: 'Kategori Produk',
+                href: '/categories',
+            },
+            {
+                title: 'Varian Produk',
+                href: '/variant-types',
+            },
+        ],
     },
     {
         title: 'Data Master',
