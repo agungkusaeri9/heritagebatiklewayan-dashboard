@@ -47,7 +47,7 @@ return [
 
     'username' => 'username',
 
-    'email' => 'username',
+    'email' => 'email',
 
     /*
     |--------------------------------------------------------------------------
@@ -143,7 +143,7 @@ return [
     */
 
     'features' => [
-        // Features::resetPasswords(),
+        Features::resetPasswords(),
     ],
 
 ];

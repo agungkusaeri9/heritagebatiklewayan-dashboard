@@ -6,6 +6,34 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ---
 
+## [vx.x.x]
+
+Pembaruan fitur lupa & atur ulang kata sandi mandiri via email (Fortify integration), penambahan kolom email pada data pengguna, serta perombakan antarmuka autentikasi dengan desain modern dan segar.
+
+### ✨ Fitur Baru (Features)
+
+- **Fitur Lupa & Atur Ulang Kata Sandi (Password Reset Flow)**:
+  - Alur pemulihan kata sandi mandiri melalui pengiriman tautan ke email pengguna via Laravel Fortify.
+  - Halaman permintaan pemulihan kata sandi (`ForgotPassword.vue`) dan halaman pengisian kata sandi baru (`ResetPassword.vue`).
+  - Action `ResetUserPassword` untuk validasi keamanan kata sandi dan hashing password baru.
+- **Dukungan Email Pengguna**:
+  - Penambahan kolom `email` (nullable & unique) pada tabel `users`.
+  - Integrasi input email pada form Tambah dan Edit Pengguna di sisi admin.
+  - Aturan validasi email di `StoreUserRequest` dan `UpdateUserRequest`.
+
+### 🎨 Peningkatan Antarmuka (UI/UX Improvements)
+
+- **Desain Baru Halaman Autentikasi (`AuthCardLayout.vue`)**:
+  - Efek pencahayaan lembut (*ambient glow accents*) pada latar belakang.
+  - Kartu autentikasi terangkat (*elevated card*) dengan sudut lengkung halus (`rounded-2xl`), efek *backdrop blur*, dan bayangan lembut.
+  - Badge logo aplikasi dengan aksen warna utama (*primary*).
+- **Penyegaran Halaman Masuk (`Login.vue`)**:
+  - Penambahan ikon informatif pada input field (ikon `User` dan `Lock`).
+  - Tautan *"Lupa kata sandi?"* yang jelas serta tombol aksi dengan efek bayangan dan animasi *spinner* saat memproses.
+  - Banner status notifikasi berwarna hijau (*emerald*) yang rapi.
+
+---
+
 ## [0.1.0] - 2026-10-03
 
 Rilis awal sistem manajemen pengguna, peran, hak akses, dan log aktivitas dengan antarmuka DataTable modern serta arsitektur backend Service-Repository.

@@ -30,6 +30,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($userId)],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'password' => ['nullable', 'string', 'min:8'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['string', 'exists:roles,name'],
@@ -46,6 +47,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => 'nama lengkap',
             'username' => 'username',
+            'email' => 'alamat email',
             'password' => 'kata sandi',
             'roles' => 'peran',
         ];

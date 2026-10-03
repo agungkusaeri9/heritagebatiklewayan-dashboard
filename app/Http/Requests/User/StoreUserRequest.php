@@ -25,6 +25,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
+            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['string', 'exists:roles,name'],
@@ -41,6 +42,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => 'nama lengkap',
             'username' => 'username',
+            'email' => 'alamat email',
             'password' => 'kata sandi',
             'roles' => 'peran',
         ];

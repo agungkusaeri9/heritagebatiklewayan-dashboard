@@ -63,6 +63,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'username' => $user->username,
+                'email' => $user->email,
                 'roles' => $user->roles()->pluck('name')->toArray(),
             ],
             'roles' => $this->roleService->getAllRoles(),

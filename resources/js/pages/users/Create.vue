@@ -33,6 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     name: '',
     username: '',
+    email: '',
     password: '',
     roles: [] as string[],
 });
@@ -102,6 +103,22 @@ const submit = () => {
                             class="text-xs text-destructive"
                         >
                             {{ form.errors.username }}
+                        </p>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="email">Alamat Email (Opsional)</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            v-model="form.email"
+                            placeholder="contoh: user@email.com"
+                        />
+                        <p
+                            v-if="form.errors.email"
+                            class="text-xs text-destructive"
+                        >
+                            {{ form.errors.email }}
                         </p>
                     </div>
 

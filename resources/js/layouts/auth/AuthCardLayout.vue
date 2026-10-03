@@ -18,32 +18,47 @@ defineProps<{
 
 <template>
     <div
-        class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10"
+        class="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background p-4 sm:p-6 md:p-10"
     >
-        <div class="flex w-full max-w-md flex-col gap-6">
+        <!-- Background Ambient Glow Accents -->
+        <div
+            class="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/10 blur-[100px]"
+        />
+        <div
+            class="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-primary/10 blur-[100px]"
+        />
+
+        <div class="relative z-10 flex w-full max-w-[420px] flex-col gap-6">
+            <!-- Brand Logo Header -->
             <Link
                 :href="home()"
-                class="flex items-center gap-2 self-center font-medium"
+                class="flex flex-col items-center gap-2 self-center transition-transform hover:scale-105"
             >
-                <div class="flex h-9 w-9 items-center justify-center">
-                    <AppLogoIcon
-                        class="size-9 fill-current text-black dark:text-white"
-                    />
+                <div
+                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md shadow-primary/20 ring-4 ring-primary/10"
+                >
+                    <AppLogoIcon class="size-6 fill-current" />
                 </div>
             </Link>
 
-            <div class="flex flex-col gap-6">
-                <Card class="rounded-xl">
-                    <CardHeader class="px-10 pt-8 pb-0 text-center">
-                        <CardTitle class="text-xl">{{ title }}</CardTitle>
-                        <CardDescription>
-                            {{ description }}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="px-10 py-8">
-                        <slot />
-                    </CardContent>
-                </Card>
+            <!-- Elevated Auth Card -->
+            <Card class="rounded-2xl border bg-card/95 shadow-xl shadow-black/5 backdrop-blur-xs">
+                <CardHeader class="px-6 pt-6 pb-2 text-center sm:px-8">
+                    <CardTitle class="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                        {{ title }}
+                    </CardTitle>
+                    <CardDescription v-if="description" class="text-sm text-muted-foreground">
+                        {{ description }}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent class="px-6 pt-4 pb-6 sm:px-8 sm:pb-8">
+                    <slot />
+                </CardContent>
+            </Card>
+
+            <!-- Footer copyright/info -->
+            <div class="text-center text-xs text-muted-foreground">
+                &copy; {{ new Date().getFullYear() }} {{ $page.props.name || 'Ecommerce Batik' }}. Hak Cipta Dilindungi.
             </div>
         </div>
     </div>
