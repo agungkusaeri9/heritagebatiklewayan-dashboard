@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Produk', href: '#' },
+    { title: 'Varian Produk', href: '/variant-types' },
+    { title: 'Edit Varian', href: '#' },
+];
+
 const form = useForm({
     name: props.variantType.name,
     slug: props.variantType.slug,
@@ -43,21 +51,19 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Edit Varian Produk" />
+    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+        <Head title="Edit Varian Produk" />
 
-    <div class="flex flex-col gap-6 p-6">
-        <!-- Header -->
-        <div class="flex flex-col gap-1">
-            <nav class="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <a href="/dashboard" class="hover:text-foreground transition-colors">Dashboard</a>
-                <span>/</span>
-                <span>Produk</span>
-                <span>/</span>
-                <a href="/variant-types" class="hover:text-foreground transition-colors">Varian Produk</a>
-                <span>/</span>
-                <span class="text-foreground font-medium">Edit Varian</span>
-            </nav>
-            <h1 class="text-2xl font-bold tracking-tight">Edit Varian: {{ variantType.name }}</h1>
+        <!-- Breadcrumbs in Content -->
+        <Breadcrumbs :breadcrumbs="breadcrumbs" />
+
+        <!-- Page Header -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Edit Varian: {{ variantType.name }}</h1>
+                </div>
+            </div>
         </div>
 
         <form @submit.prevent="submit" class="grid gap-6 lg:grid-cols-3">

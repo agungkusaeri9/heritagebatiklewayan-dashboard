@@ -51,4 +51,12 @@ class Category extends Model
 
         return Storage::disk('public')->url($this->image);
     }
+
+    /**
+     * Scope a query to only include active categories.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

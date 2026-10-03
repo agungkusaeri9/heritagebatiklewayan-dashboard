@@ -5,6 +5,7 @@ namespace App\Repositories\Eloquent;
 use App\Models\VariantType;
 use App\Models\VariantValue;
 use App\Repositories\Contracts\VariantTypeRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class VariantTypeRepository implements VariantTypeRepositoryInterface
@@ -26,6 +27,11 @@ class VariantTypeRepository implements VariantTypeRepositoryInterface
             ->orderBy('name')
             ->paginate($perPage)
             ->withQueryString();
+    }
+
+    public function getAllActive(): Collection
+    {
+        return VariantType::active()->with('values')->orderBy('sort_order')->get();
     }
 
     public function findById(int $id): ?VariantType

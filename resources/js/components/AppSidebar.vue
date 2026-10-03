@@ -5,6 +5,7 @@ import {
     LayoutGrid,
     Package,
     User,
+    Users,
     History,
     ShieldCheck,
 } from 'lucide-vue-next';
@@ -35,6 +36,10 @@ const mainNavItems = computed<NavItem[]>(() => [
         icon: Package,
         items: [
             {
+                title: 'Semua Produk',
+                href: '/products',
+            },
+            {
                 title: 'Kategori Produk',
                 href: '/categories',
             },
@@ -50,9 +55,14 @@ const mainNavItems = computed<NavItem[]>(() => [
         icon: Database,
         items: [
             {
-                title: 'Pengguna',
+                title: 'Pengguna (Admin)',
                 href: '/users',
                 icon: User,
+            },
+            {
+                title: 'Pelanggan (Customer)',
+                href: '/customers',
+                icon: Users,
             },
         ],
     },

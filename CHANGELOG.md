@@ -8,6 +8,29 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ## [vx.x.x]
 
+Penambahan fitur **Import Produk via Excel** secara massal dan modul **Manajemen Pelanggan (Customer)** lengkap dengan *seeding* otomatis.
+
+### ✨ Fitur Baru (Features)
+
+- **Import Produk via Excel (.xlsx / .csv)**:
+  - Integrasi pustaka `maatwebsite/excel` untuk pengimporan data produk.
+  - Fitur unduh file template Excel (.xlsx) dengan kolom yang siap diisi.
+  - Sistem impor pintar (*auto-create* Kategori dan Varian jika belum ada).
+- **Manajemen Pelanggan (Customer)**:
+  - Database terpisah untuk entitas Pelanggan (`customers`) dan Alamat (`customer_addresses`).
+  - Halaman CRUD pelanggan (Daftar, Detail Profil & Alamat, Edit, dan Hapus) lengkap dengan filter pencarian dan paginasi.
+  - Navigasi sidebar terdedikasi untuk "Pelanggan" di grup Data Master.
+
+### 🏗️ Arsitektur & Backend
+
+- **Customer Service & Repository**: Pemisahan logika dari Controller. Pengecekan eksistensi data dipusatkan di layer *Service* (`getCustomerById`).
+- **Database Seeder**: Penambahan `CustomerSeeder` untuk men-generate 20 data pelanggan *dummy* beserta struktur alamatnya.
+- **Resolusi Bug Hydration**: Menghapus komponen `Switch` dari Reka-UI (yang menyebabkan *mismatch*) dan menggantinya dengan Checkbox Native (*Tailwind-styled*) pada form Produk dan form Pelanggan.
+
+---
+
+## [vx.x.x]
+
 Penambahan fitur **Kategori Produk** dan **Varian Produk** dengan CRUD lengkap, upload gambar untuk kategori, navigasi sidebar dropdown Produk, serta berbagai perbaikan UI.
 
 ### ✨ Fitur Baru (Features)

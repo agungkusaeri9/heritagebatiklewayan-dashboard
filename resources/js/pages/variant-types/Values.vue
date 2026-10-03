@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,13 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Produk', href: '#' },
+    { title: 'Varian Produk', href: '/variant-types' },
+    { title: 'Nilai Varian', href: '#' },
+];
 
 // Local state for editing values
 const localValues = ref<string[]>(props.variantType.values.map((v) => v.value));
@@ -67,39 +75,34 @@ const isDirty = ref(false);
 </script>
 
 <template>
-    <Head :title="`Nilai Varian: ${variantType.name}`" />
+    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+        <Head :title="`Nilai Varian: ${variantType.name}`" />
 
-    <div class="flex flex-col gap-6 p-6">
-        <!-- Header -->
-        <div class="flex flex-col gap-1">
-            <nav class="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <a href="/dashboard" class="hover:text-foreground transition-colors">Dashboard</a>
-                <span>/</span>
-                <span>Produk</span>
-                <span>/</span>
-                <a href="/variant-types" class="hover:text-foreground transition-colors">Varian Produk</a>
-                <span>/</span>
-                <span class="text-foreground font-medium">Nilai Varian</span>
-            </nav>
-            <div class="flex items-center justify-between gap-4">
-                <div>
-                    <div class="flex items-center gap-2.5 mb-0.5">
-                        <h1 class="text-2xl font-bold tracking-tight">{{ variantType.name }}</h1>
-                        <Badge :variant="variantType.is_active ? 'default' : 'secondary'">
-                            {{ variantType.is_active ? 'Aktif' : 'Nonaktif' }}
-                        </Badge>
-                    </div>
-                    <p class="text-sm text-muted-foreground">
-                        Kelola nilai/opsi untuk tipe varian ini. Total: <strong>{{ localValues.length }}</strong> nilai.
-                    </p>
+        <!-- Breadcrumbs in Content -->
+        <Breadcrumbs :breadcrumbs="breadcrumbs" />
+
+        <!-- Page Header -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                        {{ variantType.name }}
+                    </h1>
+                    <Badge :variant="variantType.is_active ? 'default' : 'secondary'">
+                        {{ variantType.is_active ? 'Aktif' : 'Nonaktif' }}
+                    </Badge>
                 </div>
-                <Link href="/variant-types">
-                    <Button variant="outline" class="gap-2">
-                        <ArrowLeft class="h-4 w-4" />
-                        Kembali
-                    </Button>
-                </Link>
+                <p class="text-sm text-muted-foreground">
+                    Kelola nilai/opsi untuk tipe varian ini. Total: <strong>{{ localValues.length }}</strong> nilai.
+                </p>
             </div>
+
+            <Button as-child variant="outline" class="shrink-0 gap-2">
+                <Link href="/variant-types">
+                    <ArrowLeft class="h-4 w-4" />
+                    Kembali
+                </Link>
+            </Button>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-3">

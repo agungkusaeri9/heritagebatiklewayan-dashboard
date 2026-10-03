@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -70,21 +71,19 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Tambah Varian Produk" />
+    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+        <Head title="Tambah Varian Produk" />
 
-    <div class="flex flex-col gap-6 p-6">
-        <!-- Header -->
-        <div class="flex flex-col gap-1">
-            <nav class="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <a href="/dashboard" class="hover:text-foreground transition-colors">Dashboard</a>
-                <span>/</span>
-                <span>Produk</span>
-                <span>/</span>
-                <a href="/variant-types" class="hover:text-foreground transition-colors">Varian Produk</a>
-                <span>/</span>
-                <span class="text-foreground font-medium">Tambah Varian</span>
-            </nav>
-            <h1 class="text-2xl font-bold tracking-tight">Tambah Varian Produk</h1>
+        <!-- Breadcrumbs in Content -->
+        <Breadcrumbs :breadcrumbs="breadcrumbs" />
+
+        <!-- Page Header -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Tambah Varian Produk</h1>
+                </div>
+            </div>
         </div>
 
         <form @submit.prevent="submit" class="grid gap-6 lg:grid-cols-3">

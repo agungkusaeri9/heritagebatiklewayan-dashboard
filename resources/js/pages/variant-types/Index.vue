@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -126,32 +127,29 @@ const formatDate = (dateStr: string) => {
 </script>
 
 <template>
-    <Head title="Varian Produk" />
+    <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+        <Head title="Varian Produk" />
 
-    <div class="flex flex-col gap-6 p-6">
-        <!-- Header -->
-        <div class="flex flex-col gap-1">
-            <nav class="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <a href="/dashboard" class="hover:text-foreground transition-colors">Dashboard</a>
-                <span>/</span>
-                <span>Produk</span>
-                <span>/</span>
-                <span class="text-foreground font-medium">Varian Produk</span>
-            </nav>
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight">Varian Produk</h1>
-                    <p class="text-muted-foreground text-sm mt-0.5">
-                        Kelola tipe varian produk (Ukuran, Warna, Motif, dll.)
-                    </p>
+        <!-- Breadcrumbs in Content -->
+        <Breadcrumbs :breadcrumbs="breadcrumbs" />
+
+        <!-- Page Header -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="space-y-1">
+                <div class="flex items-center gap-3">
+                    <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Varian Produk</h1>
                 </div>
-                <Link href="/variant-types/create">
-                    <Button class="gap-2">
-                        <Plus class="h-4 w-4" />
-                        Tambah Varian
-                    </Button>
-                </Link>
+                <p class="text-sm text-muted-foreground">
+                    Kelola tipe varian produk (Ukuran, Warna, Motif, dll.)
+                </p>
             </div>
+
+            <Button as-child class="shrink-0">
+                <Link href="/variant-types/create">
+                    <Plus class="mr-2 h-4 w-4" />
+                    Tambah Varian
+                </Link>
+            </Button>
         </div>
 
         <!-- Table Card -->

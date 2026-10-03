@@ -35,4 +35,12 @@ class VariantType extends Model
     {
         return $this->hasMany(VariantValue::class)->orderBy('sort_order')->orderBy('value');
     }
+
+    /**
+     * Scope a query to only include active variant types.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

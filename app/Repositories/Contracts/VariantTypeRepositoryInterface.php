@@ -3,11 +3,14 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\VariantType;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface VariantTypeRepositoryInterface
 {
     public function getAllPaginated(array $filters, int $perPage): LengthAwarePaginator;
+
+    public function getAllActive(): Collection;
 
     public function findById(int $id): ?VariantType;
 
