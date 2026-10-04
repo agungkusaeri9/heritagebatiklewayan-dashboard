@@ -56,4 +56,9 @@ class CustomerRepository implements CustomerRepositoryInterface
     {
         return $customer->delete();
     }
+
+    public function countTotal(): int
+    {
+        return Customer::count();
+    }
 }

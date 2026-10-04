@@ -37,4 +37,9 @@ interface ProductRepositoryInterface
      * Delete a product.
      */
     public function delete(Product $product): bool;
+
+    /**
+     * Count total products.
+     */
+    public function countProducts(): int;
 }

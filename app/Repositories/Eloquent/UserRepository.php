@@ -48,4 +48,9 @@ class UserRepository implements UserRepositoryInterface
     {
         return $user->delete();
     }
+
+    public function countCustomers(): int
+    {
+        return User::role('customer')->count();
+    }
 }

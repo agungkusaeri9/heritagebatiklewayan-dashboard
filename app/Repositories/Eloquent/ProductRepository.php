@@ -73,4 +73,12 @@ class ProductRepository implements ProductRepositoryInterface
     {
         return $product->delete();
     }
+
+    /**
+     * Count total products.
+     */
+    public function countProducts(): int
+    {
+        return Product::count();
+    }
 }

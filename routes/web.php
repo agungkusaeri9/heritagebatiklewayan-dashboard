@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::resource('customers', CustomerController::class)->except(['create', 'store']);
     Route::resource('payment-methods', PaymentMethodController::class)->except(['create', 'show', 'edit']);
@@ -39,6 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('api/locations/cities', [\App\Http\Controllers\LocationController::class, 'getCities'])->name('api.locations.cities');
     Route::get('api/locations/subdistricts', [\App\Http\Controllers\LocationController::class, 'getSubdistricts'])->name('api.locations.subdistricts');
     
+    Route::get('orders', [\App\Http\Controllers\OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{order}', [\App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+    Route::post('orders/{order}/status', [\App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::post('orders/{order}/payment', [\App\Http\Controllers\OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment');
+
     // Store Settings
     Route::get('store-settings', [\App\Http\Controllers\StoreSettingController::class, 'index'])->name('store-settings.index');
     Route::post('store-settings', [\App\Http\Controllers\StoreSettingController::class, 'update'])->name('store-settings.update');

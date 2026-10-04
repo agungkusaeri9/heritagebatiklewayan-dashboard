@@ -12,6 +12,7 @@ import {
     Truck,
     MapPin,
     Settings,
+    ShoppingBag,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -33,6 +34,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Pesanan',
+        href: '/orders',
+        icon: ShoppingBag,
     },
     {
         title: 'Produk',

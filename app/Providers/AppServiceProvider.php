@@ -22,6 +22,8 @@ use App\Repositories\Eloquent\CustomerRepository;
 use App\Repositories\Eloquent\PaymentMethodRepository;
 use App\Repositories\Contracts\CourierRepositoryInterface;
 use App\Repositories\Eloquent\CourierRepository;
+use App\Repositories\Contracts\OrderRepositoryInterface;
+use App\Repositories\Eloquent\OrderRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -48,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CustomerRepositoryInterface::class, CustomerRepository::class);
         $this->app->bind(PaymentMethodRepositoryInterface::class, PaymentMethodRepository::class);
         $this->app->bind(CourierRepositoryInterface::class, CourierRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
     }
 
     /**
