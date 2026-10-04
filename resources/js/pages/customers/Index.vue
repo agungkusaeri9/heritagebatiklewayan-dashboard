@@ -38,7 +38,8 @@ import {
     Trash2,
     ChevronLeft,
     ChevronRight,
-    Users
+    Users,
+    X,
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
@@ -87,6 +88,12 @@ const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || 'all');
 const perPage = ref(props.filters.per_page?.toString() || '10');
 const isLoading = ref(false);
+
+const perPageOptions = ['10', '20', '30', '40', '50', '100'];
+
+const clearSearch = () => {
+    search.value = '';
+};
 
 let searchTimeout: ReturnType<typeof setTimeout>;
 
@@ -155,21 +162,30 @@ const executeDelete = () => {
         <div class="rounded-xl border bg-card shadow-xs">
             <!-- Table Controls -->
             <div class="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div class="flex flex-1 items-center gap-2 sm:max-w-xs">
-                    <div class="relative w-full">
-                        <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            v-model="search"
-                            placeholder="Cari nama, email, atau no HP..."
-                            class="w-full bg-background pl-8"
-                        />
-                    </div>
+                <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>Tampilkan</span>
+                    <Select v-model="perPage">
+                        <SelectTrigger class="h-8 w-[72px] text-xs">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="opt in perPageOptions"
+                                :key="opt"
+                                :value="opt"
+                            >
+                                {{ opt }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span>data</span>
                 </div>
+
                 <div class="flex items-center gap-2">
                     <div class="flex items-center gap-2 border-r pr-2 mr-2">
                         <Filter class="h-4 w-4 text-muted-foreground" />
                         <Select v-model="status">
-                            <SelectTrigger class="h-9 w-[130px] bg-background">
+                            <SelectTrigger class="h-8 w-[130px] bg-background text-xs">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -178,6 +194,23 @@ const executeDelete = () => {
                                 <SelectItem value="inactive">Nonaktif</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+                    <div class="relative w-full max-w-xs sm:w-64">
+                        <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            v-model="search"
+                            type="search"
+                            placeholder="Cari nama, email, atau no HP..."
+                            class="h-8 w-full bg-background pl-8 pr-8 text-xs"
+                        />
+                        <button
+                            v-if="search"
+                            type="button"
+                            class="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+                            @click="clearSearch"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -262,33 +295,44 @@ const executeDelete = () => {
             </div>
 
             <!-- Pagination -->
-            <div class="flex items-center justify-between border-t px-4 py-4" v-if="customers.data.length > 0">
-                <div class="text-sm text-muted-foreground">
-                    Menampilkan <span class="font-medium">{{ customers.from }}</span> - <span class="font-medium">{{ customers.to }}</span> dari <span class="font-medium">{{ customers.total }}</span> data
+            <div class="flex flex-col gap-3 border-t p-4 sm:flex-row sm:items-center sm:justify-between" v-if="customers.data.length > 0">
+                <div class="text-xs text-muted-foreground">
+                    Menampilkan {{ customers.from || 0 }} sampai {{ customers.to || 0 }} dari {{ customers.total }} data
                 </div>
-                <div class="flex items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!customers.links[0].url"
-                        as-child
-                    >
-                        <Link :href="customers.links[0].url || '#'" preserve-scroll preserve-state>
-                            <ChevronLeft class="h-4 w-4 mr-1" />
-                            Prev
-                        </Link>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        :disabled="!customers.links[customers.links.length - 1].url"
-                        as-child
-                    >
-                        <Link :href="customers.links[customers.links.length - 1].url || '#'" preserve-scroll preserve-state>
-                            Next
-                            <ChevronRight class="h-4 w-4 ml-1" />
-                        </Link>
-                    </Button>
+                <div class="flex flex-wrap items-center gap-1">
+                    <template v-for="(link, i) in customers.links" :key="i">
+                        <Button
+                            v-if="i === 0"
+                            variant="outline"
+                            size="icon"
+                            class="h-8 w-8"
+                            :disabled="!link.url"
+                            @click="link.url && router.get(link.url, { search, status, per_page: perPage }, { preserveState: true })"
+                        >
+                            <ChevronLeft class="h-4 w-4" />
+                        </Button>
+                        <Button
+                            v-else-if="i === customers.links.length - 1"
+                            variant="outline"
+                            size="icon"
+                            class="h-8 w-8"
+                            :disabled="!link.url"
+                            @click="link.url && router.get(link.url, { search, status, per_page: perPage }, { preserveState: true })"
+                        >
+                            <ChevronRight class="h-4 w-4" />
+                        </Button>
+                        <span v-else-if="link.label === '...'" class="px-2 text-xs text-muted-foreground">...</span>
+                        <Button
+                            v-else
+                            :variant="link.active ? 'default' : 'outline'"
+                            size="sm"
+                            class="h-8 min-w-8 px-2.5 text-xs font-medium"
+                            :disabled="!link.url"
+                            @click="link.url && router.get(link.url, { search, status, per_page: perPage }, { preserveState: true })"
+                        >
+                            {{ link.label }}
+                        </Button>
+                    </template>
                 </div>
             </div>
         </div>

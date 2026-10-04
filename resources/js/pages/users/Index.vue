@@ -64,8 +64,7 @@ const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Data Master', href: '#' },
-    { title: 'Manajemen Pengguna', href: '/users' },
+    { title: 'Pengguna', href: '/users' },
 ];
 
 const filterState = reactive({
@@ -126,7 +125,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
 </script>
 
 <template>
-    <Head title="Manajemen Pengguna" />
+    <Head title="Pengguna" />
 
     <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
         <!-- Breadcrumbs in Content -->
@@ -139,7 +138,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
             <div class="space-y-1">
                 <div class="flex items-center gap-3">
                     <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                        Manajemen Pengguna
+                        Pengguna
                     </h1>
                 </div>
                 <p class="text-sm text-muted-foreground">

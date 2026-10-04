@@ -10,6 +10,7 @@ use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\VariantTypeRepositoryInterface;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
+use App\Repositories\Contracts\PaymentMethodRepositoryInterface;
 use App\Repositories\Eloquent\ActivityLogRepository;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\PermissionRepository;
@@ -18,6 +19,7 @@ use App\Repositories\Eloquent\RoleRepository;
 use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Eloquent\VariantTypeRepository;
 use App\Repositories\Eloquent\CustomerRepository;
+use App\Repositories\Eloquent\PaymentMethodRepository;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(VariantTypeRepositoryInterface::class, VariantTypeRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(CustomerRepositoryInterface::class, CustomerRepository::class);
+        $this->app->bind(PaymentMethodRepositoryInterface::class, PaymentMethodRepository::class);
     }
 
     /**

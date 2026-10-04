@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariantTypeController;
@@ -16,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
     Route::resource('users', UserController::class);
     Route::resource('customers', CustomerController::class)->except(['create', 'store']);
+    Route::resource('payment-methods', PaymentMethodController::class)->except(['create', 'show', 'edit']);
     Route::resource('categories', CategoryController::class);
     Route::resource('variant-types', VariantTypeController::class)->except(['show']);
     Route::get('variant-types/{variant_type}/values', [VariantTypeController::class, 'values'])->name('variant-types.values');

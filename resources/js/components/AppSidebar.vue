@@ -8,6 +8,7 @@ import {
     Users,
     History,
     ShieldCheck,
+    CreditCard,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -63,6 +64,11 @@ const mainNavItems = computed<NavItem[]>(() => [
                 title: 'Pelanggan (Customer)',
                 href: '/customers',
                 icon: Users,
+            },
+            {
+                title: 'Metode Pembayaran',
+                href: '/payment-methods',
+                icon: CreditCard,
             },
         ],
     },
