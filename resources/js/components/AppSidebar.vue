@@ -9,6 +9,9 @@ import {
     History,
     ShieldCheck,
     CreditCard,
+    Truck,
+    MapPin,
+    Settings,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -70,6 +73,16 @@ const mainNavItems = computed<NavItem[]>(() => [
                 href: '/payment-methods',
                 icon: CreditCard,
             },
+            {
+                title: 'Kurir (RajaOngkir)',
+                href: '/couriers',
+                icon: Truck,
+            },
+            {
+                title: 'Lokasi',
+                href: '/locations',
+                icon: MapPin,
+            },
         ],
     },
     {
@@ -84,6 +97,17 @@ const mainNavItems = computed<NavItem[]>(() => [
             {
                 title: 'Hak Akses (Permissions)',
                 href: '/permissions',
+            },
+        ],
+    },
+    {
+        title: 'Pengaturan',
+        href: '#',
+        icon: Settings,
+        items: [
+            {
+                title: 'Pengaturan Toko',
+                href: '/store-settings',
             },
         ],
     },
