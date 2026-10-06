@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PaymentMethod;
 use App\Repositories\Contracts\PaymentMethodRepositoryInterface;
 use App\Services\PaymentMethodService;
 use Illuminate\Http\Request;
@@ -48,9 +47,10 @@ class PaymentMethodController extends Controller
 
         try {
             $this->paymentMethodService->createPaymentMethod($validated);
+
             return back()->with('success', 'Metode pembayaran berhasil ditambahkan.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan metode pembayaran: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Gagal menambahkan metode pembayaran: '.$e->getMessage())->withInput();
         }
     }
 
@@ -70,9 +70,10 @@ class PaymentMethodController extends Controller
 
         try {
             $this->paymentMethodService->updatePaymentMethod($id, $validated);
+
             return back()->with('success', 'Metode pembayaran berhasil diperbarui.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal memperbarui metode pembayaran: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Gagal memperbarui metode pembayaran: '.$e->getMessage())->withInput();
         }
     }
 
@@ -80,9 +81,10 @@ class PaymentMethodController extends Controller
     {
         try {
             $this->paymentMethodService->deletePaymentMethod($id);
+
             return back()->with('success', 'Metode pembayaran berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus metode pembayaran: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus metode pembayaran: '.$e->getMessage());
         }
     }
 }

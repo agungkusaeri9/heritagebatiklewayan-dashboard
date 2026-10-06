@@ -14,7 +14,7 @@ class CourierRepository implements CourierRepositoryInterface
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%");
             });
         }
 
@@ -40,6 +40,7 @@ class CourierRepository implements CourierRepositoryInterface
     {
         $courier = Courier::findOrFail($id);
         $courier->update($data);
+
         return $courier;
     }
 

@@ -19,7 +19,7 @@ class ProductTemplateExport implements FromArray, WithHeadings
             'description',
             'is_virtual_try_on',
             'is_active',
-            'variants'
+            'variants',
         ];
     }
 
@@ -36,7 +36,7 @@ class ProductTemplateExport implements FromArray, WithHeadings
                 'Kemeja halus premium', // description
                 1, // is_virtual_try_on
                 1, // is_active
-                'Warna:Merah,Biru;Ukuran:M,L,XL' // variants
+                'Warna:Merah,Biru;Ukuran:M,L,XL', // variants
             ],
             [
                 'Kain Batik Sogan',
@@ -48,8 +48,8 @@ class ProductTemplateExport implements FromArray, WithHeadings
                 'Kain premium untuk seragam',
                 0,
                 1,
-                'Tipe:Katun,Sutra'
-            ]
+                'Tipe:Katun,Sutra',
+            ],
         ];
     }
 }

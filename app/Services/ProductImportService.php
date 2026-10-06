@@ -38,9 +38,9 @@ class ProductImportService
 
                 // 1. Resolve Category
                 $categoryId = null;
-                if (!empty($data['category'])) {
+                if (! empty($data['category'])) {
                     $category = Category::firstOrCreate([
-                        'slug' => Str::slug($data['category'])
+                        'slug' => Str::slug($data['category']),
                     ], [
                         'name' => $data['category'],
                         'is_active' => true,
@@ -50,12 +50,12 @@ class ProductImportService
 
                 // 2. Prepare Product Data
                 $slug = Str::slug($data['name']);
-                
+
                 // Ensure slug uniqueness
                 $originalSlug = $slug;
                 $counter = 1;
                 while (Product::where('slug', $slug)->exists()) {
-                    $slug = $originalSlug . '-' . $counter;
+                    $slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
 
@@ -73,7 +73,7 @@ class ProductImportService
                 ]);
 
                 // 3. Resolve Variants (Format: "Warna:Merah,Biru;Ukuran:M,L")
-                if (!empty($data['variants'])) {
+                if (! empty($data['variants'])) {
                     $variantGroups = explode(';', $data['variants']);
                     $variantValueIds = [];
 
@@ -91,7 +91,7 @@ class ProductImportService
 
                             foreach ($values as $valueName) {
                                 $valueName = trim($valueName);
-                                if (!empty($valueName)) {
+                                if (! empty($valueName)) {
                                     $variantValue = VariantValue::firstOrCreate([
                                         'variant_type_id' => $variantType->id,
                                         'value' => $valueName,
@@ -102,7 +102,7 @@ class ProductImportService
                         }
                     }
 
-                    if (!empty($variantValueIds)) {
+                    if (! empty($variantValueIds)) {
                         $product->variantValues()->sync($variantValueIds);
                     }
                 }

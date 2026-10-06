@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductTemplateExport;
 use App\Http\Requests\Product\IndexProductRequest;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
+use App\Imports\ProductsImport;
 use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\VariantTypeRepositoryInterface;
 use App\Services\ProductService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ProductTemplateExport;
-use App\Imports\ProductsImport;
 
 class ProductController extends Controller
 {
@@ -176,14 +177,14 @@ class ProductController extends Controller
         }
     }
 
-    public function import(\Illuminate\Http\Request $request)
+    public function import(Request $request)
     {
         $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ]);
 
         try {
-            $import = new ProductsImport();
+            $import = new ProductsImport;
             Excel::import($import, $request->file('file'));
 
             return back()->with('success', "Berhasil mengimpor {$import->getImportedCount()} produk dari Excel/CSV.");

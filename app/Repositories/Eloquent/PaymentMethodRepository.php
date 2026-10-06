@@ -14,8 +14,8 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('account_name', 'like', "%{$search}%")
-                  ->orWhere('account_number', 'like', "%{$search}%");
+                ->orWhere('account_name', 'like', "%{$search}%")
+                ->orWhere('account_number', 'like', "%{$search}%");
         }
 
         if ($status === 'active') {

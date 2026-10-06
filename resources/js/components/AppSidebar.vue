@@ -13,6 +13,7 @@ import {
     MapPin,
     Settings,
     ShoppingBag,
+    Bell,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -103,6 +104,21 @@ const mainNavItems = computed<NavItem[]>(() => [
             {
                 title: 'Hak Akses (Permissions)',
                 href: '/permissions',
+            },
+        ],
+    },
+    {
+        title: 'Notifikasi',
+        href: '#',
+        icon: Bell,
+        items: [
+            {
+                title: 'Daftar Notifikasi',
+                href: '/notifications',
+            },
+            {
+                title: 'Template Pengaturan',
+                href: '/notification-settings',
             },
         ],
     },

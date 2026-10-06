@@ -2,26 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Courier;
+use App\Models\Province;
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class StoreSettingController extends Controller
 {
     public function index()
     {
         $setting = StoreSetting::first();
-        
-        if (!$setting) {
+
+        if (! $setting) {
             $setting = StoreSetting::create([
                 'name' => 'Toko BatikKu',
                 'whatsapp' => '6281234567890',
             ]);
         }
 
-        $couriers = \App\Models\Courier::all();
-        $provinces = \App\Models\Province::all();
+        $couriers = Courier::all();
+        $provinces = Province::all();
 
         return Inertia::render('store-settings/Index', [
             'setting' => $setting,
@@ -50,7 +52,7 @@ class StoreSettingController extends Controller
                 Storage::disk('public')->delete($setting->logo);
             }
             $validated['logo'] = $request->file('logo_file')->store('store', 'public');
-        } else if (array_key_exists('logo', $request->all()) && $request->input('logo') === null) {
+        } elseif (array_key_exists('logo', $request->all()) && $request->input('logo') === null) {
             if ($setting->logo && Storage::disk('public')->exists($setting->logo)) {
                 Storage::disk('public')->delete($setting->logo);
             }
@@ -58,7 +60,7 @@ class StoreSettingController extends Controller
         }
 
         unset($validated['logo_file']);
-        
+
         $setting->update($validated);
 
         return redirect()->back()->with('success', 'Pengaturan toko berhasil diperbarui.');

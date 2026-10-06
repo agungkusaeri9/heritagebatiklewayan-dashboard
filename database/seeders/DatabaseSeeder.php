@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,17 +14,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Seed Roles & Permissions first
+        $this->call(RolePermissionSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Admin User',
-            'username' => 'admin',
-            'password' => Hash::make('password'),
-        ]);
+        // 2. Ensure Super Admin User exists and has super admin role
+        $sa = User::firstOrCreate(
+            ['username' => 'superadmin'],
+            [
+                'name' => 'Super Admin',
+                'email' => 'superadmin@batik.com',
+                'password' => Hash::make('password'),
+            ]
+        );
 
+        $superAdminRole = Role::where('name', 'super admin')->first();
+        if ($superAdminRole && ! $sa->hasRole('super admin')) {
+            $sa->assignRole($superAdminRole);
+        }
+
+        // 3. Seed other core data (excluding provinces, cities, subdistricts from RajaOngkir)
         $this->call([
-            RolePermissionSeeder::class,
             CourierSeeder::class,
+            PaymentMethodSeeder::class,
+            CategorySeeder::class,
+            VariantTypeSeeder::class,
+            ProductSeeder::class,
+            CustomerSeeder::class,
+            OrderSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

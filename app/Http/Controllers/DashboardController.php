@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\DashboardService;
-use Inertia\Inertia;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -19,10 +20,10 @@ class DashboardController extends Controller
     {
         $filter = $request->query('filter', 'this_week');
         $data = $this->dashboardService->getDashboardData($filter);
-        
+
         $data['currentFilter'] = $filter;
 
-        $currentYear = \Carbon\Carbon::now()->year;
+        $currentYear = Carbon::now()->year;
         $data['availableYears'] = range($currentYear, $currentYear - 4);
 
         return Inertia::render('Dashboard', $data);

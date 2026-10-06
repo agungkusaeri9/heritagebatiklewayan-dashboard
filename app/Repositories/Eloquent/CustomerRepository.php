@@ -15,7 +15,7 @@ class CustomerRepository implements CustomerRepositoryInterface
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             })->orWhere('phone', 'like', "%{$search}%");
         }
 
@@ -28,8 +28,8 @@ class CustomerRepository implements CustomerRepositoryInterface
         if ($sort === 'name' || $sort === 'email') {
             // Sort by related user table
             $query->join('users', 'customers.user_id', '=', 'users.id')
-                  ->orderBy('users.'.$sort, $direction)
-                  ->select('customers.*');
+                ->orderBy('users.'.$sort, $direction)
+                ->select('customers.*');
         } else {
             $query->orderBy('customers.'.$sort, $direction);
         }

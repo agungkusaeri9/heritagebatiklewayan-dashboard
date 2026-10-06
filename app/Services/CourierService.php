@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Repositories\Contracts\CourierRepositoryInterface;
 use Illuminate\Support\Facades\Storage;
-use Exception;
 
 class CourierService
 {
@@ -38,7 +37,7 @@ class CourierService
             }
             $path = $data['logo_file']->store('couriers', 'public');
             $data['logo'] = $path;
-        } else if (array_key_exists('logo', $data) && $data['logo'] === null) {
+        } elseif (array_key_exists('logo', $data) && $data['logo'] === null) {
             // Remove logo
             if ($courier->logo && Storage::disk('public')->exists($courier->logo)) {
                 Storage::disk('public')->delete($courier->logo);
@@ -54,6 +53,7 @@ class CourierService
         if ($courier->logo && Storage::disk('public')->exists($courier->logo)) {
             Storage::disk('public')->delete($courier->logo);
         }
+
         return $this->courierRepository->delete($id);
     }
 }

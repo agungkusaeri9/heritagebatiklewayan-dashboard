@@ -2,16 +2,15 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
-
+use App\Models\Courier;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
-use App\Models\Transaction;
-use App\Models\User;
-use App\Models\Product;
 use App\Models\PaymentMethod;
-use App\Models\Courier;
+use App\Models\Product;
+use App\Models\Subdistrict;
+use App\Models\Transaction;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class OrderSeeder extends Seeder
@@ -21,22 +20,17 @@ class OrderSeeder extends Seeder
      */
     public function run(): void
     {
-
-        $customers = User::role('customer')->get();
+        $customers = Customer::all();
         if ($customers->isEmpty()) {
-            $this->command->warn('No customers found. Creating a dummy customer...');
-            $customer = User::create([
-                'name' => 'Dummy Customer',
-                'email' => 'customer' . rand(1, 100) . '@example.com',
-                'password' => bcrypt('password'),
-            ]);
-            $customer->assignRole('customer');
-            $customers = collect([$customer]);
+            $this->command->warn('No customers found, skipping order seeder.');
+
+            return;
         }
 
         $products = Product::all();
         if ($products->isEmpty()) {
             $this->command->warn('No products found, skipping order seeder.');
+
             return;
         }
 
@@ -44,7 +38,6 @@ class OrderSeeder extends Seeder
         $couriers = Courier::all();
 
         $statuses = ['pending', 'processing', 'success', 'failed'];
-        $paymentStatuses = ['pending', 'paid', 'failed'];
 
         for ($i = 0; $i < 10; $i++) {
             $customer = $customers->random();
@@ -55,14 +48,14 @@ class OrderSeeder extends Seeder
             $maxProducts = min(3, $products->count());
             $orderProducts = $products->random(rand(1, $maxProducts));
             $subtotal = 0;
-            
+
             $orderDetailsData = [];
             foreach ($orderProducts as $product) {
                 $qty = rand(1, 3);
-                $price = $product->price;
+                $price = (float) $product->price;
                 $totalPrice = $price * $qty;
                 $subtotal += $totalPrice;
-                
+
                 $orderDetailsData[] = [
                     'product_id' => $product->id,
                     'price' => $price,
@@ -75,19 +68,20 @@ class OrderSeeder extends Seeder
             $totalAmount = $subtotal + $shippingFee;
 
             $status = $statuses[array_rand($statuses)];
+            $subdistrict = Subdistrict::with('city')->inRandomOrder()->first();
 
             $order = Order::create([
-                'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+                'order_number' => 'ORD-'.strtoupper(Str::random(10)),
                 'customer_id' => $customer->id,
                 'payment_method_id' => $paymentMethod ? $paymentMethod->id : null,
                 'subtotal' => $subtotal,
                 'shipping_fee' => $shippingFee,
                 'total_amount' => $totalAmount,
                 'status' => $status,
-                'province_id' => rand(1, 34),
-                'city_id' => rand(1, 100),
-                'subdistrict_id' => rand(1, 100),
-                'address' => 'Jl. Dummy Address No. ' . rand(1, 100),
+                'province_id' => $subdistrict?->city?->province_id ?? 1,
+                'city_id' => $subdistrict?->city_id ?? 1,
+                'subdistrict_id' => $subdistrict?->subdistrict_id ?? 1,
+                'address' => 'Jl. Batik No. '.rand(1, 100).', RT 01 / RW 02',
                 'courier_id' => $courier ? $courier->id : null,
             ]);
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
 use App\Services\CustomerService;
 use Illuminate\Http\Request;
@@ -74,9 +73,10 @@ class CustomerController extends Controller
 
         try {
             $this->customerService->updateCustomer($id, $validated);
+
             return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to update customer: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Failed to update customer: '.$e->getMessage())->withInput();
         }
     }
 
@@ -84,9 +84,10 @@ class CustomerController extends Controller
     {
         try {
             $this->customerService->deleteCustomer($id);
+
             return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to delete customer: ' . $e->getMessage());
+            return back()->with('error', 'Failed to delete customer: '.$e->getMessage());
         }
     }
 }

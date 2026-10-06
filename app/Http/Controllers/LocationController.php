@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Province;
 use App\Models\City;
+use App\Models\Province;
 use App\Models\Subdistrict;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,7 +32,7 @@ class LocationController extends Controller
         $search = $request->input('search');
 
         $query = $province->cities();
-        
+
         if ($search) {
             $query->where('city_name', 'like', "%{$search}%");
         }
@@ -50,7 +50,7 @@ class LocationController extends Controller
         $search = $request->input('search');
 
         $query = $city->subdistricts();
-        
+
         if ($search) {
             $query->where('subdistrict_name', 'like', "%{$search}%");
         }

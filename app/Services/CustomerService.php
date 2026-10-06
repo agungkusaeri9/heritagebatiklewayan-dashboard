@@ -19,7 +19,7 @@ class CustomerService
     {
         $customer = $this->customerRepository->findById($id);
 
-        if (!$customer) {
+        if (! $customer) {
             throw new \Exception('Customer tidak ditemukan.');
         }
 
@@ -32,7 +32,7 @@ class CustomerService
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'username' => $data['username'] ?? Str::slug($data['name']) . '-' . rand(1000, 9999),
+                'username' => $data['username'] ?? Str::slug($data['name']).'-'.rand(1000, 9999),
                 'password' => Hash::make($data['password']),
             ]);
 
@@ -54,7 +54,7 @@ class CustomerService
                 'email' => $data['email'],
             ];
 
-            if (!empty($data['password'])) {
+            if (! empty($data['password'])) {
                 $userData['password'] = Hash::make($data['password']);
             }
 
@@ -74,6 +74,7 @@ class CustomerService
         return DB::transaction(function () use ($customer) {
             $user = $customer->user;
             $this->customerRepository->delete($customer);
+
             return $user->delete();
         });
     }

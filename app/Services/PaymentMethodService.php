@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Models\PaymentMethod;
 use App\Repositories\Contracts\PaymentMethodRepositoryInterface;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class PaymentMethodService
 {
@@ -17,18 +17,18 @@ class PaymentMethodService
     public function getPaymentMethodById(int $id): PaymentMethod
     {
         $paymentMethod = $this->paymentMethodRepository->findById($id);
-        
-        if (!$paymentMethod) {
+
+        if (! $paymentMethod) {
             throw new \Exception('Metode Pembayaran tidak ditemukan.');
         }
-        
+
         return $paymentMethod;
     }
 
     public function createPaymentMethod(array $data): PaymentMethod
     {
         return DB::transaction(function () use ($data) {
-            if (isset($data['logo']) && $data['logo'] instanceof \Illuminate\Http\UploadedFile) {
+            if (isset($data['logo']) && $data['logo'] instanceof UploadedFile) {
                 $data['logo'] = $data['logo']->store('payment_methods', 'public');
             }
 
@@ -47,7 +47,7 @@ class PaymentMethodService
         $paymentMethod = $this->getPaymentMethodById($id);
 
         return DB::transaction(function () use ($paymentMethod, $data) {
-            if (isset($data['logo']) && $data['logo'] instanceof \Illuminate\Http\UploadedFile) {
+            if (isset($data['logo']) && $data['logo'] instanceof UploadedFile) {
                 // Hapus logo lama jika ada
                 if ($paymentMethod->logo) {
                     Storage::disk('public')->delete($paymentMethod->logo);
@@ -69,6 +69,7 @@ class PaymentMethodService
             if ($paymentMethod->logo) {
                 Storage::disk('public')->delete($paymentMethod->logo);
             }
+
             return $this->paymentMethodRepository->delete($paymentMethod);
         });
     }

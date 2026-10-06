@@ -2,14 +2,17 @@
 
 namespace App\Services;
 
-use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
+use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use Carbon\Carbon;
 
 class DashboardService
 {
     protected $orderRepository;
+
     protected $customerRepository;
+
     protected $productRepository;
 
     public function __construct(
@@ -25,27 +28,27 @@ class DashboardService
     public function getDashboardData(string $filter = 'this_week'): array
     {
         $isYearFilter = str_starts_with($filter, 'year-');
-        
+
         if ($isYearFilter) {
             $year = (int) str_replace('year-', '', $filter);
-            $startDate = \Carbon\Carbon::createFromDate($year)->startOfYear();
-            $endDate = \Carbon\Carbon::createFromDate($year)->endOfYear();
+            $startDate = Carbon::createFromDate($year)->startOfYear();
+            $endDate = Carbon::createFromDate($year)->endOfYear();
             $aggregationPeriod = $filter;
         } else {
             $startDate = match ($filter) {
-                'today' => \Carbon\Carbon::today(),
-                'this_week' => \Carbon\Carbon::now()->startOfWeek(),
-                'this_month' => \Carbon\Carbon::now()->startOfMonth(),
-                default => \Carbon\Carbon::now()->startOfWeek(),
+                'today' => Carbon::today(),
+                'this_week' => Carbon::now()->startOfWeek(),
+                'this_month' => Carbon::now()->startOfMonth(),
+                default => Carbon::now()->startOfWeek(),
             };
-            $endDate = \Carbon\Carbon::now();
+            $endDate = Carbon::now();
             $aggregationPeriod = $filter;
         }
 
         $revenueChart = $this->orderRepository->getRevenueByPeriod($aggregationPeriod);
         $ordersChart = $this->orderRepository->getOrdersCountByPeriod($aggregationPeriod);
         $statusCounts = $this->orderRepository->getOrdersCountByStatus($startDate, $endDate);
-        
+
         $dates = array_keys($revenueChart);
         $revenueData = array_values($revenueChart);
         $ordersData = array_values($ordersChart);

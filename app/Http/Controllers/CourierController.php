@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Courier;
 use App\Http\Requests\Courier\IndexCourierRequest;
 use App\Http\Requests\Courier\StoreCourierRequest;
 use App\Http\Requests\Courier\UpdateCourierRequest;
+use App\Models\Courier;
 use App\Services\CourierService;
 use Inertia\Inertia;
 
@@ -35,9 +35,10 @@ class CourierController extends Controller
     {
         try {
             $this->courierService->createCourier($request->validated());
+
             return redirect()->route('couriers.index')->with('success', 'Kurir berhasil ditambahkan.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menambahkan kurir: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Gagal menambahkan kurir: '.$e->getMessage())->withInput();
         }
     }
 
@@ -45,19 +46,21 @@ class CourierController extends Controller
     {
         try {
             $this->courierService->updateCourier($courier->id, $request->validated());
+
             return redirect()->route('couriers.index')->with('success', 'Kurir berhasil diubah.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengubah kurir: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Gagal mengubah kurir: '.$e->getMessage())->withInput();
         }
     }
 
     public function toggle(Courier $courier)
     {
         try {
-            $courier->update(['is_active' => !$courier->is_active]);
+            $courier->update(['is_active' => ! $courier->is_active]);
+
             return back()->with('success', 'Status kurir berhasil diubah.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal mengubah status kurir: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengubah status kurir: '.$e->getMessage());
         }
     }
 
@@ -65,9 +68,10 @@ class CourierController extends Controller
     {
         try {
             $this->courierService->deleteCourier($courier->id);
+
             return redirect()->route('couriers.index')->with('success', 'Kurir berhasil dihapus.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal menghapus kurir: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus kurir: '.$e->getMessage());
         }
     }
 }

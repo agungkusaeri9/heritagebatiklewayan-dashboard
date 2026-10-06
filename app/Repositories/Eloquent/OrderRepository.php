@@ -39,9 +39,11 @@ class OrderRepository implements OrderRepositoryInterface
         $data = [];
         if ($period === 'today') {
             for ($i = 0; $i < 24; $i++) {
-                $label = str_pad($i, 2, '0', STR_PAD_LEFT) . ':00';
+                $label = str_pad($i, 2, '0', STR_PAD_LEFT).':00';
                 $query = Order::whereDate('created_at', Carbon::today())->whereRaw('HOUR(created_at) = ?', [$i]);
-                if ($type === 'sum') $query->where('status', 'success');
+                if ($type === 'sum') {
+                    $query->where('status', 'success');
+                }
                 $data[$label] = $type === 'sum' ? (float) $query->sum('total_amount') : $query->count();
             }
         } elseif (str_starts_with($period, 'year-')) {
@@ -49,24 +51,31 @@ class OrderRepository implements OrderRepositoryInterface
             for ($i = 1; $i <= 12; $i++) {
                 $label = Carbon::create()->month($i)->format('M');
                 $query = Order::whereYear('created_at', $year)->whereMonth('created_at', $i);
-                if ($type === 'sum') $query->where('status', 'success');
+                if ($type === 'sum') {
+                    $query->where('status', 'success');
+                }
                 $data[$label] = $type === 'sum' ? (float) $query->sum('total_amount') : $query->count();
             }
         } else {
             // this_week or this_month -> group by days
             $days = $period === 'this_month' ? Carbon::now()->daysInMonth : 7;
             $start = $period === 'this_month' ? Carbon::now()->startOfMonth() : Carbon::now()->startOfWeek();
-            
+
             for ($i = 0; $i < $days; $i++) {
                 $date = $start->copy()->addDays($i);
-                if ($date->isFuture()) break; // Optional: don't show future days in the chart
-                
+                if ($date->isFuture()) {
+                    break;
+                } // Optional: don't show future days in the chart
+
                 $label = $date->format('d M');
                 $query = Order::whereDate('created_at', $date);
-                if ($type === 'sum') $query->where('status', 'success');
+                if ($type === 'sum') {
+                    $query->where('status', 'success');
+                }
                 $data[$label] = $type === 'sum' ? (float) $query->sum('total_amount') : $query->count();
             }
         }
+
         return $data;
     }
 

@@ -22,15 +22,15 @@ class ProductsImport implements ToCollection, WithHeadingRow
 
         try {
             foreach ($rows as $row) {
-                if (!isset($row['name']) || empty($row['name']) || !isset($row['price'])) {
+                if (! isset($row['name']) || empty($row['name']) || ! isset($row['price'])) {
                     continue; // Skip invalid rows
                 }
 
                 // 1. Resolve Category
                 $categoryId = null;
-                if (!empty($row['category'])) {
+                if (! empty($row['category'])) {
                     $category = Category::firstOrCreate([
-                        'slug' => Str::slug($row['category'])
+                        'slug' => Str::slug($row['category']),
                     ], [
                         'name' => $row['category'],
                         'is_active' => true,
@@ -40,12 +40,12 @@ class ProductsImport implements ToCollection, WithHeadingRow
 
                 // 2. Prepare Product Data
                 $slug = Str::slug($row['name']);
-                
+
                 // Ensure slug uniqueness
                 $originalSlug = $slug;
                 $counter = 1;
                 while (Product::where('slug', $slug)->exists()) {
-                    $slug = $originalSlug . '-' . $counter;
+                    $slug = $originalSlug.'-'.$counter;
                     $counter++;
                 }
 
@@ -63,7 +63,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
                 ]);
 
                 // 3. Resolve Variants
-                if (!empty($row['variants'])) {
+                if (! empty($row['variants'])) {
                     $variantGroups = explode(';', $row['variants']);
                     $variantValueIds = [];
 
@@ -81,7 +81,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
 
                             foreach ($values as $valueName) {
                                 $valueName = trim($valueName);
-                                if (!empty($valueName)) {
+                                if (! empty($valueName)) {
                                     $variantValue = VariantValue::firstOrCreate([
                                         'variant_type_id' => $variantType->id,
                                         'value' => $valueName,
@@ -92,7 +92,7 @@ class ProductsImport implements ToCollection, WithHeadingRow
                         }
                     }
 
-                    if (!empty($variantValueIds)) {
+                    if (! empty($variantValueIds)) {
                         $product->variantValues()->sync($variantValueIds);
                     }
                 }
