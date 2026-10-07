@@ -12,13 +12,14 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariantTypeController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::redirect('/', '/login')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -61,6 +62,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('notifications', NotificationController::class)->except(['edit', 'update']);
     Route::post('notification-settings/{notification_setting}/toggle', [NotificationSettingController::class, 'toggle'])->name('notification-settings.toggle');
     Route::resource('notification-settings', NotificationSettingController::class)->except(['create', 'show', 'edit']);
+
+    // Product Reviews
+    Route::post('reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
+    Route::post('reviews/{review}/toggle', [ProductReviewController::class, 'toggle'])->name('reviews.toggle');
+    Route::delete('reviews/{review}', [ProductReviewController::class, 'destroy'])->name('reviews.destroy');
 
     Route::middleware(['role:super admin'])->group(function () {
         Route::resource('roles', RoleController::class);

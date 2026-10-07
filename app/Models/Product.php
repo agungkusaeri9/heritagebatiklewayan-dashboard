@@ -52,6 +52,11 @@ class Product extends Model
         return $this->belongsToMany(VariantValue::class, 'product_variant_values');
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
     public function getPrimaryImageUrlAttribute(): ?string
     {
         return $this->primary_image ? Storage::disk('public')->url($this->primary_image) : null;

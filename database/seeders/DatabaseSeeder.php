@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             OrderSeeder::class,
             NotificationSeeder::class,
+            ProductReviewSeeder::class,
         ]);
     }
 }

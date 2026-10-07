@@ -10,6 +10,7 @@ use App\Imports\ProductsImport;
 use App\Models\Product;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Repositories\Contracts\ProductReviewRepositoryInterface;
 use App\Repositories\Contracts\VariantTypeRepositoryInterface;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -23,7 +24,8 @@ class ProductController extends Controller
         protected ProductRepositoryInterface $productRepository,
         protected ProductService $productService,
         protected CategoryRepositoryInterface $categoryRepository,
-        protected VariantTypeRepositoryInterface $variantTypeRepository
+        protected VariantTypeRepositoryInterface $variantTypeRepository,
+        protected ProductReviewRepositoryInterface $productReviewRepository
     ) {}
 
     public function index(IndexProductRequest $request)
@@ -73,9 +75,25 @@ class ProductController extends Controller
         }
     }
 
-    public function show(Product $product)
+    public function show(Request $request, Product $product)
     {
         $product->load(['category', 'images', 'variantValues.variantType']);
+
+        $perPage = (int) $request->input('review_per_page', 10);
+        if (! in_array($perPage, [5, 10, 15, 20, 50])) {
+            $perPage = 10;
+        }
+
+        $ratingFilter = $request->filled('review_rating') ? (int) $request->input('review_rating') : null;
+
+        $reviews = $this->productReviewRepository->getPaginatedReviewsForProduct(
+            $product->id,
+            $perPage,
+            $ratingFilter,
+            false // allow viewing all reviews in admin product detail
+        );
+
+        $ratingStats = $this->productReviewRepository->getProductRatingStats($product->id);
 
         return Inertia::render('products/Show', [
             'product' => [
@@ -108,6 +126,12 @@ class ProductController extends Controller
                         'values' => $values->pluck('value')->toArray(),
                     ];
                 })->values(),
+            ],
+            'reviews' => $reviews,
+            'rating_stats' => $ratingStats,
+            'review_filters' => [
+                'review_per_page' => $perPage,
+                'review_rating' => $ratingFilter,
             ],
         ]);
     }

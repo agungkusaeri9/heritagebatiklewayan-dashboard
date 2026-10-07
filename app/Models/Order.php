@@ -52,4 +52,9 @@ class Order extends Model
     {
         return $this->hasOne(Transaction::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(ProductReview::class);
+    }
 }
