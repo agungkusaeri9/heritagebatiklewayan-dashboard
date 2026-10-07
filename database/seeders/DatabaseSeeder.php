@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             OrderSeeder::class,
             NotificationSeeder::class,
             ProductReviewSeeder::class,
+            BannerSeeder::class,
         ]);
     }
 }

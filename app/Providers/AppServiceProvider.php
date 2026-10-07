@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\Contracts\ActivityLogRepositoryInterface;
+use App\Repositories\Contracts\BannerRepositoryInterface;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\CourierRepositoryInterface;
 use App\Repositories\Contracts\CustomerRepositoryInterface;
@@ -17,6 +18,7 @@ use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\VariantTypeRepositoryInterface;
 use App\Repositories\Eloquent\ActivityLogRepository;
+use App\Repositories\Eloquent\BannerRepository;
 use App\Repositories\Eloquent\CategoryRepository;
 use App\Repositories\Eloquent\CourierRepository;
 use App\Repositories\Eloquent\CustomerRepository;
@@ -60,6 +62,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
         $this->app->bind(NotificationSettingRepositoryInterface::class, NotificationSettingRepository::class);
         $this->app->bind(ProductReviewRepositoryInterface::class, ProductReviewRepository::class);
+        $this->app->bind(BannerRepositoryInterface::class, BannerRepository::class);
     }
 
     /**

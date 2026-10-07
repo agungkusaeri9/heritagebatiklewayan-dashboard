@@ -59,6 +59,10 @@ class Product extends Model
 
     public function getPrimaryImageUrlAttribute(): ?string
     {
+        if (! array_key_exists('primary_image', $this->attributes)) {
+            return null;
+        }
+
         return $this->primary_image ? Storage::disk('public')->url($this->primary_image) : null;
     }
 }

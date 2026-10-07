@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\CustomerController;
@@ -30,6 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('couriers/{courier}/toggle', [CourierController::class, 'toggle'])->name('couriers.toggle');
     Route::resource('couriers', CourierController::class)->except(['create', 'show', 'edit']);
     Route::resource('categories', CategoryController::class);
+    Route::post('banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
+    Route::resource('banners', BannerController::class)->except(['show']);
     Route::resource('variant-types', VariantTypeController::class)->except(['show']);
     Route::get('variant-types/{variant_type}/values', [VariantTypeController::class, 'values'])->name('variant-types.values');
     Route::post('variant-types/{variant_type}/values', [VariantTypeController::class, 'syncValues'])->name('variant-types.values.sync');

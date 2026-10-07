@@ -14,6 +14,7 @@ import {
     Settings,
     ShoppingBag,
     Bell,
+    Smartphone,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -40,6 +41,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: 'Pesanan',
         href: '/orders',
         icon: ShoppingBag,
+    },
+    {
+        title: 'Banner Promosi',
+        href: '/banners',
+        icon: Smartphone,
     },
     {
         title: 'Produk',
