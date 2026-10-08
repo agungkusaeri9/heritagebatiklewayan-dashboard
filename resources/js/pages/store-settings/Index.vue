@@ -17,27 +17,29 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import type { BreadcrumbItem } from '@/types';
 import { Head, useForm, router } from '@inertiajs/vue3';
-import { Image as ImageIcon, Loader2, Save, Trash2, Store, Truck } from 'lucide-vue-next';
+import { Image as ImageIcon, Loader2, Save, Trash2, Store } from 'lucide-vue-next';
 import { ref } from 'vue';
-
-interface Courier {
-    id: number;
-    name: string;
-    code: string;
-    is_active: boolean;
-    logo: string | null;
-}
 
 interface StoreSetting {
     id: number;
     name: string;
     logo: string | null;
     whatsapp: string | null;
+    phone: string | null;
+    email: string | null;
+    website: string | null;
+    facebook_url: string | null;
+    twitter_url: string | null;
+    instagram_url: string | null;
     description: string | null;
     address: string | null;
+    province_id?: number | null;
+    city_id?: number | null;
+    subdistrict_id?: number | null;
+    privacy_policy?: string | null;
+    policy?: string | null;
 }
 
 interface Province {
@@ -57,18 +59,10 @@ interface Subdistrict {
 
 interface Props {
     setting: StoreSetting;
-    couriers: Courier[];
     provinces: Province[];
 }
 
 const props = defineProps<Props>();
-
-const toggleCourier = (courierId: number) => {
-    router.post(`/couriers/${courierId}/toggle`, {}, {
-        preserveScroll: true,
-        preserveState: true,
-    });
-};
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -82,11 +76,19 @@ const previewUrl = ref<string | null>(props.setting.logo ? `/storage/${props.set
 const form = useForm({
     name: props.setting.name || '',
     whatsapp: props.setting.whatsapp || '',
+    phone: props.setting.phone || '',
+    email: props.setting.email || '',
+    website: props.setting.website || '',
+    facebook_url: props.setting.facebook_url || '',
+    twitter_url: props.setting.twitter_url || '',
+    instagram_url: props.setting.instagram_url || '',
     description: props.setting.description || '',
     address: props.setting.address || '',
     province_id: props.setting.province_id?.toString() || '',
     city_id: props.setting.city_id?.toString() || '',
     subdistrict_id: props.setting.subdistrict_id?.toString() || '',
+    privacy_policy: props.setting.privacy_policy || '',
+    policy: props.setting.policy || '',
     logo: null as File | null | undefined, // undefined means no change, null means delete
     logo_file: null as File | null, // explicitly for new uploads
 });
@@ -170,10 +172,9 @@ const submitForm = () => {
         <div class="w-full">
             <form @submit.prevent="submitForm">
                 <Tabs defaultValue="general" class="w-full">
-                    <TabsList class="grid w-full grid-cols-3">
+                    <TabsList class="grid w-full grid-cols-2">
                         <TabsTrigger value="general">Informasi Umum</TabsTrigger>
                         <TabsTrigger value="contact">Kontak & Alamat</TabsTrigger>
-                        <TabsTrigger value="couriers">Kurir Pengiriman</TabsTrigger>
                     </TabsList>
 
                     <!-- TAB: Informasi Umum -->
@@ -261,130 +262,172 @@ const submitForm = () => {
                     <!-- TAB: Kontak & Alamat -->
                     <TabsContent value="contact">
                         <div class="rounded-xl border bg-card text-card-foreground shadow-sm mt-4 p-6 space-y-6">
-                            <h3 class="text-lg font-medium border-b pb-2">Kontak & Alamat</h3>
-                            
-                            <div class="space-y-2">
-                                <Label for="whatsapp">Nomor WhatsApp</Label>
-                                <Input
-                                    id="whatsapp"
-                                    v-model="form.whatsapp"
-                                    placeholder="Contoh: 6281234567890"
-                                    :class="{ 'border-destructive': form.errors.whatsapp }"
-                                />
-                                <p class="text-xs text-muted-foreground">
-                                    Gunakan format awalan 62xxx. Akan digunakan untuk fitur chat pembeli (mobile / web).
-                                </p>
-                                <p v-if="form.errors.whatsapp" class="text-sm text-destructive">{{ form.errors.whatsapp }}</p>
-                            </div>
-
-                            <div class="grid gap-6 md:grid-cols-3">
-                                <div class="space-y-2">
-                                    <Label for="province_id">Provinsi (Asal Pengiriman) <span class="text-destructive">*</span></Label>
-                                    <Select 
-                                        v-model="form.province_id" 
-                                        @update:modelValue="(val) => { form.city_id = ''; form.subdistrict_id = ''; subdistricts = []; loadCities(val); }"
-                                    >
-                                        <SelectTrigger :class="{ 'border-destructive': form.errors.province_id }">
-                                            <SelectValue placeholder="Pilih Provinsi" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem v-for="province in provinces" :key="province.province_id" :value="province.province_id.toString()">
-                                                {{ province.province_name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <p v-if="form.errors.province_id" class="text-sm text-destructive">{{ form.errors.province_id }}</p>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="city_id">Kota / Kabupaten <span class="text-destructive">*</span></Label>
-                                    <Select 
-                                        v-model="form.city_id" 
-                                        :disabled="!form.province_id || cities.length === 0"
-                                        @update:modelValue="(val) => { form.subdistrict_id = ''; loadSubdistricts(val); }"
-                                    >
-                                        <SelectTrigger :class="{ 'border-destructive': form.errors.city_id }">
-                                            <SelectValue placeholder="Pilih Kota/Kabupaten" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem v-for="city in cities" :key="city.city_id" :value="city.city_id.toString()">
-                                                {{ city.city_name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <p v-if="form.errors.city_id" class="text-sm text-destructive">{{ form.errors.city_id }}</p>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label for="subdistrict_id">Kecamatan <span class="text-destructive">*</span></Label>
-                                    <Select 
-                                        v-model="form.subdistrict_id" 
-                                        :disabled="!form.city_id || subdistricts.length === 0"
-                                    >
-                                        <SelectTrigger :class="{ 'border-destructive': form.errors.subdistrict_id }">
-                                            <SelectValue placeholder="Pilih Kecamatan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem v-for="subdistrict in subdistricts" :key="subdistrict.subdistrict_id" :value="subdistrict.subdistrict_id.toString()">
-                                                {{ subdistrict.subdistrict_name }}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <p v-if="form.errors.subdistrict_id" class="text-sm text-destructive">{{ form.errors.subdistrict_id }}</p>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2 pt-2">
-                                <Label for="address">Alamat Lengkap Toko</Label>
-                                <Textarea
-                                    id="address"
-                                    v-model="form.address"
-                                    placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Kode Pos"
-                                    class="min-h-[140px]"
-                                    :class="{ 'border-destructive': form.errors.address }"
-                                />
-                                <p v-if="form.errors.address" class="text-sm text-destructive">{{ form.errors.address }}</p>
-                            </div>
-                        </div>
-                    </TabsContent>
-                    <!-- TAB: Kurir Pengiriman -->
-                    <TabsContent value="couriers">
-                        <div class="rounded-xl border bg-card text-card-foreground shadow-sm mt-4 p-6 space-y-6">
-                            <h3 class="text-lg font-medium border-b pb-2 flex items-center gap-2">
-                                <Truck class="h-5 w-5" /> Kurir Pengiriman
-                            </h3>
-                            <p class="text-sm text-muted-foreground">
-                                Aktifkan atau nonaktifkan kurir yang ingin Anda sediakan untuk pengiriman pesanan.
-                            </p>
-
-                            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <div 
-                                    v-for="courier in couriers" 
-                                    :key="courier.id"
-                                    class="flex items-center justify-between space-x-4 rounded-lg border p-4 shadow-sm"
-                                >
-                                    <div class="flex items-center space-x-4">
-                                        <div class="flex h-12 w-12 items-center justify-center rounded-md border bg-muted/50 p-1">
-                                            <img v-if="courier.logo" :src="`/storage/${courier.logo}`" :alt="courier.name" class="max-h-full max-w-full object-contain" />
-                                            <Truck v-else class="h-6 w-6 text-muted-foreground" />
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium leading-none">{{ courier.name }}</p>
-                                            <p class="text-xs text-muted-foreground mt-1 uppercase">{{ courier.code }}</p>
-                                        </div>
+                            <!-- Kontak Layanan Pelanggan -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-medium border-b pb-2">Kontak Layanan Pelanggan</h3>
+                                
+                                <div class="grid gap-4 md:grid-cols-3">
+                                    <div class="space-y-2">
+                                        <Label for="whatsapp">Nomor WhatsApp</Label>
+                                        <Input
+                                            id="whatsapp"
+                                            v-model="form.whatsapp"
+                                            placeholder="Contoh: 6281234567890"
+                                            :class="{ 'border-destructive': form.errors.whatsapp }"
+                                        />
+                                        <p class="text-xs text-muted-foreground">Format 62xxx untuk chat pembeli.</p>
+                                        <p v-if="form.errors.whatsapp" class="text-xs text-destructive">{{ form.errors.whatsapp }}</p>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs text-muted-foreground">{{ courier.is_active ? 'ON' : 'OFF' }}</span>
-                                        <label class="relative flex items-center cursor-pointer">
-                                            <input 
-                                                type="checkbox" 
-                                                v-model="courier.is_active"
-                                                @change="toggleCourier(courier.id)"
-                                                class="peer sr-only"
-                                            />
-                                            <div class="peer h-6 w-11 rounded-full bg-input after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-                                        </label>
+
+                                    <div class="space-y-2">
+                                        <Label for="phone">Nomor Telepon (Phone)</Label>
+                                        <Input
+                                            id="phone"
+                                            v-model="form.phone"
+                                            placeholder="Contoh: 0274-1234567"
+                                            :class="{ 'border-destructive': form.errors.phone }"
+                                        />
+                                        <p class="text-xs text-muted-foreground">Telepon kantor / toko.</p>
+                                        <p v-if="form.errors.phone" class="text-xs text-destructive">{{ form.errors.phone }}</p>
                                     </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="email">Email Kontak Toko</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            v-model="form.email"
+                                            placeholder="Contoh: cs@batiknusantara.com"
+                                            :class="{ 'border-destructive': form.errors.email }"
+                                        />
+                                        <p class="text-xs text-muted-foreground">Email resmi layanan pelanggan.</p>
+                                        <p v-if="form.errors.email" class="text-xs text-destructive">{{ form.errors.email }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Website & Media Sosial -->
+                            <div class="space-y-4 pt-2">
+                                <h3 class="text-lg font-medium border-b pb-2">Website & Media Sosial (Contact Us)</h3>
+                                
+                                <div class="grid gap-4 md:grid-cols-2">
+                                    <div class="space-y-2">
+                                        <Label for="website">Website URL</Label>
+                                        <Input
+                                            id="website"
+                                            v-model="form.website"
+                                            placeholder="https://batiknusantara.com"
+                                            :class="{ 'border-destructive': form.errors.website }"
+                                        />
+                                        <p v-if="form.errors.website" class="text-xs text-destructive">{{ form.errors.website }}</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="instagram_url">Instagram URL</Label>
+                                        <Input
+                                            id="instagram_url"
+                                            v-model="form.instagram_url"
+                                            placeholder="https://instagram.com/batiknusantara"
+                                            :class="{ 'border-destructive': form.errors.instagram_url }"
+                                        />
+                                        <p v-if="form.errors.instagram_url" class="text-xs text-destructive">{{ form.errors.instagram_url }}</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="facebook_url">Facebook URL</Label>
+                                        <Input
+                                            id="facebook_url"
+                                            v-model="form.facebook_url"
+                                            placeholder="https://facebook.com/batiknusantara"
+                                            :class="{ 'border-destructive': form.errors.facebook_url }"
+                                        />
+                                        <p v-if="form.errors.facebook_url" class="text-xs text-destructive">{{ form.errors.facebook_url }}</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="twitter_url">Twitter / X URL</Label>
+                                        <Input
+                                            id="twitter_url"
+                                            v-model="form.twitter_url"
+                                            placeholder="https://x.com/batiknusantara"
+                                            :class="{ 'border-destructive': form.errors.twitter_url }"
+                                        />
+                                        <p v-if="form.errors.twitter_url" class="text-xs text-destructive">{{ form.errors.twitter_url }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Alamat Asal Pengiriman -->
+                            <div class="space-y-4 pt-2">
+                                <h3 class="text-lg font-medium border-b pb-2">Alamat Asal Pengiriman</h3>
+
+                                <div class="grid gap-6 md:grid-cols-3">
+                                    <div class="space-y-2">
+                                        <Label for="province_id">Provinsi (Asal Pengiriman) <span class="text-destructive">*</span></Label>
+                                        <Select 
+                                            v-model="form.province_id" 
+                                            @update:modelValue="(val) => { form.city_id = ''; form.subdistrict_id = ''; subdistricts = []; loadCities(val); }"
+                                        >
+                                            <SelectTrigger :class="{ 'border-destructive': form.errors.province_id }">
+                                                <SelectValue placeholder="Pilih Provinsi" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem v-for="province in provinces" :key="province.province_id" :value="province.province_id.toString()">
+                                                    {{ province.province_name }}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p v-if="form.errors.province_id" class="text-sm text-destructive">{{ form.errors.province_id }}</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="city_id">Kota / Kabupaten <span class="text-destructive">*</span></Label>
+                                        <Select 
+                                            v-model="form.city_id" 
+                                            :disabled="!form.province_id || cities.length === 0"
+                                            @update:modelValue="(val) => { form.subdistrict_id = ''; loadSubdistricts(val); }"
+                                        >
+                                            <SelectTrigger :class="{ 'border-destructive': form.errors.city_id }">
+                                                <SelectValue placeholder="Pilih Kota/Kabupaten" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem v-for="city in cities" :key="city.city_id" :value="city.city_id.toString()">
+                                                    {{ city.city_name }}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p v-if="form.errors.city_id" class="text-sm text-destructive">{{ form.errors.city_id }}</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <Label for="subdistrict_id">Kecamatan <span class="text-destructive">*</span></Label>
+                                        <Select 
+                                            v-model="form.subdistrict_id" 
+                                            :disabled="!form.city_id || subdistricts.length === 0"
+                                        >
+                                            <SelectTrigger :class="{ 'border-destructive': form.errors.subdistrict_id }">
+                                                <SelectValue placeholder="Pilih Kecamatan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem v-for="subdistrict in subdistricts" :key="subdistrict.subdistrict_id" :value="subdistrict.subdistrict_id.toString()">
+                                                    {{ subdistrict.subdistrict_name }}
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <p v-if="form.errors.subdistrict_id" class="text-sm text-destructive">{{ form.errors.subdistrict_id }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2 pt-2">
+                                    <Label for="address">Alamat Lengkap Toko</Label>
+                                    <Textarea
+                                        id="address"
+                                        v-model="form.address"
+                                        placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Kode Pos"
+                                        class="min-h-[140px]"
+                                        :class="{ 'border-destructive': form.errors.address }"
+                                    />
+                                    <p v-if="form.errors.address" class="text-sm text-destructive">{{ form.errors.address }}</p>
                                 </div>
                             </div>
                         </div>

@@ -55,6 +55,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { usePermissions } from '@/composables/usePermissions';
+
+const { can } = usePermissions();
 
 interface Product {
     id: number;
@@ -216,11 +219,11 @@ const submitImport = () => {
             </div>
 
             <div class="flex shrink-0 items-center gap-2">
-                <Button variant="outline" @click="isImportModalOpen = true" class="gap-2">
+                <Button v-if="can('import products')" variant="outline" @click="isImportModalOpen = true" class="gap-2">
                     <FileUp class="h-4 w-4" />
                     Import Excel
                 </Button>
-                <Button as-child class="gap-2">
+                <Button v-if="can('create products')" as-child class="gap-2">
                     <Link href="/products/create">
                         <Plus class="h-4 w-4" />
                         Tambah Produk
@@ -348,13 +351,14 @@ const submitImport = () => {
                                                 Lihat Detail
                                             </DropdownMenuItem>
                                         </Link>
-                                        <Link :href="`/products/${product.id}/edit`">
+                                        <Link v-if="can('edit products')" :href="`/products/${product.id}/edit`">
                                             <DropdownMenuItem class="cursor-pointer">
                                                 <Edit class="mr-2 h-4 w-4" />
                                                 Edit Produk
                                             </DropdownMenuItem>
                                         </Link>
                                         <DropdownMenuItem
+                                            v-if="can('delete products')"
                                             class="cursor-pointer text-destructive focus:text-destructive"
                                             @click="confirmDelete(product)"
                                         >

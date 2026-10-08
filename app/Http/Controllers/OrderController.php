@@ -72,4 +72,16 @@ class OrderController extends Controller
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
     }
+
+    public function updateShipping(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'shipping_name' => 'nullable|string|max:255',
+            'tracking_number' => 'nullable|string|max:255',
+        ]);
+
+        $order->update($validated);
+
+        return back()->with('success', 'Informasi pengiriman & nomor resi berhasil diperbarui.');
+    }
 }

@@ -82,7 +82,7 @@ class ProductReviewTest extends TestCase
             ->has('reviews')
             ->has('rating_stats')
             ->where('rating_stats.total_count', 1)
-            ->where('rating_stats.average_rating', 5.0)
+            ->where('rating_stats.average_rating', fn ($val) => (float) $val == 5.0)
             ->where('reviews.data.0.comment', 'Bahan sutranya luar biasa halus dan nyaman.')
         );
     }

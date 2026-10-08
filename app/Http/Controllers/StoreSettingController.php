@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Courier;
 use App\Models\Province;
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
@@ -22,12 +21,10 @@ class StoreSettingController extends Controller
             ]);
         }
 
-        $couriers = Courier::all();
         $provinces = Province::all();
 
         return Inertia::render('store-settings/Index', [
             'setting' => $setting,
-            'couriers' => $couriers,
             'provinces' => $provinces,
         ]);
     }
@@ -39,12 +36,20 @@ class StoreSettingController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'whatsapp' => 'nullable|string|max:50',
+            'phone' => 'nullable|string|max:50',
+            'email' => 'nullable|email|max:255',
+            'website' => 'nullable|string|max:255',
+            'facebook_url' => 'nullable|string|max:255',
+            'twitter_url' => 'nullable|string|max:255',
+            'instagram_url' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'address' => 'nullable|string',
             'province_id' => 'nullable|integer',
             'city_id' => 'nullable|integer',
             'subdistrict_id' => 'nullable|integer',
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'privacy_policy' => 'nullable|string',
+            'policy' => 'nullable|string',
         ]);
 
         if ($request->hasFile('logo_file')) {

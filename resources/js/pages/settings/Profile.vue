@@ -3,7 +3,6 @@ import { Form, Head, usePage } from '@inertiajs/vue3';
 import { Mail, Save, User as UserIcon } from 'lucide-vue-next';
 import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import DeleteUser from '@/components/DeleteUser.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,8 +95,6 @@ const user = computed(() => page.props.auth.user);
                 </Form>
             </CardContent>
         </Card>
-
-        <!-- Delete Account Card -->
-        <DeleteUser />
     </div>
 </template>
+

@@ -55,8 +55,14 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        $role->load('permissions');
+
         return Inertia::render('roles/Edit', [
-            'role' => $role->load('permissions'),
+            'role' => [
+                'id' => $role->id,
+                'name' => $role->name,
+                'permissions' => $role->permissions->pluck('name')->values()->all(),
+            ],
             'permissions' => $this->permissionService->getAllPermissions(),
         ]);
     }

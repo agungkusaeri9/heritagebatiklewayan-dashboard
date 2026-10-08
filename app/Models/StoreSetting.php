@@ -10,10 +10,18 @@ class StoreSetting extends Model
         'name',
         'logo',
         'whatsapp',
+        'phone',
+        'email',
+        'website',
+        'facebook_url',
+        'twitter_url',
+        'instagram_url',
         'description',
         'address',
         'province_id',
         'city_id',
         'subdistrict_id',
+        'privacy_policy',
+        'policy',
     ];
 }

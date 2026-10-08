@@ -27,7 +27,7 @@ class OrderSeeder extends Seeder
             return;
         }
 
-        $products = Product::all();
+        $products = Product::with('variantValues.variantType')->get();
         if ($products->isEmpty()) {
             $this->command->warn('No products found, skipping order seeder.');
 
@@ -56,8 +56,25 @@ class OrderSeeder extends Seeder
                 $totalPrice = $price * $qty;
                 $subtotal += $totalPrice;
 
+                // Pick variant if available
+                $variantParts = [];
+                if ($product->variantValues && $product->variantValues->isNotEmpty()) {
+                    $grouped = $product->variantValues->groupBy('variant_type_id');
+                    foreach ($grouped as $typeId => $values) {
+                        $chosen = $values->random();
+                        $typeName = $chosen->variantType?->name ?? 'Varian';
+                        $variantParts[] = "{$typeName}: {$chosen->value}";
+                    }
+                }
+
+                if (empty($variantParts)) {
+                    $sampleSizes = ['Ukuran: M', 'Ukuran: L', 'Ukuran: XL', 'Ukuran: XXL'];
+                    $variantParts[] = $sampleSizes[array_rand($sampleSizes)];
+                }
+
                 $orderDetailsData[] = [
                     'product_id' => $product->id,
+                    'variant_info' => implode(', ', $variantParts),
                     'price' => $price,
                     'quantity' => $qty,
                     'total_price' => $totalPrice,
@@ -69,6 +86,10 @@ class OrderSeeder extends Seeder
 
             $status = $statuses[array_rand($statuses)];
             $subdistrict = Subdistrict::with('city')->inRandomOrder()->first();
+
+            $shippingOptions = ['JNE - Regular', 'J&T Express', 'SiCepat REG', 'Pos Indonesia', 'TIKI ONS'];
+            $shippingName = in_array($status, ['processing', 'success']) ? $shippingOptions[array_rand($shippingOptions)] : null;
+            $trackingNumber = in_array($status, ['processing', 'success']) ? (strtoupper(substr($shippingName, 0, 3)).rand(100000000, 999999999)) : null;
 
             $order = Order::create([
                 'order_number' => 'ORD-'.strtoupper(Str::random(10)),
@@ -83,6 +104,8 @@ class OrderSeeder extends Seeder
                 'subdistrict_id' => $subdistrict?->subdistrict_id ?? 1,
                 'address' => 'Jl. Batik No. '.rand(1, 100).', RT 01 / RW 02',
                 'courier_id' => $courier ? $courier->id : null,
+                'shipping_name' => $shippingName,
+                'tracking_number' => $trackingNumber,
             ]);
 
             foreach ($orderDetailsData as $detail) {

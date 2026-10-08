@@ -15,43 +15,169 @@ class RolePermissionSeeder extends Seeder
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create permissions
+        // Comprehensive list of permissions grouped by module
         $permissions = [
+            // Dashboard
+            'view dashboard',
+
+            // Manajemen Pengguna (Admin Users)
             'view users',
             'create users',
             'edit users',
             'delete users',
+
+            // Pelanggan (Customers)
+            'view customers',
+            'edit customers',
+            'delete customers',
+
+            // Peran & Hak Akses (Roles & Permissions)
             'view roles',
             'create roles',
             'edit roles',
             'delete roles',
+            'view permissions',
+
+            // Produk (Products)
+            'view products',
+            'create products',
+            'edit products',
+            'delete products',
+            'import products',
+
+            // Kategori Produk (Categories)
+            'view categories',
+            'create categories',
+            'edit categories',
+            'delete categories',
+
+            // Tipe & Nilai Varian (Variant Types)
+            'view variant types',
+            'create variant types',
+            'edit variant types',
+            'delete variant types',
+
+            // Pesanan (Orders)
+            'view orders',
+            'edit orders',
+            'update order status',
+            'update order payment',
+            'update order shipping',
+
+            // Banner Promosi (Banners)
+            'view banners',
+            'create banners',
+            'edit banners',
+            'delete banners',
+            'toggle banners',
+
+            // Metode Pembayaran (Payment Methods)
+            'view payment methods',
+            'create payment methods',
+            'edit payment methods',
+            'delete payment methods',
+
+            // Kurir (Couriers)
+            'view couriers',
+            'create couriers',
+            'edit couriers',
+            'delete couriers',
+            'toggle couriers',
+
+            // Lokasi Wilayah (Locations)
+            'view locations',
+
+            // Notifikasi (Notifications)
+            'view notifications',
+            'create notifications',
+            'delete notifications',
+            'manage notification settings',
+
+            // Ulasan Produk (Product Reviews)
+            'view product reviews',
+            'toggle product reviews',
+            'delete product reviews',
+
+            // Pengaturan Toko (Store Settings)
+            'view store settings',
+            'edit store settings',
+
+            // Kebijakan & Privasi (Privacy Policy)
+            'view privacy policy',
+            'edit privacy policy',
+
+            // FAQ (Tanya Jawab)
+            'view faqs',
+            'create faqs',
+            'edit faqs',
+            'delete faqs',
+
+            // Log Aktivitas (Activity Logs)
             'view activity logs',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::findOrCreate($permission);
+            Permission::findOrCreate($permission, 'web');
         }
 
-        // Create Super Admin role
-        $superAdminRole = Role::findOrCreate('super admin');
-        // No need to sync permissions for super admin if using Gate::before
+        // Create Super Admin role and sync all permissions
+        $superAdminRole = Role::findOrCreate('super admin', 'web');
+        $superAdminRole->syncPermissions(Permission::all());
 
-        // Create Admin role and assign some permissions
-        $adminRole = Role::findOrCreate('admin');
-        $adminRole->syncPermissions([
+        // Create Admin role and assign operational permissions
+        $adminRole = Role::findOrCreate('admin', 'web');
+        $adminPermissions = [
+            'view dashboard',
             'view users',
             'create users',
             'edit users',
+            'view customers',
+            'edit customers',
+            'view products',
+            'create products',
+            'edit products',
+            'import products',
+            'view categories',
+            'create categories',
+            'edit categories',
+            'view variant types',
+            'create variant types',
+            'edit variant types',
+            'view orders',
+            'edit orders',
+            'update order status',
+            'update order payment',
+            'update order shipping',
+            'view banners',
+            'create banners',
+            'edit banners',
+            'toggle banners',
+            'view payment methods',
+            'view couriers',
+            'view locations',
+            'view notifications',
+            'create notifications',
+            'manage notification settings',
+            'view product reviews',
+            'toggle product reviews',
+            'view store settings',
+            'edit store settings',
+            'view privacy policy',
+            'edit privacy policy',
+            'view faqs',
+            'create faqs',
+            'edit faqs',
             'view activity logs',
-        ]);
+        ];
+        $adminRole->syncPermissions($adminPermissions);
 
         // Create Customer role
-        Role::findOrCreate('customer');
+        Role::findOrCreate('customer', 'web');
 
-        // Assign super admin role to the first user
-        $user = User::first();
-        if ($user) {
-            $user->assignRole($superAdminRole);
+        // Assign super admin role to the superadmin user or first user
+        $superAdminUser = User::where('username', 'superadmin')->first() ?? User::first();
+        if ($superAdminUser && ! $superAdminUser->hasRole('super admin')) {
+            $superAdminUser->assignRole($superAdminRole);
         }
     }
 }

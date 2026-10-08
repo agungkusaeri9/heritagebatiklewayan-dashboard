@@ -33,6 +33,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useDebounceFn } from '@vueuse/core';
 import type { BreadcrumbItem } from '@/types';
+import { usePermissions } from '@/composables/usePermissions';
+
+const { can } = usePermissions();
 
 interface Permission {
     id: number;
@@ -137,7 +140,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                 </p>
             </div>
 
-            <Button as-child class="shrink-0">
+            <Button v-if="can('create roles')" as-child class="shrink-0">
                 <Link href="/roles/create">
                     <Plus class="mr-2 h-4 w-4" />
                     Tambah Peran
@@ -265,6 +268,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                             <td class="p-3.5 text-right align-middle">
                                 <div class="flex justify-end gap-1">
                                     <Button
+                                        v-if="can('edit roles')"
                                         variant="ghost"
                                         size="icon"
                                         class="h-8 w-8 text-muted-foreground hover:text-foreground"
@@ -277,6 +281,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                                         </Link>
                                     </Button>
                                     <Button
+                                        v-if="can('delete roles')"
                                         variant="ghost"
                                         size="icon"
                                         class="h-8 w-8 text-muted-foreground hover:text-destructive"

@@ -34,7 +34,7 @@ const { isCurrentUrl } = useCurrentUrl();
                 <Collapsible
                     v-if="item.items && item.items.length > 0"
                     as-child
-                    :default-open="item.isActive"
+                    :default-open="item.isActive || item.items.some((sub: any) => isCurrentUrl(sub.href))"
                     class="group/collapsible"
                 >
                     <SidebarMenuItem>

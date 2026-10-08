@@ -6,12 +6,14 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\RoleController;
@@ -54,10 +56,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::post('orders/{order}/payment', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment');
+    Route::post('orders/{order}/shipping', [OrderController::class, 'updateShipping'])->name('orders.update-shipping');
 
     // Store Settings
     Route::get('store-settings', [StoreSettingController::class, 'index'])->name('store-settings.index');
     Route::post('store-settings', [StoreSettingController::class, 'update'])->name('store-settings.update');
+
+    // Privacy & Policy Settings
+    Route::get('privacy-policy-settings', [PrivacyPolicyController::class, 'index'])->name('privacy-policy.index');
+    Route::post('privacy-policy-settings', [PrivacyPolicyController::class, 'update'])->name('privacy-policy.update');
+
+    // FAQs
+    Route::post('faqs/{faq}/toggle', [FaqController::class, 'toggle'])->name('faqs.toggle');
+    Route::resource('faqs', FaqController::class);
 
     // Notifications
     Route::post('notifications/{notification}/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');

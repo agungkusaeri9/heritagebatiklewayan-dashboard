@@ -44,6 +44,8 @@ class DatabaseSeeder extends Seeder
             NotificationSeeder::class,
             ProductReviewSeeder::class,
             BannerSeeder::class,
+            StoreSettingSeeder::class,
+            FaqSeeder::class,
         ]);
     }
 }

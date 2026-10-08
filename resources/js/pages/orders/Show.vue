@@ -17,12 +17,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ref, watch } from 'vue';
+import { Copy, Check, Send } from 'lucide-vue-next';
+import { usePermissions } from '@/composables/usePermissions';
 
 interface Props {
     order: any;
 }
 
 const props = defineProps<Props>();
+const { can } = usePermissions();
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -89,6 +95,37 @@ const updatePaymentStatus = (newStatus: string) => {
         preserveScroll: true
     });
 };
+
+const shippingForm = useForm({
+    shipping_name: props.order.shipping_name || '',
+    tracking_number: props.order.tracking_number || '',
+});
+
+const copiedResi = ref(false);
+const copyResi = () => {
+    if (props.order.tracking_number) {
+        navigator.clipboard.writeText(props.order.tracking_number);
+        copiedResi.value = true;
+        setTimeout(() => {
+            copiedResi.value = false;
+        }, 2000);
+    }
+};
+
+const updateShipping = () => {
+    shippingForm.post(`/orders/${props.order.id}/shipping`, {
+        preserveScroll: true
+    });
+};
+
+watch(() => props.order, (newOrder) => {
+    if (newOrder) {
+        form.status = newOrder.status;
+        paymentForm.payment_status = newOrder.transaction?.status;
+        shippingForm.shipping_name = newOrder.shipping_name || '';
+        shippingForm.tracking_number = newOrder.tracking_number || '';
+    }
+}, { deep: true });
 </script>
 
 <template>
@@ -133,12 +170,30 @@ const updatePaymentStatus = (newStatus: string) => {
                         <div class="space-y-4">
                             <div v-for="item in order.details" :key="item.id" class="flex gap-4 items-start">
                                 <div class="h-16 w-16 rounded border bg-muted flex items-center justify-center shrink-0 overflow-hidden">
-                                    <img v-if="item.product?.image" :src="`/storage/${item.product.image}`" class="object-cover h-full w-full" />
+                                    <img 
+                                        v-if="item.product?.primary_image_url || item.product?.primary_image || item.product?.image" 
+                                        :src="item.product?.primary_image_url || (item.product?.primary_image ? `/storage/${item.product.primary_image}` : `/storage/${item.product.image}`)" 
+                                        :alt="item.product?.name"
+                                        class="object-cover h-full w-full" 
+                                    />
                                     <Package v-else class="h-8 w-8 text-muted-foreground" />
                                 </div>
-                                <div class="flex-1">
-                                    <h4 class="font-medium line-clamp-1">{{ item.product?.name || 'Produk Dihapus' }}</h4>
-                                    <p class="text-sm text-muted-foreground">{{ formatCurrency(item.price) }} x {{ item.quantity }}</p>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-medium line-clamp-1 text-foreground">{{ item.product?.name || 'Produk Dihapus' }}</h4>
+                                    
+                                    <!-- Info Varian Produk yang Dipilih (Mendukung Multi-Varian seperti Ukuran, Warna, dll) -->
+                                    <div v-if="item.variant_info" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                                        <Badge 
+                                            v-for="(variant, idx) in item.variant_info.split(',').map((v: string) => v.trim()).filter(Boolean)" 
+                                            :key="idx"
+                                            variant="secondary" 
+                                            class="text-xs font-normal py-0.5 px-2 bg-muted text-foreground border rounded-md"
+                                        >
+                                            {{ variant }}
+                                        </Badge>
+                                    </div>
+                                    
+                                    <p class="text-sm text-muted-foreground mt-1">{{ formatCurrency(item.price) }} x {{ item.quantity }}</p>
                                 </div>
                                 <div class="font-semibold text-right">
                                     {{ formatCurrency(item.total_price) }}
@@ -165,7 +220,7 @@ const updatePaymentStatus = (newStatus: string) => {
                     </div>
 
                     <!-- Kartu Aksi Pesanan -->
-                    <div class="rounded-xl border bg-card shadow-sm p-6">
+                    <div v-if="can('update order status')" class="rounded-xl border bg-card shadow-sm p-6">
                         <div class="flex items-center gap-2 border-b pb-4 mb-4">
                             <Clock class="h-5 w-5 text-primary" />
                             <h3 class="font-semibold">Aksi Status Pesanan</h3>
@@ -249,13 +304,78 @@ const updatePaymentStatus = (newStatus: string) => {
                             </p>
                         </div>
                         <div v-else class="text-sm text-muted-foreground">Alamat tidak tersedia.</div>
-                        
-                        <div class="mt-4 pt-4 border-t flex items-center gap-3">
-                            <Truck class="h-5 w-5 text-muted-foreground" />
-                            <div>
-                                <p class="text-xs text-muted-foreground">Kurir Pengiriman</p>
-                                <p class="font-medium text-sm">{{ order.courier?.name || '-' }}</p>
+                    </div>
+
+                    <!-- Kartu Pengiriman & Nomor Resi (Aktif jika pembayaran lunas) -->
+                    <div class="rounded-xl border bg-card shadow-sm p-6">
+                        <div class="flex items-center justify-between border-b pb-4 mb-4">
+                            <div class="flex items-center gap-2">
+                                <Truck class="h-5 w-5 text-primary" />
+                                <h3 class="font-semibold">Pengiriman & Nomor Resi</h3>
                             </div>
+                            <Badge v-if="order.tracking_number" variant="outline" class="bg-green-50 text-green-700 border-green-200 text-xs">
+                                Resi Terbit
+                            </Badge>
+                        </div>
+
+                        <!-- Kondisi: Pembayaran Belum Lunas -->
+                        <div v-if="order.transaction?.status !== 'paid'" class="p-3.5 rounded-lg bg-amber-50/70 border border-amber-200 text-amber-900 text-xs leading-relaxed flex items-start gap-2">
+                            <Clock class="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+                            <span>Ekspedisi dan nomor resi dapat diisi setelah pembayaran berstatus <strong>Lunas</strong> dan pesanan sedang diproses.</span>
+                        </div>
+
+                        <!-- Kondisi: Pembayaran Lunas -->
+                        <div v-else class="space-y-4">
+                            <form @submit.prevent="updateShipping" class="space-y-3">
+                                <div class="space-y-1.5">
+                                    <Label for="shipping_name" class="text-xs font-medium">Nama Ekspedisi / Pengiriman</Label>
+                                    <Input 
+                                        id="shipping_name"
+                                        v-model="shippingForm.shipping_name"
+                                        placeholder="Contoh: JNE Regular, J&T Express, SiCepat"
+                                        class="text-sm h-9"
+                                        :disabled="shippingForm.processing"
+                                    />
+                                </div>
+
+                                <div class="space-y-1.5">
+                                    <Label for="tracking_number" class="text-xs font-medium">Nomor Resi Pengiriman</Label>
+                                    <div class="flex gap-2">
+                                        <Input 
+                                            id="tracking_number"
+                                            v-model="shippingForm.tracking_number"
+                                            placeholder="Contoh: JNE102938484"
+                                            class="text-sm h-9 font-mono uppercase"
+                                            :disabled="shippingForm.processing"
+                                        />
+                                        <Button 
+                                            v-if="order.tracking_number" 
+                                            type="button" 
+                                            variant="outline" 
+                                            size="icon" 
+                                            class="h-9 w-9 shrink-0" 
+                                            @click="copyResi" 
+                                            title="Salin Resi"
+                                        >
+                                            <Check v-if="copiedResi" class="h-4 w-4 text-green-600" />
+                                            <Copy v-else class="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <div v-if="can('update order shipping')" class="pt-1 flex justify-end">
+                                    <Button 
+                                        type="submit" 
+                                        size="sm" 
+                                        class="gap-1.5 text-xs w-full sm:w-auto"
+                                        :disabled="shippingForm.processing || (shippingForm.shipping_name === (order.shipping_name || '') && shippingForm.tracking_number === (order.tracking_number || ''))"
+                                    >
+                                        <Loader2 v-if="shippingForm.processing" class="h-3.5 w-3.5 animate-spin" />
+                                        <Send v-else class="h-3.5 w-3.5" />
+                                        Simpan Nomor Resi
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
                     </div>
 
@@ -287,7 +407,7 @@ const updatePaymentStatus = (newStatus: string) => {
                                 Belum ada bukti pembayaran
                             </div>
                             
-                            <div class="pt-4 border-t mt-4 flex flex-col gap-2">
+                            <div v-if="can('update order payment')" class="pt-4 border-t mt-4 flex flex-col gap-2">
                                 <p class="text-xs font-semibold text-muted-foreground mb-1">Aksi Pembayaran</p>
                                 <div class="flex gap-2">
                                     <Button 
