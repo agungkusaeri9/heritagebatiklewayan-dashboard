@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Models\PaymentMethod;
 use App\Repositories\Contracts\PaymentMethodRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class PaymentMethodRepository implements PaymentMethodRepositoryInterface
@@ -30,6 +31,16 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
     public function findById(int $id): ?PaymentMethod
     {
         return PaymentMethod::find($id);
+    }
+
+    /**
+     * Get all active payment methods.
+     *
+     * @return Collection<int, PaymentMethod>
+     */
+    public function getAllActive(): Collection
+    {
+        return PaymentMethod::where('is_active', true)->orderBy('name', 'asc')->get();
     }
 
     public function create(array $data): PaymentMethod

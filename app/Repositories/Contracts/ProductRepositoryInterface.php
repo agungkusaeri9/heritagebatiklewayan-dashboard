@@ -15,13 +15,19 @@ interface ProductRepositoryInterface
         ?string $search = null,
         ?string $status = null,
         string $sortColumn = 'created_at',
-        string $sortDirection = 'desc'
+        string $sortDirection = 'desc',
+        int|string|null $category = null
     ): LengthAwarePaginator;
 
     /**
      * Find a product by ID.
      */
     public function findById(int $id): ?Product;
+
+    /**
+     * Find a product by slug.
+     */
+    public function findBySlug(string $slug): ?Product;
 
     /**
      * Create a new product.

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class StoreSetting extends Model
 {
@@ -24,4 +25,21 @@ class StoreSetting extends Model
         'privacy_policy',
         'policy',
     ];
+
+    protected $appends = [
+        'logo_url',
+    ];
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        if (! $this->logo) {
+            return null;
+        }
+
+        if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
+            return $this->logo;
+        }
+
+        return Storage::disk('public')->url($this->logo);
+    }
 }

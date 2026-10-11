@@ -16,7 +16,8 @@ class ProductRepository implements ProductRepositoryInterface
         ?string $search = null,
         ?string $status = null,
         string $sortColumn = 'created_at',
-        string $sortDirection = 'desc'
+        string $sortDirection = 'desc',
+        int|string|null $category = null
     ): LengthAwarePaginator {
         $query = Product::query()->with('category');
 
@@ -30,6 +31,16 @@ class ProductRepository implements ProductRepositoryInterface
         if ($status !== null && $status !== 'all') {
             $isActive = $status === 'active';
             $query->where('is_active', $isActive);
+        }
+
+        if ($category !== null && $category !== '' && $category !== 'all') {
+            if (is_numeric($category)) {
+                $query->where('category_id', (int) $category);
+            } else {
+                $query->whereHas('category', function ($q) use ($category) {
+                    $q->where('slug', $category);
+                });
+            }
         }
 
         $allowedSortColumns = ['name', 'price', 'stock', 'is_active', 'created_at'];
@@ -47,7 +58,17 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function findById(int $id): ?Product
     {
-        return Product::with(['category', 'images', 'variantValues'])->find($id);
+        return Product::with(['category', 'images', 'variantValues.variantType'])->find($id);
+    }
+
+    /**
+     * Find a product by slug.
+     */
+    public function findBySlug(string $slug): ?Product
+    {
+        return Product::with(['category', 'images', 'variantValues.variantType'])
+            ->where('slug', $slug)
+            ->first();
     }
 
     /**
