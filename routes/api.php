@@ -4,7 +4,11 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MeController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CustomerAddressController;
 use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
@@ -28,6 +32,35 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     // Alias: GET /api/v1/me
     Route::middleware('auth:sanctum')->get('me', MeController::class)->name('me');
+
+    // Customer Addresses (scoped to authenticated user)
+    Route::middleware('auth:sanctum')->prefix('addresses')->name('addresses.')->group(function () {
+        Route::get('/', [CustomerAddressController::class, 'index'])->name('index');
+        Route::post('/', [CustomerAddressController::class, 'store'])->name('store');
+        Route::get('{id}', [CustomerAddressController::class, 'show'])->whereNumber('id')->name('show');
+        Route::match(['put', 'patch'], '{id}', [CustomerAddressController::class, 'update'])->whereNumber('id')->name('update');
+        Route::patch('{id}/primary', [CustomerAddressController::class, 'setPrimary'])->whereNumber('id')->name('set-primary');
+        Route::delete('{id}', [CustomerAddressController::class, 'destroy'])->whereNumber('id')->name('destroy');
+    });
+
+    // Customer Orders (scoped to authenticated user)
+    Route::middleware('auth:sanctum')->prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('index');
+        Route::get('{identifier}', [OrderController::class, 'show'])->name('show');
+    });
+
+    // Notifications (scoped to authenticated user & broadcast)
+    Route::middleware('auth:sanctum')->prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+    });
+
+    // Carts (scoped to authenticated user)
+    Route::middleware('auth:sanctum')->prefix('cart')->name('cart.')->group(function () {
+        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::post('/', [CartController::class, 'store'])->name('store');
+        Route::match(['put', 'patch'], '{id}', [CartController::class, 'update'])->whereNumber('id')->name('update');
+        Route::delete('{id}', [CartController::class, 'destroy'])->whereNumber('id')->name('destroy');
+    });
 
     // Products
     Route::prefix('products')->name('products.')->group(function () {

@@ -10,6 +10,7 @@ use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class CustomerSeeder extends Seeder
 {
@@ -32,7 +33,7 @@ class CustomerSeeder extends Seeder
                 'password' => $password,
             ]);
 
-            $user->assignRole('customer');
+            $user->assignRole(Role::findOrCreate('customer', 'api'));
 
             $customer = Customer::create([
                 'user_id' => $user->id,

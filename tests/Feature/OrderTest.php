@@ -19,6 +19,7 @@ class OrderTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Order $order;
 
     protected function setUp(): void
@@ -52,13 +53,13 @@ class OrderTest extends TestCase
 
         $paymentMethod = PaymentMethod::create([
             'name' => 'BCA Virtual Account',
-            'code' => 'bca_va',
+            'account_name' => 'PT Batik Nusantara',
             'account_number' => '1234567890',
             'is_active' => true,
         ]);
 
         $this->order = Order::create([
-            'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+            'order_number' => 'ORD-'.strtoupper(Str::random(10)),
             'customer_id' => $customer->id,
             'payment_method_id' => $paymentMethod->id,
             'subtotal' => 250000,

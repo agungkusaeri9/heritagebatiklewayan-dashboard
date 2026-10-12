@@ -173,6 +173,7 @@ class RolePermissionSeeder extends Seeder
 
         // Create Customer role
         Role::findOrCreate('customer', 'web');
+        Role::findOrCreate('customer', 'api');
 
         // Assign super admin role to the superadmin user or first user
         $superAdminUser = User::where('username', 'superadmin')->first() ?? User::first();
