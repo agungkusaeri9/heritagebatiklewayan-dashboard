@@ -38,7 +38,11 @@ class OrderListResource extends JsonResource
                 'payment_method_id' => $this->payment_method_id,
                 'payment_method_name' => $this->paymentMethod?->name,
                 'payment_status' => $this->transaction?->status ?? 'pending',
+                'payment_proof' => $this->transaction?->payment_proof,
+                'payment_proof_url' => $this->transaction?->payment_proof_url,
             ],
+            'payment_proof' => $this->transaction?->payment_proof,
+            'payment_proof_url' => $this->transaction?->payment_proof_url,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

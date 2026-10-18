@@ -127,4 +127,102 @@ class NotificationApiTest extends TestCase
             ->assertJsonPath('meta.pagination.per_page', 2)
             ->assertJsonPath('meta.pagination.last_page', 3);
     }
+
+    public function test_user_can_mark_all_notifications_as_read(): void
+    {
+        $notif1 = Notification::create([
+            'title' => 'Notif 1',
+            'message' => 'Pesan 1',
+            'recipient_type' => 'ALL_USERS',
+        ]);
+
+        $notif2 = Notification::create([
+            'title' => 'Notif 2',
+            'message' => 'Pesan 2',
+            'recipient_type' => 'CUSTOMER',
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        $response = $this->postJson(route('api.v1.notifications.mark-all-read'));
+
+        $response->assertOk()
+            ->assertJsonPath('meta.code', 200)
+            ->assertJsonPath('meta.status', 'success')
+            ->assertJsonPath('data.updated_count', 2);
+
+        $this->assertDatabaseHas('notification_recipients', [
+            'notification_id' => $notif1->id,
+            'user_id' => $this->user->id,
+            'is_read' => true,
+        ]);
+
+        $this->assertDatabaseHas('notification_recipients', [
+            'notification_id' => $notif2->id,
+            'user_id' => $this->user->id,
+            'is_read' => true,
+        ]);
+    }
+
+    public function test_user_can_mark_subset_of_notifications_as_read(): void
+    {
+        $notif1 = Notification::create([
+            'title' => 'Notif 1',
+            'message' => 'Pesan 1',
+            'recipient_type' => 'ALL_USERS',
+        ]);
+
+        $notif2 = Notification::create([
+            'title' => 'Notif 2',
+            'message' => 'Pesan 2',
+            'recipient_type' => 'ALL_USERS',
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        // Mark only notif1
+        $response = $this->postJson(route('api.v1.notifications.mark-read'), [
+            'notification_ids' => [$notif1->id],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('meta.code', 200)
+            ->assertJsonPath('data.updated_count', 1)
+            ->assertJsonPath('data.notification_ids', [$notif1->id]);
+
+        $this->assertDatabaseHas('notification_recipients', [
+            'notification_id' => $notif1->id,
+            'user_id' => $this->user->id,
+            'is_read' => true,
+        ]);
+
+        $this->assertDatabaseMissing('notification_recipients', [
+            'notification_id' => $notif2->id,
+            'user_id' => $this->user->id,
+        ]);
+    }
+
+    public function test_user_can_mark_single_notification_as_read(): void
+    {
+        $notif = Notification::create([
+            'title' => 'Notif Single',
+            'message' => 'Pesan Single',
+            'recipient_type' => 'ALL_USERS',
+        ]);
+
+        Sanctum::actingAs($this->user);
+
+        $response = $this->postJson(route('api.v1.notifications.mark-single-read', $notif->id));
+
+        $response->assertOk()
+            ->assertJsonPath('meta.code', 200)
+            ->assertJsonPath('data.notification_id', $notif->id)
+            ->assertJsonPath('data.is_read', true);
+
+        $this->assertDatabaseHas('notification_recipients', [
+            'notification_id' => $notif->id,
+            'user_id' => $this->user->id,
+            'is_read' => true,
+        ]);
+    }
 }

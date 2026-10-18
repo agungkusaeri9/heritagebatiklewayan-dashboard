@@ -150,7 +150,9 @@ class OrderApiTest extends TestCase
             ->assertJsonPath('data.0.status', 'processing')
             ->assertJsonPath('data.0.total_amount', 370000)
             ->assertJsonPath('data.0.shipping.shipping_name', 'JNE - Reguler')
-            ->assertJsonPath('data.0.payment.payment_status', 'paid');
+            ->assertJsonPath('data.0.payment.payment_status', 'paid')
+            ->assertJsonPath('data.0.payment.payment_proof', null)
+            ->assertJsonPath('data.0.payment_proof', null);
     }
 
     public function test_user_can_filter_orders_by_status(): void

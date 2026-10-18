@@ -1,14 +1,19 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\EmailVerificationController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MeController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\CustomerAddressController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\OrderPaymentController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
@@ -21,12 +26,23 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('throttle:6,1')->group(function () {
             Route::post('register', RegisterController::class)->name('register');
             Route::post('login', LoginController::class)->name('login');
+
+            // Password Reset via OTP
+            Route::post('forgot-password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('forgot-password.send-otp');
+            Route::post('forgot-password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('forgot-password.verify-otp');
+            Route::post('reset-password', ResetPasswordController::class)->name('reset-password');
+            Route::post('forgot-password/reset-password', ResetPasswordController::class)->name('forgot-password.reset');
+
+            // Email Verification via OTP
+            Route::post('email/send-otp', [EmailVerificationController::class, 'sendOtp'])->name('email.send-otp');
+            Route::post('email/verify-otp', [EmailVerificationController::class, 'verifyOtp'])->name('email.verify-otp');
         });
 
         // Authenticated auth routes
         Route::middleware('auth:sanctum')->group(function () {
             Route::get('me', MeController::class)->name('me');
             Route::post('refresh-token', RefreshTokenController::class)->name('refresh-token');
+            Route::post('email/resend-otp', [EmailVerificationController::class, 'sendOtp'])->name('email.resend-otp');
         });
     });
 
@@ -43,15 +59,36 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('{id}', [CustomerAddressController::class, 'destroy'])->whereNumber('id')->name('destroy');
     });
 
-    // Customer Orders (scoped to authenticated user)
-    Route::middleware('auth:sanctum')->prefix('orders')->name('orders.')->group(function () {
-        Route::get('/', [OrderController::class, 'index'])->name('index');
-        Route::get('{identifier}', [OrderController::class, 'show'])->name('show');
+    // Customer Orders & Checkout (scoped to authenticated user)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::prefix('orders')->name('orders.')->group(function () {
+            Route::get('/', [OrderController::class, 'index'])->name('index');
+            Route::post('checkout', [CheckoutController::class, 'checkout'])->name('checkout');
+            Route::post('checkout/preview', [CheckoutController::class, 'preview'])->name('checkout.preview');
+            Route::post('/', [CheckoutController::class, 'checkout'])->name('store');
+            Route::get('{identifier}', [OrderController::class, 'show'])->name('show');
+            Route::post('{identifier}/payment-proof', [OrderPaymentController::class, 'upload'])->name('payment-proof');
+            Route::post('{identifier}/upload-payment-proof', [OrderPaymentController::class, 'upload']);
+        });
+
+        Route::prefix('checkout')->name('checkout.')->group(function () {
+            Route::post('/', [CheckoutController::class, 'checkout'])->name('index');
+            Route::post('preview', [CheckoutController::class, 'preview'])->name('preview');
+        });
     });
 
     // Notifications (scoped to authenticated user & broadcast)
     Route::middleware('auth:sanctum')->prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('mark-read', [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::post('mark-all-read', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+        Route::post('{id}/mark-read', [NotificationController::class, 'markSingleRead'])->whereNumber('id')->name('mark-single-read');
+    });
+
+    // Product Reviews (Create review for completed & paid order)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
+        Route::post('products/{product_id}/reviews', [ProductReviewController::class, 'store'])->whereNumber('product_id')->name('products.reviews.store');
     });
 
     // Carts (scoped to authenticated user)

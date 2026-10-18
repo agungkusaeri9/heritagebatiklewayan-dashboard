@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Product\IndexProductReviewRequest;
+use App\Http\Requests\Api\Review\StoreProductReviewApiRequest;
 use App\Http\Resources\ProductReviewResource;
 use App\Http\Responses\ApiResponse;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductReviewRepositoryInterface;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductReviewController extends Controller
 {
@@ -55,6 +57,32 @@ class ProductReviewController extends Controller
                 ],
                 'rating_stats' => $ratingStats,
             ],
+        );
+    }
+
+    /**
+     * Store a new product review for a completed and paid order.
+     */
+    public function store(StoreProductReviewApiRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $customer = $user->customer;
+
+        $review = $this->reviewRepository->createReview([
+            'order_id' => (int) $request->validated('order_id'),
+            'product_id' => (int) $request->validated('product_id'),
+            'customer_id' => $customer->id,
+            'rating' => (int) $request->validated('rating'),
+            'comment' => $request->validated('comment'),
+            'is_visible' => true,
+        ]);
+
+        $review->load(['customer.user', 'product', 'order']);
+
+        return ApiResponse::success(
+            data: ProductReviewResource::make($review)->resolve($request),
+            message: 'Ulasan produk berhasil dikirim.',
+            code: Response::HTTP_CREATED,
         );
     }
 }
