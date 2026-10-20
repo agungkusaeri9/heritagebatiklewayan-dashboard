@@ -6,6 +6,33 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ---
 
+## [0.2.0-alpha.1] - 2026-10-20
+
+Pembaruan tampilan tabel pelanggan dengan penambahan kolom avatar otomatis melalui model accessor, serta penambahan endpoint API pembaruan kata sandi pengguna terautentikasi dengan verifikasi kata sandi saat ini.
+
+### ✨ Fitur Baru (Features)
+
+- **Kolom Avatar pada Tabel Pelanggan (Customer Avatar Column)**:
+  - Penambahan kolom *Avatar* pada posisi kolom pertama di tabel data master pelanggan (`/customers`).
+  - Menampilkan foto avatar pelanggan dengan fallback otomatis ke ikon avatar default (`avatar.svg`).
+  - Penyesuaian layout tabel dan status kosong (*empty state colspan*).
+
+- **Endpoint API Pembaruan Kata Sandi (Update User Password API)**:
+  - Penambahan endpoint `PUT /api/v1/user/password` berotentikasi Laravel Sanctum (`auth:sanctum`).
+  - Validasi ketat kata sandi saat ini menggunakan aturan bawaan Laravel (`current_password`).
+  - Validasi kata sandi baru: minimal 8 karakter, konfirmasi kecocokan (`confirmed`), dan larangan menggunakan kata sandi yang sama dengan kata sandi saat ini (`different:current_password`).
+  - Penyimpanan kata sandi baru terenkripsi secara aman menggunakan `Hash::make()`.
+
+### 🏗️ Arsitektur & Backend
+
+- **Accessor & Appends Model Customer**:
+  - Penambahan atribut `avatar_url` pada array `$appends` di model `App\Models\Customer`.
+  - Implementasi accessor `getAvatarUrlAttribute()` untuk menangani fallback cerdas: URL eksternal (http/https), path relatif storage publik (`Storage::disk('public')->url()`), atau default SVG lokal (`asset('assets/images/avatar.svg')`), sehingga frontend tidak perlu melakukan pengolahan URL secara manual.
+- **Controller Terisolasi**:
+  - Pembuatan `App\Http\Controllers\Api\UserPasswordController` untuk memisahkan logika pembaruan kata sandi akun dari controller profil umum.
+
+---
+
 ## [vx.x.x]
 
 Penambahan fitur **Import Produk via Excel** secara massal dan modul **Manajemen Pelanggan (Customer)** lengkap dengan *seeding* otomatis.

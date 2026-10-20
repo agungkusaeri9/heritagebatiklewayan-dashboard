@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,6 +47,8 @@ import { ref, watch } from 'vue';
 interface Customer {
     id: number;
     phone: string | null;
+    avatar?: string | null;
+    avatar_url: string;
     is_active: boolean;
     user: {
         id: number;
@@ -223,6 +226,7 @@ const executeDelete = () => {
                 <table class="w-full caption-bottom text-sm">
                     <thead class="bg-muted/50 [&_tr]:border-b">
                         <tr class="border-b transition-colors">
+                            <th class="h-10 w-16 px-4 text-center align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase">Avatar</th>
                             <th class="h-10 px-4 text-left align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase">Nama</th>
                             <th class="h-10 px-4 text-left align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase">Email</th>
                             <th class="h-10 px-4 text-left align-middle text-xs font-semibold tracking-wider text-muted-foreground uppercase">No. HP</th>
@@ -232,7 +236,7 @@ const executeDelete = () => {
                     </thead>
                     <tbody class="[&_tr:last-child]:border-0">
                         <tr v-if="customers.data.length === 0">
-                            <td colspan="5" class="h-32 text-center text-muted-foreground">
+                            <td colspan="6" class="h-32 text-center text-muted-foreground">
                                 <div class="flex flex-col items-center justify-center gap-2">
                                     <Users class="h-8 w-8 text-muted-foreground/50" />
                                     <p>Tidak ada data customer ditemukan.</p>
@@ -244,6 +248,24 @@ const executeDelete = () => {
                             :key="customer.id"
                             class="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                         >
+                            <td class="p-4 align-middle text-center">
+                                <div class="flex items-center justify-center">
+                                    <Avatar class="h-10 w-10 border bg-muted/20">
+                                        <AvatarImage
+                                            :src="customer.avatar_url"
+                                            :alt="customer.user?.name || 'Customer'"
+                                            class="object-cover"
+                                        />
+                                        <AvatarFallback class="bg-muted">
+                                            <img
+                                                src="/assets/images/avatar.svg"
+                                                :alt="customer.user?.name || 'Avatar'"
+                                                class="h-full w-full object-cover p-1.5 opacity-70 dark:invert"
+                                            />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </div>
+                            </td>
                             <td class="p-4 align-middle font-medium">
                                 {{ customer.user?.name }}
                             </td>

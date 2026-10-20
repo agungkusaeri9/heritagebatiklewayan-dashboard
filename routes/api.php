@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
 use App\Http\Controllers\Api\StoreSettingController;
+use App\Http\Controllers\Api\UserLocationController;
+use App\Http\Controllers\Api\UserPasswordController;
+use App\Http\Controllers\Api\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -48,6 +51,21 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     // Alias: GET /api/v1/me
     Route::middleware('auth:sanctum')->get('me', MeController::class)->name('me');
+
+    // User Location (scoped to authenticated user)
+    Route::middleware('auth:sanctum')->prefix('user/location')->name('user.location.')->group(function () {
+        Route::get('/', [UserLocationController::class, 'show'])->name('show');
+        Route::put('/', [UserLocationController::class, 'update'])->name('update');
+        Route::post('/', [UserLocationController::class, 'update'])->name('store');
+    });
+
+    // User Profile (Complete / Update Profile)
+    Route::middleware('auth:sanctum')->prefix('user/profile')->name('user.profile.')->group(function () {
+        Route::get('/', [UserProfileController::class, 'show'])->name('show');
+        Route::match(['put', 'patch', 'post'], '/', [UserProfileController::class, 'update'])->name('update');
+    });
+    Route::middleware('auth:sanctum')->match(['put', 'patch', 'post'], 'profile', [UserProfileController::class, 'update'])->name('profile.update');
+    Route::middleware('auth:sanctum')->match(['put', 'patch', 'post'], 'user/password', [UserPasswordController::class, 'update'])->name('user.password.update');
 
     // Customer Addresses (scoped to authenticated user)
     Route::middleware('auth:sanctum')->prefix('addresses')->name('addresses.')->group(function () {
