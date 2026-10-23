@@ -24,6 +24,7 @@ class StoreSetting extends Model
         'subdistrict_id',
         'privacy_policy',
         'policy',
+        'cancellation_policy',
     ];
 
     protected $appends = [

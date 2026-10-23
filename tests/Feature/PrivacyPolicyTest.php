@@ -36,11 +36,13 @@ class PrivacyPolicyTest extends TestCase
         $setting->update([
             'privacy_policy' => 'Kebijakan privasi lama',
             'policy' => 'Kebijakan toko lama',
+            'cancellation_policy' => 'Kebijakan pembatalan lama',
         ]);
 
         $response = $this->actingAs($user)->post(route('privacy-policy.update'), [
             'privacy_policy' => 'Konten kebijakan privasi baru untuk perlindungan data batik customer.',
             'policy' => 'Syarat dan ketentuan pembelian serta pengembalian produk batik baru.',
+            'cancellation_policy' => 'Ketentuan pembatalan pesanan sebelum barang diserahkan ke kurir.',
         ]);
 
         $response->assertRedirect();
@@ -50,6 +52,7 @@ class PrivacyPolicyTest extends TestCase
             'id' => $setting->id,
             'privacy_policy' => 'Konten kebijakan privasi baru untuk perlindungan data batik customer.',
             'policy' => 'Syarat dan ketentuan pembelian serta pengembalian produk batik baru.',
+            'cancellation_policy' => 'Ketentuan pembatalan pesanan sebelum barang diserahkan ke kurir.',
         ]);
     }
 
@@ -60,12 +63,34 @@ class PrivacyPolicyTest extends TestCase
         $response = $this->actingAs($user)->post(route('privacy-policy.update'), [
             'privacy_policy' => 'Kebijakan privasi awal.',
             'policy' => 'Kebijakan toko awal.',
+            'cancellation_policy' => 'Kebijakan pembatalan awal.',
         ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('store_settings', [
             'privacy_policy' => 'Kebijakan privasi awal.',
             'policy' => 'Kebijakan toko awal.',
+            'cancellation_policy' => 'Kebijakan pembatalan awal.',
         ]);
+    }
+
+    public function test_api_privacy_policy_returns_cancellation_policy(): void
+    {
+        $setting = StoreSetting::first() ?? StoreSetting::create([
+            'name' => 'Toko Batik Test',
+            'whatsapp' => '6281234567890',
+        ]);
+        $setting->update([
+            'cancellation_policy' => 'Ketentuan pembatalan via API.',
+            'policy' => 'Ketentuan umum via API.',
+            'privacy_policy' => 'Ketentuan privasi via API.',
+        ]);
+
+        $response = $this->getJson('/api/v1/settings/privacy-policy');
+
+        $response->assertOk()
+            ->assertJsonPath('data.cancellation_policy', 'Ketentuan pembatalan via API.')
+            ->assertJsonPath('data.policy', 'Ketentuan umum via API.')
+            ->assertJsonPath('data.privacy_policy', 'Ketentuan privasi via API.');
     }
 }

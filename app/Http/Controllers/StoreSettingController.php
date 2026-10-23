@@ -50,6 +50,7 @@ class StoreSettingController extends Controller
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'privacy_policy' => 'nullable|string',
             'policy' => 'nullable|string',
+            'cancellation_policy' => 'nullable|string',
         ]);
 
         if ($request->hasFile('logo_file')) {

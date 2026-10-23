@@ -65,11 +65,15 @@ class AuthService
             throw new AuthenticationException('Email atau kata sandi salah.');
         }
 
+        if ($user->is_deleted) {
+            throw new AccessDeniedHttpException('Akun ini telah dinonaktifkan atau dihapus.');
+        }
+
         if (! $user->hasRole(self::CUSTOMER_ROLE, self::API_GUARD)) {
             throw new AccessDeniedHttpException('Akun ini tidak memiliki akses sebagai customer.');
         }
 
-        if (! $user->customer?->is_active) {
+        if (! $user->customer?->is_active || $user->customer?->is_deleted) {
             throw new AccessDeniedHttpException('Akun customer tidak aktif.');
         }
 

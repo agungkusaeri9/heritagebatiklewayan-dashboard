@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
 use App\Http\Controllers\Api\StoreSettingController;
+use App\Http\Controllers\Api\UserAccountController;
 use App\Http\Controllers\Api\UserLocationController;
 use App\Http\Controllers\Api\UserPasswordController;
 use App\Http\Controllers\Api\UserProfileController;
@@ -66,6 +67,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
     Route::middleware('auth:sanctum')->match(['put', 'patch', 'post'], 'profile', [UserProfileController::class, 'update'])->name('profile.update');
     Route::middleware('auth:sanctum')->match(['put', 'patch', 'post'], 'user/password', [UserPasswordController::class, 'update'])->name('user.password.update');
+    Route::middleware('auth:sanctum')->match(['delete', 'post'], 'user/account', [UserAccountController::class, 'destroy'])->name('user.account.destroy');
+    Route::middleware('auth:sanctum')->delete('user', [UserAccountController::class, 'destroy'])->name('user.destroy');
 
     // Customer Addresses (scoped to authenticated user)
     Route::middleware('auth:sanctum')->prefix('addresses')->name('addresses.')->group(function () {

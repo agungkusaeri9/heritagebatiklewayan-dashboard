@@ -42,6 +42,7 @@ class StoreSettingController extends Controller
             data: [
                 'privacy_policy' => $setting?->privacy_policy ?? '',
                 'policy' => $setting?->policy ?? '',
+                'cancellation_policy' => $setting?->cancellation_policy ?? '',
                 'updated_at' => $setting?->updated_at?->toISOString(),
             ],
             message: 'Berhasil mengambil kebijakan privasi dan ketentuan toko.',

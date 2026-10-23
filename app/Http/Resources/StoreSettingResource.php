@@ -37,6 +37,7 @@ class StoreSettingResource extends JsonResource
             'policies' => [
                 'privacy_policy' => $this->privacy_policy ?? '',
                 'policy' => $this->policy ?? '',
+                'cancellation_policy' => $this->cancellation_policy ?? '',
             ],
             'updated_at' => $this->updated_at?->toISOString(),
         ];

@@ -65,6 +65,16 @@ EOT;
 - Nomor resi pengiriman akan diperbarui secara otomatis di halaman riwayat pesanan setelah diserahkan ke pihak ekspedisi.
 EOT;
 
+        $cancellationPolicy = <<<'EOT'
+1. WAKTU PENGAJUAN PEMBATALAN
+- Pembatalan pesanan hanya dapat diajukan sebelum pesanan berstatus "Diproses" atau "Dikirim" oleh pihak toko.
+- Apabila pesanan sudah diserahkan kepada kurir ekspedisi dengan nomor resi pengiriman, pesanan tidak dapat dibatalkan.
+
+2. PENGEMBALIAN DANA (REFUND) PEMBATALAN
+- Dana transaksi yang dibatalkan akan diproses kembali ke rekening atau saldo pembeli dalam waktu 1x24 jam kerja.
+- Pastikan rekening bank atau nomor e-wallet yang terdaftar sudah sesuai dan aktif.
+EOT;
+
         StoreSetting::updateOrCreate(
             ['id' => 1],
             [
@@ -84,6 +94,7 @@ EOT;
                 'subdistrict_id' => $subdistrict?->subdistrict_id,
                 'privacy_policy' => $privacyPolicy,
                 'policy' => $policy,
+                'cancellation_policy' => $cancellationPolicy,
             ]
         );
     }

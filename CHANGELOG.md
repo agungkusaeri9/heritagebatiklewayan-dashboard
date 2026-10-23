@@ -6,6 +6,33 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ---
 
+## [0.3.0] - 2026-10-23
+
+Pembaruan modul Pengaturan Kebijakan & Privasi (Privacy Policy Settings) dengan penambahan kolom khusus Kebijakan Pembatalan (Cancellation Policy) pada database, integrasi antarmuka form admin 3-kolom, serta penyempurnaan endpoint API untuk konsumsi aplikasi mobile.
+
+### ✨ Fitur Baru (Features)
+
+- **Manajemen Kebijakan Pembatalan (Cancellation Policy Management)**:
+  - Penambahan kolom input form *Kebijakan Pembatalan (Cancellation Policy)* pada halaman pengaturan web admin (`/privacy-policy-settings`).
+  - Antarmuka form responsif 3-kolom untuk mengelola Kebijakan Pembatalan (*Cancellation Policy*), Syarat & Ketentuan (*Terms & Policy*), dan Kebijakan Privasi (*Privacy Policy*).
+  - Validasi dan penyimpanan data `cancellation_policy` pada `PrivacyPolicyController` dan `StoreSettingController`.
+
+- **Penyempurnaan Endpoint API Kebijakan Toko (Store Policy API)**:
+  - Endpoint `GET /api/v1/settings/privacy-policy` kini mengembalikan data `cancellation_policy` bersama `privacy_policy`, `policy`, dan `updated_at`.
+  - Resource `StoreSettingResource` menyertakan `cancellation_policy` dalam struktur grup `policies` untuk integrasi mobile.
+
+### 🏗️ Arsitektur & Backend
+
+- **Migrasi Database `cancellation_policy`**:
+  - Penambahan kolom `cancellation_policy` berjenis `longText` (`nullable`) pada tabel `store_settings`.
+  - Pendaftaran `cancellation_policy` ke dalam `$fillable` model `App\Models\StoreSetting`.
+- **Database Seeder**:
+  - Pembaruan `StoreSettingSeeder` dengan template resmi ketentuan pembatalan pesanan dan batas waktu pengajuan sebelum paket diserahkan ke pihak kurir ekspedisi.
+- **Unit & Feature Testing**:
+  - Penambahan pengujian unit dan fitur pada `tests/Feature/PrivacyPolicyTest.php` untuk verifikasi simpan form admin dan respon payload API `cancellation_policy`.
+
+---
+
 ## [0.2.0-alpha.1] - 2026-10-20
 
 Pembaruan tampilan tabel pelanggan dengan penambahan kolom avatar otomatis melalui model accessor, serta penambahan endpoint API pembaruan kata sandi pengguna terautentikasi dengan verifikasi kata sandi saat ini.
@@ -23,13 +50,23 @@ Pembaruan tampilan tabel pelanggan dengan penambahan kolom avatar otomatis melal
   - Validasi kata sandi baru: minimal 8 karakter, konfirmasi kecocokan (`confirmed`), dan larangan menggunakan kata sandi yang sama dengan kata sandi saat ini (`different:current_password`).
   - Penyimpanan kata sandi baru terenkripsi secara aman menggunakan `Hash::make()`.
 
+- **Endpoint API Hapus Akun (Delete Account API)**:
+  - Penambahan endpoint `DELETE /api/v1/user/account` (dan alias `DELETE /api/v1/user`) berotentikasi Laravel Sanctum.
+  - Penonaktifan akun dengan mengubah flag `is_deleted = true` pada tabel `users` dan `customers` (`is_active = false`).
+  - Pencabutan seluruh personal access token secara otomatis untuk keamanan.
+  - Proteksi login: akun dengan status `is_deleted = true` ditolak secara otomatis saat mencoba masuk.
+
 ### 🏗️ Arsitektur & Backend
 
+- **Kolom `is_deleted` pada Database**:
+  - Migration penambahan kolom boolean `is_deleted` (default `false`) pada tabel `users` dan `customers`.
+  - Pendaftaran `is_deleted` pada `$fillable` dan `$casts` di model `App\Models\User` dan `App\Models\Customer`.
 - **Accessor & Appends Model Customer**:
   - Penambahan atribut `avatar_url` pada array `$appends` di model `App\Models\Customer`.
   - Implementasi accessor `getAvatarUrlAttribute()` untuk menangani fallback cerdas: URL eksternal (http/https), path relatif storage publik (`Storage::disk('public')->url()`), atau default SVG lokal (`asset('assets/images/avatar.svg')`), sehingga frontend tidak perlu melakukan pengolahan URL secara manual.
 - **Controller Terisolasi**:
-  - Pembuatan `App\Http\Controllers\Api\UserPasswordController` untuk memisahkan logika pembaruan kata sandi akun dari controller profil umum.
+  - Pembuatan `App\Http\Controllers\Api\UserPasswordController` untuk pembaruan kata sandi.
+  - Pembuatan `App\Http\Controllers\Api\UserAccountController` untuk penghapusan akun.
 
 ---
 

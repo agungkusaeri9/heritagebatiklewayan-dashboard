@@ -18,10 +18,12 @@ class Customer extends Model
         'gender',
         'avatar',
         'is_active',
+        'is_deleted',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_deleted' => 'boolean',
     ];
 
     protected $appends = [

@@ -11,6 +11,7 @@ interface StoreSettingLegal {
     id?: number;
     privacy_policy?: string | null;
     policy?: string | null;
+    cancellation_policy?: string | null;
 }
 
 interface Props {
@@ -28,6 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     privacy_policy: props.setting?.privacy_policy || '',
     policy: props.setting?.policy || '',
+    cancellation_policy: props.setting?.cancellation_policy || '',
 });
 
 const submitForm = () => {
@@ -48,13 +50,59 @@ const submitForm = () => {
                 Kebijakan & Privasi
             </h1>
             <p class="text-sm text-muted-foreground">
-                Atur isi teks kebijakan privasi dan syarat ketentuan toko Anda.
+                Atur isi teks kebijakan privasi, syarat ketentuan toko, dan kebijakan pembatalan pesanan.
             </p>
         </div>
 
         <form @submit.prevent="submitForm" class="space-y-6">
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <!-- Kolom 1: Privacy Policy -->
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <!-- Kolom 1: Cancellation Policy -->
+                <div class="rounded-xl border bg-card p-5 space-y-3">
+                    <div class="space-y-1">
+                        <Label for="cancellation_policy" class="text-base font-semibold text-foreground">
+                            Kebijakan Pembatalan (Cancellation Policy)
+                        </Label>
+                        <p class="text-xs text-muted-foreground">
+                            Ketentuan pembatalan pesanan sebelum diproses/dikirim.
+                        </p>
+                    </div>
+
+                    <Textarea
+                        id="cancellation_policy"
+                        v-model="form.cancellation_policy"
+                        placeholder="Tuliskan ketentuan pembatalan pesanan di sini..."
+                        class="min-h-[380px] bg-background text-sm"
+                        :class="{ 'border-destructive': form.errors.cancellation_policy }"
+                    />
+                    <p v-if="form.errors.cancellation_policy" class="text-xs text-destructive">
+                        {{ form.errors.cancellation_policy }}
+                    </p>
+                </div>
+
+                <!-- Kolom 2: Terms & Conditions / Policy -->
+                <div class="rounded-xl border bg-card p-5 space-y-3">
+                    <div class="space-y-1">
+                        <Label for="policy" class="text-base font-semibold text-foreground">
+                            Syarat & Ketentuan Toko (Terms & Policy)
+                        </Label>
+                        <p class="text-xs text-muted-foreground">
+                            Ketentuan transaksi, pembelian, dan kebijakan retur.
+                        </p>
+                    </div>
+
+                    <Textarea
+                        id="policy"
+                        v-model="form.policy"
+                        placeholder="Tuliskan syarat dan kebijakan toko di sini..."
+                        class="min-h-[380px] bg-background text-sm"
+                        :class="{ 'border-destructive': form.errors.policy }"
+                    />
+                    <p v-if="form.errors.policy" class="text-xs text-destructive">
+                        {{ form.errors.policy }}
+                    </p>
+                </div>
+
+                <!-- Kolom 3: Privacy Policy -->
                 <div class="rounded-xl border bg-card p-5 space-y-3">
                     <div class="space-y-1">
                         <Label for="privacy_policy" class="text-base font-semibold text-foreground">
@@ -74,29 +122,6 @@ const submitForm = () => {
                     />
                     <p v-if="form.errors.privacy_policy" class="text-xs text-destructive">
                         {{ form.errors.privacy_policy }}
-                    </p>
-                </div>
-
-                <!-- Kolom 2: Policy / Terms -->
-                <div class="rounded-xl border bg-card p-5 space-y-3">
-                    <div class="space-y-1">
-                        <Label for="policy" class="text-base font-semibold text-foreground">
-                            Syarat & Kebijakan Toko (Policy)
-                        </Label>
-                        <p class="text-xs text-muted-foreground">
-                            Ketentuan transaksi, pembelian, dan kebijakan retur.
-                        </p>
-                    </div>
-
-                    <Textarea
-                        id="policy"
-                        v-model="form.policy"
-                        placeholder="Tuliskan syarat dan kebijakan toko di sini..."
-                        class="min-h-[380px] bg-background text-sm"
-                        :class="{ 'border-destructive': form.errors.policy }"
-                    />
-                    <p v-if="form.errors.policy" class="text-xs text-destructive">
-                        {{ form.errors.policy }}
                     </p>
                 </div>
             </div>

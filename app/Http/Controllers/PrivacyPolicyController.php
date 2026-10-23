@@ -29,6 +29,7 @@ class PrivacyPolicyController extends Controller
                 'id' => $setting->id,
                 'privacy_policy' => $setting->privacy_policy ?? '',
                 'policy' => $setting->policy ?? '',
+                'cancellation_policy' => $setting->cancellation_policy ?? '',
                 'updated_at' => $setting->updated_at?->format('d M Y H:i'),
             ],
         ]);
@@ -42,6 +43,7 @@ class PrivacyPolicyController extends Controller
         $validated = $request->validate([
             'privacy_policy' => ['nullable', 'string'],
             'policy' => ['nullable', 'string'],
+            'cancellation_policy' => ['nullable', 'string'],
         ]);
 
         $setting = StoreSetting::first();
