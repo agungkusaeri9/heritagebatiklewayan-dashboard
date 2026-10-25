@@ -6,6 +6,34 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ---
 
+## [0.4.0] - 2026-10-25
+
+Penambahan endpoint API data master kategori produk, kurir pengiriman, produk rekomendasi & terlaris untuk integrasi beranda mobile, serta integrasi layanan kalkulasi ongkos kirim RajaOngkir.
+
+### ✨ Fitur Baru (Features)
+
+- **Endpoint API Kategori Produk (`GET /api/v1/categories`)**:
+  - Menyediakan daftar kategori aktif yang diurutkan berdasarkan abjad (`name`).
+  - Menghitung jumlah produk aktif per kategori (`total_items`) secara efisien via `withCount('products')`.
+  - Menambahkan relasi `products(): HasMany` pada model `Category`.
+  - Penyempurnaan `CategoryResource` dengan atribut `description`, `total_items`, dan `is_active`.
+
+- **Endpoint API Produk Beranda (Rekomendasi & Terlaris)**:
+  - `GET /api/v1/products/recommendations`: Mengambil produk aktif dengan prioritas fitur Virtual Try-On (`is_virtual_try_on DESC`) dan ID terbaru untuk carousel rekomendasi.
+  - `GET /api/v1/products/best-sellers`: Mengambil produk terlaris dengan penghitungan ulasan (`reviews_count`) untuk bagian best seller beranda.
+
+- **Endpoint API Kurir & Kalkulasi Ongkir (RajaOngkir / Komerce)**:
+  - `GET /api/v1/couriers` & `GET /api/v1/shipping-types`: Menampilkan daftar kurir pengiriman aktif via `CourierController` dan `CourierResource`.
+  - `POST /api/v1/couriers/cost`, `POST /api/v1/shipping/cost`, dan `POST /api/v1/check-ongkir`: Endpoint perhitungan ongkos kirim otomatis berdasarkan alamat tujuan dan berat paket.
+  - Konfigurasi kredensial `rajaongkir` pada `config/services.php` dan template variabel environment pada `.env.example`.
+
+### 🏗️ Arsitektur & Backend
+
+- **Database Seeder**:
+  - Pendaftaran `UserCartSeeder::class` pada `DatabaseSeeder.php` untuk inisialisasi data keranjang belanja pengujian.
+
+---
+
 ## [0.3.0] - 2026-10-23
 
 Pembaruan modul Pengaturan Kebijakan & Privasi (Privacy Policy Settings) dengan penambahan kolom khusus Kebijakan Pembatalan (Cancellation Policy) pada database, integrasi antarmuka form admin 3-kolom, serta penyempurnaan endpoint API untuk konsumsi aplikasi mobile.

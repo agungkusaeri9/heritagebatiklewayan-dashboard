@@ -8,15 +8,19 @@ use App\Http\Controllers\Api\Auth\RefreshTokenController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\CourierController;
 use App\Http\Controllers\Api\CustomerAddressController;
 use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderPaymentController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
+use App\Http\Controllers\Api\ShippingCostController;
 use App\Http\Controllers\Api\StoreSettingController;
 use App\Http\Controllers\Api\UserAccountController;
 use App\Http\Controllers\Api\UserLocationController;
@@ -120,9 +124,16 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('{id}', [CartController::class, 'destroy'])->whereNumber('id')->name('destroy');
     });
 
+    // Categories
+    Route::prefix('categories')->name('categories.')->group(function () {
+        Route::get('/', [CategoryController::class, 'index'])->name('index');
+    });
+
     // Products
     Route::prefix('products')->name('products.')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('index');
+        Route::get('recommendations', [ProductController::class, 'recommendations'])->name('recommendations');
+        Route::get('best-sellers', [ProductController::class, 'bestSellers'])->name('best-sellers');
         Route::get('slug/{slug}/reviews', [ProductReviewController::class, 'index'])->name('reviews.slug-path');
         Route::get('slug/{slug}', [ProductController::class, 'showBySlug'])->name('show-by-slug');
         Route::get('{id}', [ProductController::class, 'show'])->whereNumber('id')->name('show');
@@ -136,6 +147,17 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('{id}', [PaymentMethodController::class, 'show'])->whereNumber('id')->name('show');
     });
 
+    // Couriers, Shipping Types & RajaOngkir Shipping Cost
+    Route::prefix('couriers')->name('couriers.')->group(function () {
+        Route::get('/', [CourierController::class, 'index'])->name('index');
+        Route::post('cost', [ShippingCostController::class, 'calculate'])->name('cost');
+        Route::post('check-ongkir', [ShippingCostController::class, 'calculate'])->name('check-ongkir');
+    });
+    Route::get('shipping-types', [CourierController::class, 'index'])->name('shipping-types.index');
+    Route::post('shipping/cost', [ShippingCostController::class, 'calculate'])->name('shipping.cost');
+    Route::post('shipping/check-cost', [ShippingCostController::class, 'calculate'])->name('shipping.check-cost');
+    Route::post('check-ongkir', [ShippingCostController::class, 'calculate'])->name('check-ongkir');
+
     // FAQs
     Route::prefix('faqs')->name('faqs.')->group(function () {
         Route::get('/', [FaqController::class, 'index'])->name('index');
@@ -147,4 +169,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/', [StoreSettingController::class, 'index'])->name('index');
         Route::get('privacy-policy', [StoreSettingController::class, 'privacyPolicy'])->name('privacy-policy');
     });
+
+    // Locations (Provinces, Cities, Subdistricts)
+    Route::prefix('locations')->name('locations.')->group(function () {
+        Route::get('provinces', [LocationController::class, 'provinces'])->name('provinces');
+        Route::get('cities', [LocationController::class, 'cities'])->name('cities');
+        Route::get('subdistricts', [LocationController::class, 'subdistricts'])->name('subdistricts');
+    });
+    Route::get('provinces', [LocationController::class, 'provinces'])->name('provinces.index');
+    Route::get('cities', [LocationController::class, 'cities'])->name('cities.index');
+    Route::get('subdistricts', [LocationController::class, 'subdistricts'])->name('subdistricts.index');
 });
+
+Route::post('shipping/cost', [ShippingCostController::class, 'calculate'])->name('api.shipping.cost');
+Route::post('shipping/check-cost', [ShippingCostController::class, 'calculate'])->name('api.shipping.check-cost');
+Route::post('check-ongkir', [ShippingCostController::class, 'calculate'])->name('api.check-ongkir');

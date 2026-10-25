@@ -22,7 +22,10 @@ class CategoryResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'description' => $this->description,
             'image_url' => $this->image_url,
+            'total_items' => (int) ($this->products_count ?? 0),
+            'is_active' => (bool) $this->is_active,
         ];
     }
 }

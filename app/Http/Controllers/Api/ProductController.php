@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Product\IndexProductApiRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Responses\ApiResponse;
+use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductReviewRepositoryInterface;
 use Illuminate\Http\JsonResponse;
@@ -90,6 +91,46 @@ class ProductController extends Controller
         return ApiResponse::success(
             data: $productData,
             message: 'Berhasil mengambil detail produk.',
+        );
+    }
+
+    /**
+     * Display a listing of recommended products.
+     */
+    public function recommendations(Request $request): JsonResponse
+    {
+        $limit = (int) $request->input('limit', 10);
+        $products = Product::query()
+            ->where('is_active', true)
+            ->with(['category', 'images'])
+            ->orderByRaw('is_virtual_try_on DESC, id DESC')
+            ->limit($limit)
+            ->get();
+
+        return ApiResponse::success(
+            data: ProductResource::collection($products)->resolve($request),
+            message: 'Berhasil mengambil produk rekomendasi.',
+        );
+    }
+
+    /**
+     * Display a listing of best seller products.
+     */
+    public function bestSellers(Request $request): JsonResponse
+    {
+        $limit = (int) $request->input('limit', 10);
+        $products = Product::query()
+            ->where('is_active', true)
+            ->with(['category', 'images'])
+            ->withCount('reviews')
+            ->orderBy('stock', 'asc') // or sold count / reviews
+            ->orderBy('id', 'desc')
+            ->limit($limit)
+            ->get();
+
+        return ApiResponse::success(
+            data: ProductResource::collection($products)->resolve($request),
+            message: 'Berhasil mengambil produk terlaris.',
         );
     }
 }
