@@ -6,6 +6,59 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ---
 
+## [0.6.0] - 2026-10-28
+
+Penyempurnaan integrasi API Riwayat & Detail Pesanan (`/api/v1/orders`), filter status pesanan (Active, Completed, Cancelled), unggah bukti bayar, serta endpoint profil pengguna (`/api/v1/user/profile`) untuk konsumsi antarmuka mobile My Orders dan Your Profile.
+
+### ✨ Fitur Baru (Features)
+
+- **Endpoint API Riwayat & Filter Status Pesanan (`GET /api/v1/orders`)**:
+  - Mendukung penyaringan pesanan berdasarkan status (`status=processing`, `status=pending`, `status=success`, `status=failed`, atau `all`) yang dipetakan ke tab *Active*, *Completed*, dan *Cancelled* pada aplikasi mobile.
+  - Mendukung paginasi data pesanan (`page`, `per_page`) serta pencarian teks (`search`).
+  - Serialisasi data teroptimasi via `App\Http\Resources\OrderListResource` yang mengembalikan `total_items`, ringkasan biaya, kurir, dan informasi status pembayaran.
+
+- **Endpoint API Detail Pesanan Lengkap (`GET /api/v1/orders/{identifier}`)**:
+  - Mengembalikan rincian lengkap pesanan berdasarkan ID atau nomor pesanan (`order_number`).
+  - Serialisasi data lengkap via `App\Http\Resources\OrderDetailResource` meliputi seluruh daftar produk (`items`), alamat penerima, kurir & resi pengiriman, breakdown harga (subtotal, ongkos kirim, diskon, biaya layanan, total), serta status transaksi.
+
+- **Endpoint Unggah Bukti Pembayaran (`POST /api/v1/orders/{identifier}/payment-proof`)**:
+  - Menerima unggahan file bukti transfer pembayaran (`payment_proof`) dengan validasi tipe berkas dan ukuran gambar.
+  - Memperbarui status pembayaran pesanan menjadi menunggu verifikasi (*waiting verification*).
+
+- **Endpoint API Pembaruan Profil Pengguna (`PUT|POST /api/v1/user/profile`)**:
+  - Menyediakan endpoint terotentikasi Sanctum untuk memperbarui data identitas pengguna (`name`, `phone`, `gender`).
+  - Mendukung unggahan multipart berkas foto profil (`avatar`) dengan penyimpanan otomatis ke direktori storage publik dan pembaruan URL avatar pengguna.
+
+### 🏗️ Arsitektur & Backend
+
+- **Normalisasi URL Storage Avatar & Bukti Bayar**:
+  - Memastikan path berkas avatar dan bukti bayar dikembalikan dalam format URL publik yang dapat diakses oleh client mobile.
+- **Konsistensi Kode Respon & Error Handling**:
+  - Standarisasi format respon JSON sukses dan respon validasi kegagalan sesuai kontrak API `ApiResponse`.
+
+---
+
+## [0.5.0] - 2026-10-27
+
+Penambahan endpoint API banner promosi beranda (`GET /api/v1/banners`) untuk konsumsi dinamis mobile carousel beserta resource serialisasi dan pengujian fitur.
+
+### ✨ Fitur Baru (Features)
+
+- **Endpoint API Banner Promosi (`GET /api/v1/banners`)**:
+  - Menyajikan daftar banner promosi aktif (`is_active = true`) yang diurutkan berdasarkan prioritas `sort_order` dan tanggal pembuatan.
+  - Mengembalikan metadata lengkap: judul, deskripsi/subtitle, teks tombol, tipe target navigasi (`product`, `category`, `url`, `none`), ID produk/kategori terkait, serta URL gambar.
+  - Controller terisolasi `App\Http\Controllers\Api\BannerController`.
+  - Serialisasi data aman menggunakan `App\Http\Resources\BannerResource`.
+
+### 🏗️ Arsitektur & Backend
+
+- **Rute API Publik**:
+  - Pendaftaran rute publik `GET /banners` pada grup versi `api/v1` di `routes/api.php`.
+- **Feature Testing**:
+  - Penambahan file pengujian fitur `tests/Feature/Api/BannerApiTest.php` untuk memvalidasi respon JSON format standar, filter banner aktif, dan pengurutan `sort_order`.
+
+---
+
 ## [0.4.0] - 2026-10-25
 
 Penambahan endpoint API data master kategori produk, kurir pengiriman, produk rekomendasi & terlaris untuk integrasi beranda mobile, serta integrasi layanan kalkulasi ongkos kirim RajaOngkir.

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Auth\MeController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
+use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\CheckoutController;
@@ -122,6 +123,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/', [CartController::class, 'store'])->name('store');
         Route::match(['put', 'patch'], '{id}', [CartController::class, 'update'])->whereNumber('id')->name('update');
         Route::delete('{id}', [CartController::class, 'destroy'])->whereNumber('id')->name('destroy');
+    });
+
+    // Banners
+    Route::prefix('banners')->name('banners.')->group(function () {
+        Route::get('/', [BannerController::class, 'index'])->name('index');
     });
 
     // Categories
