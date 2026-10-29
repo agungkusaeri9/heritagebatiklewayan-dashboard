@@ -41,6 +41,7 @@ interface AppConfigItem {
 
 interface Props {
     config: AppConfigItem;
+    baseUrlConfig?: AppConfigItem;
 }
 
 const props = defineProps<Props>();
@@ -55,6 +56,7 @@ const showKey = ref(false);
 const isCopied = ref(false);
 
 const form = useForm({
+    base_url: props.baseUrlConfig?.value ?? 'https://api.geoapify.com',
     api_key: props.config.value ?? '',
     description: props.config.description ?? 'API Key untuk layanan Geocoding dan Peta Geoapify',
 });
@@ -141,13 +143,37 @@ const copyKey = async (text: string) => {
                         <CardContent class="space-y-4">
                             <!-- Key Identifier -->
                             <div class="space-y-1.5">
-                                <Label class="text-xs text-muted-foreground">Parameter Key</Label>
-                                <div class="flex items-center gap-2">
+                                <Label class="text-xs text-muted-foreground">Parameter Keys</Label>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <code class="rounded bg-muted px-2.5 py-1 font-mono text-xs font-semibold text-foreground">
+                                        {{ baseUrlConfig?.key ?? 'geoapify_base_url' }}
+                                    </code>
                                     <code class="rounded bg-muted px-2.5 py-1 font-mono text-xs font-semibold text-foreground">
                                         {{ config.key }}
                                     </code>
-                                    <span class="text-xs text-muted-foreground">(Disimpan dalam tabel app_configs)</span>
+                                    <span class="text-xs text-muted-foreground">(Disimpan dalam tabel app_configs & di-cache)</span>
                                 </div>
+                            </div>
+
+                            <!-- Base URL Input -->
+                            <div class="space-y-1.5">
+                                <Label for="base_url" class="text-sm font-medium">
+                                    Base URL Geoapify
+                                </Label>
+                                <Input
+                                    id="base_url"
+                                    v-model="form.base_url"
+                                    type="url"
+                                    placeholder="https://api.geoapify.com"
+                                    class="font-mono text-sm"
+                                    :disabled="form.processing"
+                                />
+                                <p v-if="form.errors.base_url" class="text-xs text-destructive">
+                                    {{ form.errors.base_url }}
+                                </p>
+                                <p class="text-xs text-muted-foreground">
+                                    Default: <code>https://api.geoapify.com</code>. Digunakan untuk request geocoding, reverse geocoding, dan autocomplete.
+                                </p>
                             </div>
 
                             <!-- API Key Input -->

@@ -14,7 +14,9 @@ Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pi
 
 - **Manajemen Konfigurasi Aplikasi (`app_configs`)**:
   - CRUD tabel konfigurasi aplikasi (`key`, `value`, `description`) dengan masking nilai kredensial sensitif, pencarian, dan paginasi.
-  - Halaman konfigurasi **RajaOngkir** (`rajaongkir_api_key`) terintegrasi langsung dengan `RajaOngkirService`.
+  - Halaman konfigurasi **RajaOngkir**:
+    - Kunci API RajaOngkir (`rajaongkir_api_key`)
+    - Base URL endpoint API RajaOngkir (`rajaongkir_base_url`, default: `https://rajaongkir.komerce.id`) dengan file caching (`Cache::store('file')`) dan auto-invalidation/warming saat diperbarui di dashboard
   - Halaman konfigurasi **Fashn AI** yang mendukung:
     - Kunci API Fashn AI (`fashn_api_key`)
     - Base URL endpoint API Fashn AI (`fashn_api_base_url`, default: `https://api.fashn.ai`) dengan file caching
@@ -25,7 +27,9 @@ Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pi
     - Toggle fitur Virtual Try-On Video (`is_product_virtual_try_on_video`)
     - Batas kuota harian per pengguna (`virtual_try_on_daily_limit_per_user`, default: 3)
     - Batas kuota mingguan seluruh pengguna (`virtual_try_on_weekly_limit_all_users`, default: 100)
-  - Halaman konfigurasi **Geoapify** (`geoapify_api_key`).
+  - Halaman konfigurasi **Geoapify**:
+    - Kunci API Geoapify (`geoapify_api_key`)
+    - Base URL endpoint API Geoapify (`geoapify_base_url`, default: `https://api.geoapify.com`) dengan file caching (`Cache::store('file')`) dan auto-invalidation/warming saat diperbarui di dashboard
   - Penyederhanaan menu navigasi sidebar (sub-menu Semua Konfigurasi disembunyikan agar navigasi lebih terfokus pada sub-menu penyedia layanan).
 
 - **Manajemen Model Mannequin / Avatar Fashn AI (`/virtual-try-on-models`)**:
@@ -75,6 +79,7 @@ Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pi
     - Pengunduhan otomatis gambar dan video dari CDN Fashn AI dan penyimpanan ke disk penyimpanan lokal sistem (`downloadAndStoreImage`, `downloadAndStoreVideo`).
   - Job Queue asynchronous `GenerateProductVirtualTryOnJob` untuk pemrosesan background generasi dua tahap (foto model via tryon-max lalu video model via image-to-video) dengan pelaporan progress bertahap.
   - Penyesuaian batas waktu timeout queue worker (`--timeout=600`, `--tries=3`) pada script `dev` `composer.json` dan konfigurasi `config/queue.php` (`retry_after` = 600s) untuk mendukung proses rendering video AI tanpa kendala timeout 60 detik.
+  - Pembuatan `GeoapifyService` serta integrasi mekanisme file caching (`Cache::store('file')`, TTL 24 jam) pada `RajaOngkirService`, `GeoapifyService`, dan `FashnAiService` untuk pembacaan kredensial cepat dan hemat query database, dilengkapi proses pembersihan dan pemanasan cache otomatis (*cache invalidation & pre-warming*) setiap kali data konfigurasi diperbarui.
 - **Hak Akses & Seeder**:
   - Pendaftaran permission Spatie: `view/create/edit/delete virtual try on models`, `view/create/edit/delete product virtual try ons`, dan `view/create/edit/delete app configs` pada `RolePermissionSeeder.php`.
   - Pembuatan `AppConfigSeeder.php` dan `VirtualTryOnSeeder.php` dengan data default avatar mannequin pria, wanita, unisex, serta contoh try-on default produk dan user.

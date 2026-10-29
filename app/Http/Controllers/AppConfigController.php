@@ -8,6 +8,8 @@ use App\Http\Requests\AppConfig\UpdateAppConfigRequest;
 use App\Models\AppConfig;
 use App\Services\AppConfigService;
 use App\Services\FashnAiService;
+use App\Services\GeoapifyService;
+use App\Services\RajaOngkirService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -93,8 +95,17 @@ class AppConfigController extends Controller
             ]
         );
 
+        $baseUrlConfig = AppConfig::firstOrCreate(
+            ['key' => 'rajaongkir_base_url'],
+            [
+                'value' => 'https://rajaongkir.komerce.id',
+                'description' => 'Base URL endpoint API untuk layanan RajaOngkir / Komerce',
+            ]
+        );
+
         return Inertia::render('configurations/RajaOngkir', [
             'config' => $config,
+            'baseUrlConfig' => $baseUrlConfig,
         ]);
     }
 
@@ -105,6 +116,7 @@ class AppConfigController extends Controller
     {
         $validated = $request->validate([
             'api_key' => ['nullable', 'string', 'max:500'],
+            'base_url' => ['nullable', 'url', 'max:500'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -113,6 +125,30 @@ class AppConfigController extends Controller
             $validated['api_key'] ?? null,
             $validated['description'] ?? 'API Key untuk layanan integrasi RajaOngkir / Komerce'
         );
+
+        $this->appConfigService->setOrUpdate(
+            'rajaongkir_base_url',
+            ! empty($validated['base_url']) ? rtrim($validated['base_url'], '/') : 'https://rajaongkir.komerce.id',
+            'Base URL endpoint API untuk layanan RajaOngkir / Komerce'
+        );
+
+        // Clear and pre-warm RajaOngkir cache
+        $rajaOngkir = app(RajaOngkirService::class);
+        $rajaOngkir->clearCache();
+        $rajaOngkir->getBaseUrl();
+        $rajaOngkir->getApiKey();
+
+        $this->appConfigService->setOrUpdate(
+            'rajaongkir_base_url',
+            ! empty($validated['base_url']) ? rtrim($validated['base_url'], '/') : 'https://rajaongkir.komerce.id',
+            'Base URL endpoint API untuk layanan RajaOngkir / Komerce'
+        );
+
+        // Clear and pre-warm RajaOngkir cache
+        $rajaOngkir = app(\App\Services\RajaOngkirService::class);
+        $rajaOngkir->clearCache();
+        $rajaOngkir->getBaseUrl();
+        $rajaOngkir->getApiKey();
 
         return redirect()->back()->with('success', 'Konfigurasi RajaOngkir berhasil diperbarui.');
     }
@@ -233,28 +269,6 @@ class AppConfigController extends Controller
         $fashnService->getVideoDuration();
         $fashnService->getVideoResolution();
 
-        if (array_key_exists('video_duration', $validated)) {
-            $this->appConfigService->setOrUpdate(
-                'fashn_video_duration',
-                (string) ($validated['video_duration'] ?? 5),
-                'Durasi video generasi Fashn AI (5 atau 10 detik)'
-            );
-        }
-
-        if (array_key_exists('video_resolution', $validated)) {
-            $this->appConfigService->setOrUpdate(
-                'fashn_video_resolution',
-                $validated['video_resolution'] ?? '480p',
-                'Resolusi video generasi Fashn AI (480p, 720p, 1080p)'
-            );
-        }
-
-        // Clear and pre-warm Fashn AI cache
-        $fashnService = app(\App\Services\FashnAiService::class);
-        $fashnService->clearCache();
-        $fashnService->getVideoDuration();
-        $fashnService->getVideoResolution();
-
         if (array_key_exists('virtual_try_on_daily_limit_per_user', $validated)) {
             $this->appConfigService->setOrUpdate(
                 'virtual_try_on_daily_limit_per_user',
@@ -287,8 +301,17 @@ class AppConfigController extends Controller
             ]
         );
 
+        $baseUrlConfig = AppConfig::firstOrCreate(
+            ['key' => 'geoapify_base_url'],
+            [
+                'value' => 'https://api.geoapify.com',
+                'description' => 'Base URL endpoint API untuk layanan Geocoding dan Peta Geoapify',
+            ]
+        );
+
         return Inertia::render('configurations/Geoapify', [
             'config' => $config,
+            'baseUrlConfig' => $baseUrlConfig,
         ]);
     }
 
@@ -299,6 +322,7 @@ class AppConfigController extends Controller
     {
         $validated = $request->validate([
             'api_key' => ['nullable', 'string', 'max:500'],
+            'base_url' => ['nullable', 'url', 'max:500'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -307,6 +331,30 @@ class AppConfigController extends Controller
             $validated['api_key'] ?? null,
             $validated['description'] ?? 'API Key untuk layanan Geocoding dan Peta Geoapify'
         );
+
+        $this->appConfigService->setOrUpdate(
+            'geoapify_base_url',
+            ! empty($validated['base_url']) ? rtrim($validated['base_url'], '/') : 'https://api.geoapify.com',
+            'Base URL endpoint API untuk layanan Geocoding dan Peta Geoapify'
+        );
+
+        // Clear and pre-warm Geoapify cache
+        $geoapify = app(GeoapifyService::class);
+        $geoapify->clearCache();
+        $geoapify->getBaseUrl();
+        $geoapify->getApiKey();
+
+        $this->appConfigService->setOrUpdate(
+            'geoapify_base_url',
+            ! empty($validated['base_url']) ? rtrim($validated['base_url'], '/') : 'https://api.geoapify.com',
+            'Base URL endpoint API untuk layanan Geocoding dan Peta Geoapify'
+        );
+
+        // Clear and pre-warm Geoapify cache
+        $geoapify = app(\App\Services\GeoapifyService::class);
+        $geoapify->clearCache();
+        $geoapify->getBaseUrl();
+        $geoapify->getApiKey();
 
         return redirect()->back()->with('success', 'Konfigurasi Geoapify berhasil diperbarui.');
     }

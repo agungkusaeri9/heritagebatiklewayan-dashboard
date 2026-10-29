@@ -19,6 +19,11 @@ class AppConfigSeeder extends Seeder
                 'description' => 'API Key untuk layanan integrasi RajaOngkir / Komerce',
             ],
             [
+                'key' => 'rajaongkir_base_url',
+                'value' => 'https://rajaongkir.komerce.id',
+                'description' => 'Base URL endpoint API untuk layanan RajaOngkir / Komerce',
+            ],
+            [
                 'key' => 'fashn_api_key',
                 'value' => null,
                 'description' => 'API Key untuk layanan integrasi Fashn AI',
@@ -32,6 +37,11 @@ class AppConfigSeeder extends Seeder
                 'key' => 'geoapify_api_key',
                 'value' => null,
                 'description' => 'API Key untuk layanan Geocoding dan Peta Geoapify',
+            ],
+            [
+                'key' => 'geoapify_base_url',
+                'value' => 'https://api.geoapify.com',
+                'description' => 'Base URL endpoint API untuk layanan Geocoding dan Peta Geoapify',
             ],
             [
                 'key' => 'is_product_virtual_try_on',

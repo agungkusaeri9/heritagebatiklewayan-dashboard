@@ -4,19 +4,41 @@ namespace App\Services;
 
 use App\Models\AppConfig;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RajaOngkirService
 {
-    protected string $apiKey;
-
-    protected string $baseUrl;
-
-    public function __construct()
+    /**
+     * Get RajaOngkir API Base URL (cached in file driver).
+     */
+    public function getBaseUrl(): string
     {
-        $this->apiKey = (string) (AppConfig::getValue('rajaongkir_api_key') ?? config('services.rajaongkir.api_key') ?? env('RAJA_ONGKIR_API_KEY', ''));
-        $this->baseUrl = rtrim((string) (AppConfig::getValue('rajaongkir_url') ?? config('services.rajaongkir.url') ?? env('RAJA_ONGKIR_URL', 'https://rajaongkir.komerce.id')), '/');
+        return Cache::store('file')->remember('rajaongkir_base_url', 86400, function () {
+            $url = AppConfig::getValue('rajaongkir_base_url') ?? AppConfig::getValue('rajaongkir_url') ?? config('services.rajaongkir.url') ?? env('RAJA_ONGKIR_URL', 'https://rajaongkir.komerce.id');
+
+            return ! empty($url) ? rtrim($url, '/') : 'https://rajaongkir.komerce.id';
+        });
+    }
+
+    /**
+     * Get RajaOngkir API Key (cached in file driver).
+     */
+    public function getApiKey(): ?string
+    {
+        return Cache::store('file')->remember('rajaongkir_api_key', 86400, function () {
+            return AppConfig::getValue('rajaongkir_api_key') ?? config('services.rajaongkir.api_key') ?? env('RAJA_ONGKIR_API_KEY');
+        });
+    }
+
+    /**
+     * Clear RajaOngkir configuration cache.
+     */
+    public function clearCache(): void
+    {
+        Cache::store('file')->forget('rajaongkir_base_url');
+        Cache::store('file')->forget('rajaongkir_api_key');
     }
 
     /**
@@ -33,11 +55,12 @@ class RajaOngkirService
      */
     public function calculateDomesticCost(array $params): array
     {
-        if (empty($this->apiKey)) {
-            throw new \RuntimeException('RAJA_ONGKIR_API_KEY belum dikonfigurasi di file environment.', 500);
+        $apiKey = $this->getApiKey();
+        if (empty($apiKey)) {
+            throw new \RuntimeException('RAJA_ONGKIR_API_KEY belum dikonfigurasi di file environment atau konfigurasi aplikasi.', 500);
         }
 
-        $endpoint = "{$this->baseUrl}/api/v1/calculate/domestic-cost";
+        $endpoint = "{$this->getBaseUrl()}/api/v1/calculate/domestic-cost";
 
         $price = $params['price'] ?? 'lowest';
         $priceParam = 'lowest';
@@ -66,7 +89,7 @@ class RajaOngkirService
         /** @var Response $response */
         $response = Http::asForm()
             ->withHeaders([
-                'key' => $this->apiKey,
+                'key' => $apiKey,
             ])
             ->timeout(15)
             ->connectTimeout(5)
