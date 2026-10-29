@@ -15,6 +15,8 @@ import {
     ShoppingBag,
     Bell,
     Smartphone,
+    SlidersHorizontal,
+    Sparkles,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -72,6 +74,23 @@ const rawNavItems: NavItem[] = [
                 title: 'Varian Produk',
                 href: '/variant-types',
                 permission: 'view variant types',
+            },
+        ],
+    },
+    {
+        title: 'Fashn AI',
+        href: '#',
+        icon: Sparkles,
+        items: [
+            {
+                title: 'Model',
+                href: '/virtual-try-on-models',
+                permission: 'view virtual try on models',
+            },
+            {
+                title: 'Product Virtual Try-On',
+                href: '/product-virtual-try-ons',
+                permission: 'view product virtual try ons',
             },
         ],
     },
@@ -143,6 +162,28 @@ const rawNavItems: NavItem[] = [
                 title: 'Template Pengaturan',
                 href: '/notification-settings',
                 permission: 'manage notification settings',
+            },
+        ],
+    },
+    {
+        title: 'Konfigurasi',
+        href: '#',
+        icon: SlidersHorizontal,
+        items: [
+            {
+                title: 'RajaOngkir',
+                href: '/configurations/rajaongkir',
+                permission: 'view app configs',
+            },
+            {
+                title: 'Fashn AI',
+                href: '/configurations/fashn-ai',
+                permission: 'view app configs',
+            },
+            {
+                title: 'Geoapify',
+                href: '/configurations/geoapify',
+                permission: 'view app configs',
             },
         ],
     },

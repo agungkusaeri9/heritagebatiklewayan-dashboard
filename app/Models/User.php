@@ -66,4 +66,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserLocation::class);
     }
+
+    public function virtualTryOns(): HasMany
+    {
+        return $this->hasMany(ProductVirtualTryOn::class);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AppConfig;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -14,8 +15,8 @@ class RajaOngkirService
 
     public function __construct()
     {
-        $this->apiKey = (string) (config('services.rajaongkir.api_key') ?? env('RAJA_ONGKIR_API_KEY', ''));
-        $this->baseUrl = rtrim((string) (config('services.rajaongkir.url') ?? env('RAJA_ONGKIR_URL', 'https://rajaongkir.komerce.id')), '/');
+        $this->apiKey = (string) (AppConfig::getValue('rajaongkir_api_key') ?? config('services.rajaongkir.api_key') ?? env('RAJA_ONGKIR_API_KEY', ''));
+        $this->baseUrl = rtrim((string) (AppConfig::getValue('rajaongkir_url') ?? config('services.rajaongkir.url') ?? env('RAJA_ONGKIR_URL', 'https://rajaongkir.komerce.id')), '/');
     }
 
     /**

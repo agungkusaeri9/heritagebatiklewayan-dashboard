@@ -6,6 +6,88 @@ Format pencatatan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/
 
 ---
 
+## [0.7.0] - 2026-10-29
+
+Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pihak ketiga (RajaOngkir, Fashn AI, Geoapify), modul Fashn AI Virtual Try-On yang mencakup manajemen model avatar mannequin bawaan (`virtual_try_on_models`) serta katalog hasil simulasi try-on produk (`product_virtual_try_ons`), filter komprehensif (termasuk model default tanpa user), dan standardisasi komponen Select 100% width.
+
+### ✨ Fitur Baru (Features)
+
+- **Manajemen Konfigurasi Aplikasi (`app_configs`)**:
+  - CRUD tabel konfigurasi aplikasi (`key`, `value`, `description`) dengan masking nilai kredensial sensitif, pencarian, dan paginasi.
+  - Halaman konfigurasi **RajaOngkir** (`rajaongkir_api_key`) terintegrasi langsung dengan `RajaOngkirService`.
+  - Halaman konfigurasi **Fashn AI** yang mendukung:
+    - Kunci API Fashn AI (`fashn_api_key`)
+    - Base URL endpoint API Fashn AI (`fashn_api_base_url`, default: `https://api.fashn.ai`) dengan file caching
+    - Durasi video generasi model (`fashn_video_duration`, opsi 5 atau 10 detik, default: 5 detik) berbasis file cache
+    - Resolusi video generasi model (`fashn_video_resolution`, opsi 480p, 720p, 1080p, default: 480p) berbasis file cache
+    - Master switch aktifasi fitur Virtual Try-On (`is_product_virtual_try_on`)
+    - Toggle fitur Virtual Try-On Foto (`is_product_virtual_try_on_photo`)
+    - Toggle fitur Virtual Try-On Video (`is_product_virtual_try_on_video`)
+    - Batas kuota harian per pengguna (`virtual_try_on_daily_limit_per_user`, default: 3)
+    - Batas kuota mingguan seluruh pengguna (`virtual_try_on_weekly_limit_all_users`, default: 100)
+  - Halaman konfigurasi **Geoapify** (`geoapify_api_key`).
+  - Penyederhanaan menu navigasi sidebar (sub-menu Semua Konfigurasi disembunyikan agar navigasi lebih terfokus pada sub-menu penyedia layanan).
+
+- **Manajemen Model Mannequin / Avatar Fashn AI (`/virtual-try-on-models`)**:
+  - Dukungan dua metode pembuatan model avatar: **Unggah Manual (File)** dan **Generate Otomatis via AI (Fashn AI `model-create`)**.
+  - Integrasi endpoint asynchronous Fashn AI (`POST /v1/run` & `GET /v1/status/{id}`) dengan pengunduhan otomatis output gambar dari CDN Fashn AI ke direktori storage publik lokal sistem.
+  - CRUD lengkap model mannequin avatar bawaan toko/sistem.
+  - Atribut model: `name`, `gender` (`male`, `female`, `unisex`), `photo` (file upload atau hasil generasi AI), status `is_active`, dan penghitungan penggunaan try-on (`try_ons_count`).
+  - Modal dialog pembuatan & pengeditan interaktif dengan selector file gambar, rekomendasi prompt cepat, dan preview langsung.
+  - Lightbox modal untuk memperbesar dan melihat foto model dalam resolusi penuh.
+
+- **Katalog & Pembuatan Model Default Product Virtual Try-On (`/product-virtual-try-ons`)**:
+  - Penambahan fitur **Generate Model Default Virtual Try-On Otomatis via AI**:
+    - Menghilangkan unggah manual file gambar dan video saat membuat model default produk.
+    - Menjalankan pipeline generasi terintegrasi dengan Fashn AI API:
+      - **Foto Try-On (`tryon-max`)**: Memadukan foto produk busana batik (`product_image`) dengan foto avatar model pilihan (`model_image`) secara realistis via `POST /v1/run` model `tryon-max`.
+      - **Video Try-On (`image-to-video`)**: Pembuatan video simulasi gerakan model 5 detik resolusi 480p (`POST /v1/run` dengan model `image-to-video`) dari foto hasil tryon-max.
+      - Mengunduh otomatis output berkas media dari CDN Fashn AI dan menyimpannya secara lokal pada storage server (`public` disk).
+    - Eksekusi asynchronous via antrean worker (`GenerateProductVirtualTryOnJob`) agar proses yang memakan waktu tidak memblokir user interface.
+    - Pemantauan status antrean dan progress *real-time* di tabel data (`queued`, `processing`, `completed`, `failed`) lengkap dengan animasi progress bar persentase, label langkah pengerjaan, dan auto-polling setiap 3 detik saat terdapat proses aktif.
+    - Fitur **Coba Lagi (Retry)** pada generasi yang gagal tanpa menghapus record.
+    - Mempertahankan aturan bisnis: **Maksimal 1 model pria dan 1 model wanita per produk** (`user_id = null`).
+  - Antarmuka form modal dilengkapi kartu status kuota model default produk secara *real-time*, validasi otomatis slot gender yang masih tersedia, dropdown pemilihan model mannequin yang sesuai gender, serta toggle aktifasi generasi video (480p, 5 detik).
+  - Pengelolaan katalog seluruh hasil simulasi virtual try-on busana batik (melihat daftar, detail, dan hapus).
+  - Sistem penyaringan data tingkat lanjut:
+    - **Filter Without User / Model Default Produk**: Menyaring hasil try-on yang difungsikan sebagai model showcase produk default (tanpa akun user).
+    - **Filter Produk Batik**: Dropdown filter berdasarkan produk spesifik.
+    - **Filter Pelanggan**: Dropdown filter berdasarkan akun pengguna.
+    - **Pencarian Cepat**: Pencarian multi-field berdasarkan nama produk, kode SKU, nama pelanggan, maupun email.
+  - Modal dialog detail lengkap yang menyajikan preview foto resolusi tinggi, pemutar video HTML5 generasi virtual try-on, data produk batik terkait, avatar model mannequin, serta identitas pelanggan.
+
+### 🏗️ Arsitektur & Backend
+
+- **Database Migrations & Models**:
+  - Migrasi `2026_10_29_021543_create_app_configs_table.php`.
+  - Migrasi `2026_10_29_030356_create_virtual_try_on_models_table.php`.
+  - Migrasi `2026_10_29_030400_create_product_virtual_try_ons_table.php`.
+  - Migrasi `2026_10_29_032533_add_gender_to_product_virtual_try_ons_table.php` (menambahkan kolom `gender` dan indeks komposit `product_id + gender`).
+  - Migrasi `2026_10_29_040823_add_status_and_progress_to_product_virtual_try_ons_table.php` (menambahkan kolom `status`, `progress`, `step_label`, `task_id_photo`, `task_id_video`, `generate_video`, `error_message`).
+  - Model Eloquent `AppConfig`, `VirtualTryOnModel`, dan `ProductVirtualTryOn` dengan relasi lengkap ke `Product` dan `User`.
+- **Service & Repository Pattern**:
+  - Pemisahan abstraksi interface dan implementasi Eloquent untuk `AppConfig`, `VirtualTryOnModel`, dan `ProductVirtualTryOn` yang dibinding pada `AppServiceProvider`.
+  - Service layer terpisah dengan otomatisasi audit logging via `ActivityLogService`.
+  - Service terdedikasi `FashnAiService` untuk manajemen komunikasi API Fashn AI:
+    - `runModelCreate`, `runFaceToModel`, `runImageToVideo`.
+    - Polling status task Fashn AI (`checkStatus`, `waitForCompletion`).
+    - Pengonversian otomatis berkas avatar lokal/localhost ke Data URI base64 agar dapat diakses server Fashn AI (`prepareImageInput`).
+    - Pengunduhan otomatis gambar dan video dari CDN Fashn AI dan penyimpanan ke disk penyimpanan lokal sistem (`downloadAndStoreImage`, `downloadAndStoreVideo`).
+  - Job Queue asynchronous `GenerateProductVirtualTryOnJob` untuk pemrosesan background generasi dua tahap (foto model via tryon-max lalu video model via image-to-video) dengan pelaporan progress bertahap.
+  - Penyesuaian batas waktu timeout queue worker (`--timeout=600`, `--tries=3`) pada script `dev` `composer.json` dan konfigurasi `config/queue.php` (`retry_after` = 600s) untuk mendukung proses rendering video AI tanpa kendala timeout 60 detik.
+- **Hak Akses & Seeder**:
+  - Pendaftaran permission Spatie: `view/create/edit/delete virtual try on models`, `view/create/edit/delete product virtual try ons`, dan `view/create/edit/delete app configs` pada `RolePermissionSeeder.php`.
+  - Pembuatan `AppConfigSeeder.php` dan `VirtualTryOnSeeder.php` dengan data default avatar mannequin pria, wanita, unisex, serta contoh try-on default produk dan user.
+
+### 🎨 Antarmuka & UX (UI / UX)
+
+- **Menu Navigasi Fashn AI**:
+  - Penambahan grup menu sidebar **Fashn AI** dengan ikon `Sparkles` berisikan sub-menu **Model** dan **Product Virtual Try-On**.
+- **Standardisasi Lebar Komponen Select (100% Width)**:
+  - Pembaruan komponen UI `SelectTrigger.vue` dari `w-fit` menjadi `w-full` agar komponen dropdown `<Select>` secara default mengisi penuh 100% lebar grid kolom form.
+
+---
+
 ## [0.6.0] - 2026-10-28
 
 Penyempurnaan integrasi API Riwayat & Detail Pesanan (`/api/v1/orders`), filter status pesanan (Active, Completed, Cancelled), unggah bukti bayar, serta endpoint profil pengguna (`/api/v1/user/profile`) untuk konsumsi antarmuka mobile My Orders dan Your Profile.

@@ -112,6 +112,24 @@ class RolePermissionSeeder extends Seeder
             'edit faqs',
             'delete faqs',
 
+            // Konfigurasi Aplikasi (App Configurations)
+            'view app configs',
+            'create app configs',
+            'edit app configs',
+            'delete app configs',
+
+            // Model Virtual Try-On (Fashn AI)
+            'view virtual try on models',
+            'create virtual try on models',
+            'edit virtual try on models',
+            'delete virtual try on models',
+
+            // Produk Virtual Try-On (Fashn AI)
+            'view product virtual try ons',
+            'create product virtual try ons',
+            'edit product virtual try ons',
+            'delete product virtual try ons',
+
             // Log Aktivitas (Activity Logs)
             'view activity logs',
         ];
@@ -167,6 +185,18 @@ class RolePermissionSeeder extends Seeder
             'view faqs',
             'create faqs',
             'edit faqs',
+            'view app configs',
+            'create app configs',
+            'edit app configs',
+            'delete app configs',
+            'view virtual try on models',
+            'create virtual try on models',
+            'edit virtual try on models',
+            'delete virtual try on models',
+            'view product virtual try ons',
+            'create product virtual try ons',
+            'edit product virtual try ons',
+            'delete product virtual try ons',
             'view activity logs',
         ];
         $adminRole->syncPermissions($adminPermissions);

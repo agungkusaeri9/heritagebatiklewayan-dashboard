@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AppConfigController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourierController;
@@ -16,10 +17,12 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PrivacyPolicyController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\ProductVirtualTryOnController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariantTypeController;
+use App\Http\Controllers\VirtualTryOnModelController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -81,6 +84,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('reviews', [ProductReviewController::class, 'store'])->name('reviews.store');
     Route::post('reviews/{review}/toggle', [ProductReviewController::class, 'toggle'])->name('reviews.toggle');
     Route::delete('reviews/{review}', [ProductReviewController::class, 'destroy'])->name('reviews.destroy');
+
+    // Fashn AI Virtual Try-On
+    Route::post('virtual-try-on-models/generate-ai', [VirtualTryOnModelController::class, 'generateAi'])->name('virtual-try-on-models.generate-ai');
+    Route::resource('virtual-try-on-models', VirtualTryOnModelController::class)->except(['create', 'show', 'edit']);
+    Route::post('product-virtual-try-ons/{productVirtualTryOn}/retry', [ProductVirtualTryOnController::class, 'retry'])->name('product-virtual-try-ons.retry');
+    Route::resource('product-virtual-try-ons', ProductVirtualTryOnController::class)->except(['create', 'edit']);
+
+    // App Config & Configurations
+    Route::get('configurations', [AppConfigController::class, 'index'])->name('configurations.index');
+    Route::get('configurations/rajaongkir', [AppConfigController::class, 'rajaongkir'])->name('configurations.rajaongkir');
+    Route::post('configurations/rajaongkir', [AppConfigController::class, 'updateRajaongkir'])->name('configurations.rajaongkir.update');
+    Route::get('configurations/fashn-ai', [AppConfigController::class, 'fashnAi'])->name('configurations.fashn-ai');
+    Route::post('configurations/fashn-ai', [AppConfigController::class, 'updateFashnAi'])->name('configurations.fashn-ai.update');
+    Route::get('configurations/geoapify', [AppConfigController::class, 'geoapify'])->name('configurations.geoapify');
+    Route::post('configurations/geoapify', [AppConfigController::class, 'updateGeoapify'])->name('configurations.geoapify.update');
+    Route::resource('app-configs', AppConfigController::class)->except(['create', 'show', 'edit']);
 
     Route::middleware(['role:super admin'])->group(function () {
         Route::resource('roles', RoleController::class);

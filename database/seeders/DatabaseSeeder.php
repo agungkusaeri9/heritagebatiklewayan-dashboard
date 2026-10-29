@@ -47,7 +47,9 @@ class DatabaseSeeder extends Seeder
             BannerSeeder::class,
             StoreSettingSeeder::class,
             FaqSeeder::class,
+            AppConfigSeeder::class,
             UserCartSeeder::class,
+            VirtualTryOnSeeder::class,
         ]);
     }
 }

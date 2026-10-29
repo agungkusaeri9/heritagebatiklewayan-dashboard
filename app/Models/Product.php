@@ -57,6 +57,11 @@ class Product extends Model
         return $this->hasMany(ProductReview::class);
     }
 
+    public function virtualTryOns(): HasMany
+    {
+        return $this->hasMany(ProductVirtualTryOn::class);
+    }
+
     public function getPrimaryImageUrlAttribute(): ?string
     {
         if (! array_key_exists('primary_image', $this->attributes)) {
