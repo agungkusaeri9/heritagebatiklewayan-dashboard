@@ -154,66 +154,40 @@ class AppConfigController extends Controller
     }
 
     /**
-     * Show Fashn AI configuration page.
+     * Show Fashn AI configuration page (API credentials only).
      */
     public function fashnAi(): Response
     {
-        $keys = [
-            'fashn_api_key' => 'API Key untuk layanan integrasi Fashn AI',
-            'fashn_api_base_url' => 'Base URL endpoint API untuk layanan Fashn AI',
-            'is_product_virtual_try_on' => 'Status aktif fitur Product Virtual Try-On',
-            'is_product_virtual_try_on_photo' => 'Status aktif fitur Virtual Try-On mode Foto',
-            'is_product_virtual_try_on_video' => 'Status aktif fitur Virtual Try-On mode Video',
-            'fashn_video_duration' => 'Durasi video generasi Fashn AI (5 atau 10 detik)',
-            'fashn_video_resolution' => 'Resolusi video generasi Fashn AI (480p, 720p, 1080p)',
-            'virtual_try_on_daily_limit_per_user' => 'Batas maksimal percobaan virtual try-on per user per hari',
-            'virtual_try_on_weekly_limit_all_users' => 'Batas kuota maksimal percobaan virtual try-on seluruh pengguna per minggu',
-        ];
+        $config = AppConfig::firstOrCreate(
+            ['key' => 'fashn_api_key'],
+            [
+                'value' => null,
+                'description' => 'API Key untuk layanan integrasi Fashn AI',
+            ]
+        );
 
-        $defaultValues = [
-            'fashn_api_key' => null,
-            'fashn_api_base_url' => 'https://api.fashn.ai',
-            'is_product_virtual_try_on' => '1',
-            'is_product_virtual_try_on_photo' => '1',
-            'is_product_virtual_try_on_video' => '0',
-            'fashn_video_duration' => '5',
-            'fashn_video_resolution' => '480p',
-            'virtual_try_on_daily_limit_per_user' => '3',
-            'virtual_try_on_weekly_limit_all_users' => '100',
-        ];
-
-        $configs = [];
-        foreach ($keys as $k => $desc) {
-            $configs[$k] = AppConfig::firstOrCreate(
-                ['key' => $k],
-                [
-                    'value' => $defaultValues[$k] ?? null,
-                    'description' => $desc,
-                ]
-            );
-        }
+        $baseUrlConfig = AppConfig::firstOrCreate(
+            ['key' => 'fashn_api_base_url'],
+            [
+                'value' => 'https://api.fashn.ai',
+                'description' => 'Base URL endpoint API untuk layanan Fashn AI',
+            ]
+        );
 
         return Inertia::render('configurations/FashnAi', [
-            'config' => $configs['fashn_api_key'],
-            'configs' => $configs,
+            'config' => $config,
+            'baseUrlConfig' => $baseUrlConfig,
         ]);
     }
 
     /**
-     * Update Fashn AI configuration.
+     * Update Fashn AI configuration (API credentials only).
      */
     public function updateFashnAi(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'api_key' => ['nullable', 'string', 'max:500'],
             'base_url' => ['nullable', 'url', 'max:500'],
-            'is_product_virtual_try_on' => ['nullable', 'boolean'],
-            'is_product_virtual_try_on_photo' => ['nullable', 'boolean'],
-            'is_product_virtual_try_on_video' => ['nullable', 'boolean'],
-            'video_duration' => ['nullable', 'integer', 'in:5,10'],
-            'video_resolution' => ['nullable', 'string', 'in:480p,720p,1080p'],
-            'virtual_try_on_daily_limit_per_user' => ['nullable', 'integer', 'min:0', 'max:1000000'],
-            'virtual_try_on_weekly_limit_all_users' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -229,63 +203,13 @@ class AppConfigController extends Controller
             'Base URL endpoint API untuk layanan Fashn AI'
         );
 
-        $this->appConfigService->setOrUpdate(
-            'is_product_virtual_try_on',
-            isset($validated['is_product_virtual_try_on']) && $validated['is_product_virtual_try_on'] ? '1' : '0',
-            'Status aktif fitur Product Virtual Try-On'
-        );
-
-        $this->appConfigService->setOrUpdate(
-            'is_product_virtual_try_on_photo',
-            isset($validated['is_product_virtual_try_on_photo']) && $validated['is_product_virtual_try_on_photo'] ? '1' : '0',
-            'Status aktif fitur Virtual Try-On mode Foto'
-        );
-
-        $this->appConfigService->setOrUpdate(
-            'is_product_virtual_try_on_video',
-            isset($validated['is_product_virtual_try_on_video']) && $validated['is_product_virtual_try_on_video'] ? '1' : '0',
-            'Status aktif fitur Virtual Try-On mode Video'
-        );
-
-        if (array_key_exists('video_duration', $validated)) {
-            $this->appConfigService->setOrUpdate(
-                'fashn_video_duration',
-                (string) ($validated['video_duration'] ?? 5),
-                'Durasi video generasi Fashn AI (5 atau 10 detik)'
-            );
-        }
-
-        if (array_key_exists('video_resolution', $validated)) {
-            $this->appConfigService->setOrUpdate(
-                'fashn_video_resolution',
-                $validated['video_resolution'] ?? '480p',
-                'Resolusi video generasi Fashn AI (480p, 720p, 1080p)'
-            );
-        }
-
         // Clear and pre-warm Fashn AI cache
         $fashnService = app(FashnAiService::class);
         $fashnService->clearCache();
-        $fashnService->getVideoDuration();
-        $fashnService->getVideoResolution();
+        $fashnService->getBaseUrl();
+        $fashnService->getApiKey();
 
-        if (array_key_exists('virtual_try_on_daily_limit_per_user', $validated)) {
-            $this->appConfigService->setOrUpdate(
-                'virtual_try_on_daily_limit_per_user',
-                $validated['virtual_try_on_daily_limit_per_user'] !== null ? (string) $validated['virtual_try_on_daily_limit_per_user'] : '3',
-                'Batas maksimal percobaan virtual try-on per user per hari'
-            );
-        }
-
-        if (array_key_exists('virtual_try_on_weekly_limit_all_users', $validated)) {
-            $this->appConfigService->setOrUpdate(
-                'virtual_try_on_weekly_limit_all_users',
-                $validated['virtual_try_on_weekly_limit_all_users'] !== null ? (string) $validated['virtual_try_on_weekly_limit_all_users'] : '100',
-                'Batas kuota maksimal percobaan virtual try-on seluruh pengguna per minggu'
-            );
-        }
-
-        return redirect()->back()->with('success', 'Konfigurasi Fashn AI berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Kredensial API Fashn AI berhasil diperbarui.');
     }
 
     /**

@@ -17,20 +17,23 @@ Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pi
   - Halaman konfigurasi **RajaOngkir**:
     - Kunci API RajaOngkir (`rajaongkir_api_key`)
     - Base URL endpoint API RajaOngkir (`rajaongkir_base_url`, default: `https://rajaongkir.komerce.id`) dengan file caching (`Cache::store('file')`) dan auto-invalidation/warming saat diperbarui di dashboard
-  - Halaman konfigurasi **Fashn AI** yang mendukung:
+  - Halaman konfigurasi **Fashn AI**:
     - Kunci API Fashn AI (`fashn_api_key`)
-    - Base URL endpoint API Fashn AI (`fashn_api_base_url`, default: `https://api.fashn.ai`) dengan file caching
-    - Durasi video generasi model (`fashn_video_duration`, opsi 5 atau 10 detik, default: 5 detik) berbasis file cache
-    - Resolusi video generasi model (`fashn_video_resolution`, opsi 480p, 720p, 1080p, default: 480p) berbasis file cache
+    - Base URL endpoint API Fashn AI (`fashn_api_base_url`, default: `https://api.fashn.ai`) dengan file caching dan auto-invalidation/warming saat diperbarui di dashboard
+  - Halaman konfigurasi **Geoapify**:
+    - Kunci API Geoapify (`geoapify_api_key`)
+    - Base URL endpoint API Geoapify (`geoapify_base_url`, default: `https://api.geoapify.com`) dengan file caching dan auto-invalidation/warming saat diperbarui di dashboard
+  - Penyederhanaan menu navigasi sidebar (sub-menu Semua Konfigurasi disembunyikan agar navigasi lebih terfokus pada sub-menu penyedia layanan).
+
+- **Pengaturan Fitur & Kuota Virtual Try-On (`/fashn-ai/settings`)**:
+  - Disediakan sub-menu khusus **Pengaturan** pada grup menu sidebar **Fashn AI** (`FashnAiSettingController`), memisahkan pengaturan fitur bisnis dari kredensial API koneksi:
     - Master switch aktifasi fitur Virtual Try-On (`is_product_virtual_try_on`)
     - Toggle fitur Virtual Try-On Foto (`is_product_virtual_try_on_photo`)
     - Toggle fitur Virtual Try-On Video (`is_product_virtual_try_on_video`)
+    - Durasi video generasi model (`fashn_video_duration`, opsi 5 atau 10 detik, default: 5 detik) berbasis file cache
+    - Resolusi video generasi model (`fashn_video_resolution`, opsi 480p, 720p, 1080p, default: 480p) berbasis file cache
     - Batas kuota harian per pengguna (`virtual_try_on_daily_limit_per_user`, default: 3)
     - Batas kuota mingguan seluruh pengguna (`virtual_try_on_weekly_limit_all_users`, default: 100)
-  - Halaman konfigurasi **Geoapify**:
-    - Kunci API Geoapify (`geoapify_api_key`)
-    - Base URL endpoint API Geoapify (`geoapify_base_url`, default: `https://api.geoapify.com`) dengan file caching (`Cache::store('file')`) dan auto-invalidation/warming saat diperbarui di dashboard
-  - Penyederhanaan menu navigasi sidebar (sub-menu Semua Konfigurasi disembunyikan agar navigasi lebih terfokus pada sub-menu penyedia layanan).
 
 - **Manajemen Model Mannequin / Avatar Fashn AI (`/virtual-try-on-models`)**:
   - Dukungan dua metode pembuatan model avatar: **Unggah Manual (File)** dan **Generate Otomatis via AI (Fashn AI `model-create`)**.
@@ -97,7 +100,7 @@ Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pi
 ### 🎨 Antarmuka & UX (UI / UX)
 
 - **Menu Navigasi Fashn AI**:
-  - Penambahan grup menu sidebar **Fashn AI** dengan ikon `Sparkles` berisikan sub-menu **Model** dan **Product Virtual Try-On**.
+  - Penambahan grup menu sidebar **Fashn AI** dengan ikon `Sparkles` berisikan sub-menu **Model**, **Product Virtual Try-On**, dan **Pengaturan**.
 - **Standardisasi Lebar Komponen Select (100% Width)**:
   - Pembaruan komponen UI `SelectTrigger.vue` dari `w-fit` menjadi `w-full` agar komponen dropdown `<Select>` secara default mengisi penuh 100% lebar grid kolom form.
 

@@ -81,9 +81,12 @@ class AppConfigSeeder extends Seeder
         ];
 
         foreach ($configs as $config) {
-            AppConfig::updateOrCreate(
+            AppConfig::firstOrCreate(
                 ['key' => $config['key']],
-                $config
+                [
+                    'value' => $config['value'],
+                    'description' => $config['description'],
+                ]
             );
         }
     }

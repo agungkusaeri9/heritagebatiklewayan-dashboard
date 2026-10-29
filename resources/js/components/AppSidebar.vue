@@ -92,6 +92,11 @@ const rawNavItems: NavItem[] = [
                 href: '/product-virtual-try-ons',
                 permission: 'view product virtual try ons',
             },
+            {
+                title: 'Pengaturan',
+                href: '/fashn-ai/settings',
+                permission: 'view app configs',
+            },
         ],
     },
     {
@@ -170,6 +175,11 @@ const rawNavItems: NavItem[] = [
         href: '#',
         icon: SlidersHorizontal,
         items: [
+            {
+                title: 'Semua Konfigurasi',
+                href: '/configurations',
+                permission: 'view app configs',
+            },
             {
                 title: 'RajaOngkir',
                 href: '/configurations/rajaongkir',

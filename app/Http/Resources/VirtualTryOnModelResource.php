@@ -28,4 +28,3 @@ class VirtualTryOnModelResource extends JsonResource
         ];
     }
 }
-

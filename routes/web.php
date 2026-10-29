@@ -8,6 +8,7 @@ use App\Http\Controllers\CourierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FaqController;
+use App\Http\Controllers\FashnAiSettingController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
@@ -90,6 +91,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('virtual-try-on-models', VirtualTryOnModelController::class)->except(['create', 'show', 'edit']);
     Route::post('product-virtual-try-ons/{productVirtualTryOn}/retry', [ProductVirtualTryOnController::class, 'retry'])->name('product-virtual-try-ons.retry');
     Route::resource('product-virtual-try-ons', ProductVirtualTryOnController::class)->except(['create', 'edit']);
+    Route::get('fashn-ai/settings', [FashnAiSettingController::class, 'index'])->name('fashn-ai.settings');
+    Route::post('fashn-ai/settings', [FashnAiSettingController::class, 'update'])->name('fashn-ai.settings.update');
 
     // App Config & Configurations
     Route::get('configurations', [AppConfigController::class, 'index'])->name('configurations.index');

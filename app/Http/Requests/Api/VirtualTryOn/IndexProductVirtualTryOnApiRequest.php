@@ -33,4 +33,3 @@ class IndexProductVirtualTryOnApiRequest extends FormRequest
         ];
     }
 }
-
