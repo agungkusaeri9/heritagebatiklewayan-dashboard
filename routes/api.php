@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\OrderPaymentController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
+use App\Http\Controllers\Api\ProductVirtualTryOnController;
 use App\Http\Controllers\Api\ShippingCostController;
 use App\Http\Controllers\Api\StoreSettingController;
 use App\Http\Controllers\Api\UserAccountController;
@@ -145,6 +146,39 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('{id}', [ProductController::class, 'show'])->whereNumber('id')->name('show');
         Route::get('{slug}/reviews', [ProductReviewController::class, 'index'])->name('reviews');
         Route::get('{slug}', [ProductController::class, 'showBySlug'])->name('show.slug');
+        Route::get('{id}/virtual-try-ons', [ProductVirtualTryOnController::class, 'index'])->whereNumber('id')->name('virtual-try-ons');
+    });
+
+    // Virtual Try-On & Progress Check
+    Route::prefix('virtual-try-ons')->name('virtual-try-ons.')->group(function () {
+        Route::get('/', [ProductVirtualTryOnController::class, 'index'])->name('index');
+        Route::get('models', [ProductVirtualTryOnController::class, 'models'])->name('models');
+        Route::get('{id}', [ProductVirtualTryOnController::class, 'show'])->whereNumber('id')->name('show');
+        Route::get('{id}/progress', [ProductVirtualTryOnController::class, 'progress'])->whereNumber('id')->name('progress');
+        Route::get('{id}/status', [ProductVirtualTryOnController::class, 'progress'])->whereNumber('id')->name('status');
+
+        // Authenticated try-on actions
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/', [ProductVirtualTryOnController::class, 'store'])->name('store');
+            Route::post('{id}/retry', [ProductVirtualTryOnController::class, 'retry'])->whereNumber('id')->name('retry');
+            Route::get('user/quota', [ProductVirtualTryOnController::class, 'quota'])->name('quota');
+        });
+    });
+
+    // Alias: product-virtual-try-ons
+    Route::prefix('product-virtual-try-ons')->name('product-virtual-try-ons.')->group(function () {
+        Route::get('/', [ProductVirtualTryOnController::class, 'index'])->name('index');
+        Route::get('models', [ProductVirtualTryOnController::class, 'models'])->name('models');
+        Route::get('{id}', [ProductVirtualTryOnController::class, 'show'])->whereNumber('id')->name('show');
+        Route::get('{id}/progress', [ProductVirtualTryOnController::class, 'progress'])->whereNumber('id')->name('progress');
+        Route::get('{id}/status', [ProductVirtualTryOnController::class, 'progress'])->whereNumber('id')->name('status');
+
+        // Authenticated try-on actions
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::post('/', [ProductVirtualTryOnController::class, 'store'])->name('store');
+            Route::post('{id}/retry', [ProductVirtualTryOnController::class, 'retry'])->whereNumber('id')->name('retry');
+            Route::get('user/quota', [ProductVirtualTryOnController::class, 'quota'])->name('quota');
+        });
     });
 
     // Payment Methods

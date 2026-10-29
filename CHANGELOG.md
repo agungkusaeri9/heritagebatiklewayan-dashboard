@@ -60,6 +60,16 @@ Penyediaan modul dinamis Konfigurasi Aplikasi (`app_configs`) untuk integrasi pi
     - **Pencarian Cepat**: Pencarian multi-field berdasarkan nama produk, kode SKU, nama pelanggan, maupun email.
   - Modal dialog detail lengkap yang menyajikan preview foto resolusi tinggi, pemutar video HTML5 generasi virtual try-on, data produk batik terkait, avatar model mannequin, serta identitas pelanggan.
 
+- **API Endpoint Virtual Try-On Produk (`/api/v1/virtual-try-ons` & `/api/v1/product-virtual-try-ons`)**:
+  - `GET /api/v1/virtual-try-ons`: Mengambil daftar hasil virtual try-on dengan filter multi-parameter (`product_id`, `gender`, `status`, `type` [`my`, `default`, `all`]), pencarian, dan paginasi terstruktur via `ProductVirtualTryOnResource`.
+  - `GET /api/v1/virtual-try-ons/models`: Mengambil daftar model avatar mannequin aktif (`VirtualTryOnModelResource`) yang siap digunakan pelanggan untuk mencoba busana batik.
+  - `POST /api/v1/virtual-try-ons`: Memulai request pembuatan virtual try-on baru untuk pelanggan terotentikasi Sanctum (`auth:sanctum`), dilengkapi validasi ketersediaan foto produk, validasi model avatar aktif, pengecekan kuota harian user (`virtual_try_on_daily_limit_per_user`), kuota mingguan sistem (`virtual_try_on_weekly_limit_all_users`), dan dispatch asynchronous job antrean.
+  - `GET /api/v1/virtual-try-ons/{id}`: Menampilkan rincian lengkap hasil simulasi try-on dengan proteksi otorisasi kepemilikan akun.
+  - `GET /api/v1/virtual-try-ons/{id}/progress` (dan alias `GET .../{id}/status`): Endpoint ringan khusus polling progress real-time dari aplikasi mobile/client (`status`, `progress`, `step_label`, `photo_url`, `video_url`, `is_completed`, `is_failed`).
+  - `POST /api/v1/virtual-try-ons/{id}/retry`: Mengulang proses antrean untuk tugas try-on yang berstatus gagal.
+  - `GET /api/v1/virtual-try-ons/user/quota`: Mengambil informasi status sisa kuota harian pengguna dan kuota mingguan sistem.
+  - `GET /api/v1/products/{id}/virtual-try-ons`: Mengambil daftar virtual try-on langsung berdasarkan ID produk.
+
 ### 🏗️ Arsitektur & Backend
 
 - **Database Migrations & Models**:

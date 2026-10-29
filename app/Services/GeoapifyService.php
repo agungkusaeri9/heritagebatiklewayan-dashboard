@@ -108,4 +108,3 @@ class GeoapifyService
         return $response->json() ?? [];
     }
 }
-

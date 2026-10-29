@@ -145,7 +145,7 @@ class AppConfigController extends Controller
         );
 
         // Clear and pre-warm RajaOngkir cache
-        $rajaOngkir = app(\App\Services\RajaOngkirService::class);
+        $rajaOngkir = app(RajaOngkirService::class);
         $rajaOngkir->clearCache();
         $rajaOngkir->getBaseUrl();
         $rajaOngkir->getApiKey();
@@ -351,7 +351,7 @@ class AppConfigController extends Controller
         );
 
         // Clear and pre-warm Geoapify cache
-        $geoapify = app(\App\Services\GeoapifyService::class);
+        $geoapify = app(GeoapifyService::class);
         $geoapify->clearCache();
         $geoapify->getBaseUrl();
         $geoapify->getApiKey();

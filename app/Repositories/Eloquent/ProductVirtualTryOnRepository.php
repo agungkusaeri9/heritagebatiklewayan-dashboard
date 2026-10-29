@@ -41,6 +41,9 @@ class ProductVirtualTryOnRepository implements ProductVirtualTryOnRepositoryInte
             ->when(! empty($filters['gender']) && $filters['gender'] !== 'all', function ($query) use ($filters) {
                 $query->where('gender', $filters['gender']);
             })
+            ->when(! empty($filters['status']) && $filters['status'] !== 'all', function ($query) use ($filters) {
+                $query->where('status', $filters['status']);
+            })
             ->when(isset($filters['without_user']) && ($filters['without_user'] === '1' || $filters['without_user'] === true || $filters['without_user'] === 'true'), function ($query) {
                 $query->whereNull('user_id');
             })

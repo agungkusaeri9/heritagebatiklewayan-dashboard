@@ -3,7 +3,11 @@
 namespace App\Services;
 
 use App\Jobs\GenerateProductVirtualTryOnJob;
+use App\Models\AppConfig;
+use App\Models\Product;
 use App\Models\ProductVirtualTryOn;
+use App\Models\User;
+use App\Models\VirtualTryOnModel;
 use App\Repositories\Contracts\ProductVirtualTryOnRepositoryInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -62,6 +66,137 @@ class ProductVirtualTryOnService
                     'product_id' => $tryOn->product_id,
                     'virtual_try_on_model_id' => $tryOn->virtual_try_on_model_id,
                     'gender' => $tryOn->gender,
+                ]
+            );
+
+            return $tryOn;
+        });
+    }
+
+    /**
+     * Get quota and feature status for the given user.
+     *
+     * @return array<string, mixed>
+     */
+    public function getUserQuotaStatus(User $user): array
+    {
+        $dailyLimit = (int) AppConfig::getValue('virtual_try_on_daily_limit_per_user', 3);
+        $weeklyLimit = (int) AppConfig::getValue('virtual_try_on_weekly_limit_all_users', 100);
+
+        $dailyUsed = ProductVirtualTryOn::where('user_id', $user->id)
+            ->whereDate('created_at', today())
+            ->where('status', '!=', 'failed')
+            ->count();
+
+        $weeklyUsed = ProductVirtualTryOn::whereNotNull('user_id')
+            ->where('created_at', '>=', now()->startOfWeek())
+            ->where('status', '!=', 'failed')
+            ->count();
+
+        return [
+            'is_feature_enabled' => (bool) AppConfig::getValue('is_product_virtual_try_on', true),
+            'is_photo_enabled' => (bool) AppConfig::getValue('is_product_virtual_try_on_photo', true),
+            'is_video_enabled' => (bool) AppConfig::getValue('is_product_virtual_try_on_video', false),
+            'daily_limit' => $dailyLimit,
+            'daily_used' => $dailyUsed,
+            'daily_remaining' => max(0, $dailyLimit - $dailyUsed),
+            'weekly_limit_all_users' => $weeklyLimit,
+            'weekly_used_all_users' => $weeklyUsed,
+            'weekly_remaining_all_users' => max(0, $weeklyLimit - $weeklyUsed),
+        ];
+    }
+
+    /**
+     * Create a virtual try-on task requested by an authenticated customer/user.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function createUserTryOn(array $data, User $user): ProductVirtualTryOn
+    {
+        $isFeatureEnabled = (bool) AppConfig::getValue('is_product_virtual_try_on', true);
+        if (! $isFeatureEnabled) {
+            throw new \InvalidArgumentException('Fitur Virtual Try-On saat ini sedang dinonaktifkan.');
+        }
+
+        $dailyLimit = (int) AppConfig::getValue('virtual_try_on_daily_limit_per_user', 3);
+        if ($dailyLimit > 0) {
+            $userTodayCount = ProductVirtualTryOn::where('user_id', $user->id)
+                ->whereDate('created_at', today())
+                ->where('status', '!=', 'failed')
+                ->count();
+            if ($userTodayCount >= $dailyLimit) {
+                throw new \InvalidArgumentException("Batas kuota harian Virtual Try-On Anda telah tercapai (maksimal {$dailyLimit} kali per hari).");
+            }
+        }
+
+        $weeklyLimit = (int) AppConfig::getValue('virtual_try_on_weekly_limit_all_users', 100);
+        if ($weeklyLimit > 0) {
+            $weeklyCount = ProductVirtualTryOn::whereNotNull('user_id')
+                ->where('created_at', '>=', now()->startOfWeek())
+                ->where('status', '!=', 'failed')
+                ->count();
+            if ($weeklyCount >= $weeklyLimit) {
+                throw new \InvalidArgumentException('Batas kuota mingguan Virtual Try-On sistem telah tercapai. Silakan coba kembali minggu depan.');
+            }
+        }
+
+        $productId = (int) $data['product_id'];
+        $product = Product::with('images')->find($productId);
+        if (! $product || ! $product->is_active) {
+            throw new \InvalidArgumentException('Produk tidak ditemukan atau tidak aktif.');
+        }
+
+        $productImage = $product->primary_image ?: $product->images->first()?->image;
+        if (empty($productImage)) {
+            throw new \InvalidArgumentException('Produk belum memiliki foto yang dapat digunakan untuk Virtual Try-On.');
+        }
+
+        $modelId = (int) $data['virtual_try_on_model_id'];
+        $virtualModel = VirtualTryOnModel::active()->find($modelId);
+        if (! $virtualModel || empty($virtualModel->photo)) {
+            throw new \InvalidArgumentException('Model avatar mannequin tidak ditemukan atau tidak aktif.');
+        }
+
+        // Check if there is already an active job for this product & model
+        $pending = ProductVirtualTryOn::where('user_id', $user->id)
+            ->where('product_id', $productId)
+            ->where('virtual_try_on_model_id', $modelId)
+            ->whereIn('status', ['queued', 'processing'])
+            ->first();
+        if ($pending) {
+            throw new \InvalidArgumentException('Permintaan Virtual Try-On untuk produk dan model ini sedang diproses dalam antrean.');
+        }
+
+        $videoEnabled = (bool) AppConfig::getValue('is_product_virtual_try_on_video', false);
+        $generateVideo = ! empty($data['generate_video']) && $videoEnabled;
+
+        return DB::transaction(function () use ($productId, $virtualModel, $user, $generateVideo) {
+            $tryOn = $this->tryOnRepository->create([
+                'product_id' => $productId,
+                'virtual_try_on_model_id' => $virtualModel->id,
+                'user_id' => $user->id,
+                'gender' => $virtualModel->gender,
+                'generate_video' => $generateVideo,
+                'status' => 'queued',
+                'progress' => 5,
+                'step_label' => 'Menunggu antrean...',
+                'photo' => null,
+                'video' => null,
+            ]);
+
+            GenerateProductVirtualTryOnJob::dispatch($tryOn->id);
+
+            $this->activityLogService->log(
+                'Create User Product Virtual Try-On',
+                "User #{$user->id} dispatched virtual try-on #{$tryOn->id} for product #{$productId}",
+                [
+                    'try_on_id' => $tryOn->id,
+                    'user_id' => $user->id,
+                    'product_id' => $productId,
+                    'virtual_try_on_model_id' => $virtualModel->id,
+                    'generate_video' => $generateVideo,
                 ]
             );
 
