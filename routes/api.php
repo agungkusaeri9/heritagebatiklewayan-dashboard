@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppVersionController;
 use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\LoginController;
@@ -208,6 +209,24 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [StoreSettingController::class, 'index'])->name('index');
         Route::get('privacy-policy', [StoreSettingController::class, 'privacyPolicy'])->name('privacy-policy');
+    });
+
+    // App Versions (Manajemen Aplikasi Android / iOS)
+    Route::prefix('app-versions')->name('app-versions.')->group(function () {
+        Route::get('/', [AppVersionController::class, 'index'])->name('index');
+        Route::get('latest', [AppVersionController::class, 'latest'])->name('latest');
+        Route::get('latest/download', [AppVersionController::class, 'downloadLatest'])->name('latest.download');
+        Route::get('check', [AppVersionController::class, 'latest'])->name('check');
+        Route::get('{id}/download', [AppVersionController::class, 'download'])->whereNumber('id')->name('download');
+        Route::get('{id}', [AppVersionController::class, 'show'])->whereNumber('id')->name('show');
+    });
+    Route::prefix('mobile-apps')->name('mobile-apps.')->group(function () {
+        Route::get('/', [AppVersionController::class, 'index'])->name('index');
+        Route::get('latest', [AppVersionController::class, 'latest'])->name('latest');
+        Route::get('latest/download', [AppVersionController::class, 'downloadLatest'])->name('latest.download');
+        Route::get('check', [AppVersionController::class, 'latest'])->name('check');
+        Route::get('{id}/download', [AppVersionController::class, 'download'])->whereNumber('id')->name('download');
+        Route::get('{id}', [AppVersionController::class, 'show'])->whereNumber('id')->name('show');
     });
 
     // Locations (Provinces, Cities, Subdistricts)

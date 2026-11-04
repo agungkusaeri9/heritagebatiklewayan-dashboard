@@ -112,6 +112,12 @@ class RolePermissionSeeder extends Seeder
             'edit faqs',
             'delete faqs',
 
+            // Manajemen Aplikasi (App Versions)
+            'view app versions',
+            'create app versions',
+            'edit app versions',
+            'delete app versions',
+
             // Konfigurasi Aplikasi (App Configurations)
             'view app configs',
             'create app configs',
@@ -185,6 +191,10 @@ class RolePermissionSeeder extends Seeder
             'view faqs',
             'create faqs',
             'edit faqs',
+            'view app versions',
+            'create app versions',
+            'edit app versions',
+            'delete app versions',
             'view app configs',
             'create app configs',
             'edit app configs',

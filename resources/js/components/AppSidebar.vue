@@ -22,7 +22,6 @@ import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { usePermissions } from '@/composables/usePermissions';
 import {
     Sidebar,
     SidebarContent,
@@ -32,6 +31,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { usePermissions } from '@/composables/usePermissions';
 import type { NavItem } from '@/types';
 
 const { can, hasRole, isSuperAdmin } = usePermissions();
@@ -217,6 +217,11 @@ const rawNavItems: NavItem[] = [
                 href: '/faqs',
                 permission: 'view faqs',
             },
+            {
+                title: 'Manajemen Aplikasi',
+                href: '/app-versions',
+                permission: 'view app versions',
+            },
         ],
     },
     {
@@ -228,9 +233,18 @@ const rawNavItems: NavItem[] = [
 ];
 
 const checkItemAccess = (item: NavItem): boolean => {
-    if (isSuperAdmin.value) return true;
-    if (item.role && !hasRole(item.role)) return false;
-    if (item.permission && !can(item.permission)) return false;
+    if (isSuperAdmin.value) {
+return true;
+}
+
+    if (item.role && !hasRole(item.role)) {
+return false;
+}
+
+    if (item.permission && !can(item.permission)) {
+return false;
+}
+
     return true;
 };
 
@@ -239,14 +253,17 @@ const mainNavItems = computed<NavItem[]>(() => {
         .map((item) => {
             if (item.items && item.items.length > 0) {
                 const filteredSubItems = item.items.filter((sub) => checkItemAccess(sub));
+
                 if (filteredSubItems.length === 0) {
                     return null;
                 }
+
                 return {
                     ...item,
                     items: filteredSubItems,
                 };
             }
+
             return checkItemAccess(item) ? item : null;
         })
         .filter((item): item is NavItem => item !== null);

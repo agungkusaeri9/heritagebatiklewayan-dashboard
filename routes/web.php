@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AppConfigController;
+use App\Http\Controllers\AppVersionController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourierController;
@@ -73,6 +74,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // FAQs
     Route::post('faqs/{faq}/toggle', [FaqController::class, 'toggle'])->name('faqs.toggle');
     Route::resource('faqs', FaqController::class);
+
+    // App Versions (Manajemen Aplikasi)
+    Route::get('app-versions/{app_version}/download', [AppVersionController::class, 'download'])->name('app-versions.download');
+    Route::post('app-versions/{app_version}/set-latest', [AppVersionController::class, 'setLatest'])->name('app-versions.set-latest');
+    Route::post('app-versions/{app_version}/toggle', [AppVersionController::class, 'toggle'])->name('app-versions.toggle');
+    Route::post('app-versions/{app_version}/toggle-force-update', [AppVersionController::class, 'toggleForceUpdate'])->name('app-versions.toggle-force-update');
+    Route::resource('app-versions', AppVersionController::class)->except(['create', 'show', 'edit']);
 
     // Notifications
     Route::post('notifications/{notification}/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
