@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\OrderNotificationService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        protected OrderNotificationService $orderNotificationService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -57,6 +62,8 @@ class OrderController extends Controller
 
         $order->update(['status' => $request->status]);
 
+        $this->orderNotificationService->statusChanged($order);
+
         return back()->with('success', 'Status pesanan berhasil diperbarui.');
     }
 
@@ -68,6 +75,7 @@ class OrderController extends Controller
 
         if ($order->transaction) {
             $order->transaction->update(['status' => $request->payment_status]);
+            $this->orderNotificationService->paymentStatusChanged($order);
         }
 
         return back()->with('success', 'Status pembayaran berhasil diperbarui.');
@@ -81,6 +89,10 @@ class OrderController extends Controller
         ]);
 
         $order->update($validated);
+
+        if (! empty($validated['tracking_number']) || ! empty($validated['shipping_name'])) {
+            $this->orderNotificationService->shippingUpdated($order);
+        }
 
         return back()->with('success', 'Informasi pengiriman & nomor resi berhasil diperbarui.');
     }

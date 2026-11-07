@@ -20,8 +20,9 @@ class ProductReviewResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'customer_name' => $this->customer?->user?->name ?? 'Anonim',
+            'customer_name' => $this->customer?->user?->name ?? 'Pelanggan Batik',
             'customer_username' => $this->customer?->user?->username,
+            'customer_avatar_url' => $this->customer?->avatar_url ?? null,
             'rating' => (int) $this->rating,
             'comment' => $this->comment,
             'created_at' => $this->created_at?->toISOString(),

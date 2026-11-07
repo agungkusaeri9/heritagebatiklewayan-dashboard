@@ -24,7 +24,9 @@ class ProductReviewController extends Controller
      */
     public function index(string $slug, IndexProductReviewRequest $request): JsonResponse
     {
-        $product = $this->productRepository->findBySlug($slug);
+        $product = is_numeric($slug)
+            ? ($this->productRepository->findById((int) $slug) ?? $this->productRepository->findBySlug($slug))
+            : $this->productRepository->findBySlug($slug);
 
         if (! $product || ! $product->is_active) {
             return ApiResponse::error(

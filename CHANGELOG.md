@@ -120,6 +120,10 @@ Penyempurnaan integrasi API Riwayat & Detail Pesanan (`/api/v1/orders`), filter 
 - **Endpoint API Detail Pesanan Lengkap (`GET /api/v1/orders/{identifier}`)**:
   - Mengembalikan rincian lengkap pesanan berdasarkan ID atau nomor pesanan (`order_number`).
   - Serialisasi data lengkap via `App\Http\Resources\OrderDetailResource` meliputi seluruh daftar produk (`items`), alamat penerima, kurir & resi pengiriman, breakdown harga (subtotal, ongkos kirim, diskon, biaya layanan, total), serta status transaksi.
+  - Menyertakan status ulasan transaksi dan per-produk (`is_reviewed`, `reviewed_count`, `average_rating`, `reviews`, serta objek `review` pada masing-masing item di `items`) dengan *eager loading* relasi `reviews` pada `OrderController` dan `OrderListResource`.
+
+- **Endpoint API Ulasan & Rating Produk per Transaksi (`POST /api/v1/reviews`)**:
+  - Mendukung pengiriman rating (1–5 bintang) dan ulasan komentar untuk setiap produk dalam transaksi yang telah selesai (`status = success` & `transaction.status = paid`) disertai validasi anti-duplikasi ulasan per kombinasi `(order_id, product_id)`.
 
 - **Endpoint Unggah Bukti Pembayaran (`POST /api/v1/orders/{identifier}/payment-proof`)**:
   - Menerima unggahan file bukti transfer pembayaran (`payment_proof`) dengan validasi tipe berkas dan ukuran gambar.

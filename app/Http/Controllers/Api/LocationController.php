@@ -10,11 +10,51 @@ use App\Http\Responses\ApiResponse;
 use App\Models\City;
 use App\Models\Province;
 use App\Models\Subdistrict;
+use App\Services\GeoapifyService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LocationController extends Controller
 {
+    /**
+     * Reverse geocode latitude & longitude into a full address using Geoapify (configured in AppConfig).
+     */
+    public function getAddress(Request $request, GeoapifyService $geoapifyService): JsonResponse
+    {
+        $latInput = $request->input('lat') ?? $request->input('latitude');
+        $lonInput = $request->input('lon') ?? $request->input('lng') ?? $request->input('longitude');
+
+        if ($latInput === null || $lonInput === null || ! is_numeric($latInput) || ! is_numeric($lonInput)) {
+            return ApiResponse::error(
+                message: 'Parameter lat (latitude) dan lon (longitude) wajib diisi dengan angka yang valid.',
+                code: 422,
+            );
+        }
+
+        $lat = (float) $latInput;
+        $lon = (float) $lonInput;
+
+        try {
+            $addressData = $geoapifyService->getFullAddress($lat, $lon);
+
+            if (! $addressData || empty($addressData['formatted_address'])) {
+                return ApiResponse::error(
+                    message: 'Alamat tidak ditemukan untuk koordinat tersebut.',
+                    code: 404,
+                );
+            }
+
+            return ApiResponse::success(
+                data: $addressData,
+                message: 'Berhasil mendapatkan alamat lengkap dari koordinat.',
+            );
+        } catch (\Throwable $e) {
+            return ApiResponse::error(
+                message: 'Gagal mengambil alamat dari layanan Geoapify: '.$e->getMessage(),
+                code: 500,
+            );
+        }
+    }
     /**
      * Display a listing of all provinces.
      */

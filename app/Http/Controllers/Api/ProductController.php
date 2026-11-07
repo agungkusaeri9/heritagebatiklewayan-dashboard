@@ -52,7 +52,7 @@ class ProductController extends Controller
     /**
      * Display the specified product.
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id, Request $request): JsonResponse
     {
         $product = $this->productRepository->findById($id);
 
@@ -63,8 +63,13 @@ class ProductController extends Controller
             );
         }
 
+        $ratingStats = $this->reviewRepository->getProductRatingStats($product->id);
+
+        $productData = ProductResource::make($product)->resolve($request);
+        $productData['rating_stats'] = $ratingStats;
+
         return ApiResponse::success(
-            data: ProductResource::make($product)->resolve(request()),
+            data: $productData,
             message: 'Berhasil mengambil detail produk.',
         );
     }
@@ -102,7 +107,7 @@ class ProductController extends Controller
         $limit = (int) $request->input('limit', 10);
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'images'])
+            ->with(['category', 'images', 'variantValues.variantType'])
             ->orderByRaw('is_virtual_try_on DESC, id DESC')
             ->limit($limit)
             ->get();
@@ -121,7 +126,7 @@ class ProductController extends Controller
         $limit = (int) $request->input('limit', 10);
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'images'])
+            ->with(['category', 'images', 'variantValues.variantType'])
             ->withCount('reviews')
             ->orderBy('stock', 'asc') // or sold count / reviews
             ->orderBy('id', 'desc')

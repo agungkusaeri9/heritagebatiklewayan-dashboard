@@ -22,12 +22,20 @@ class ProductVirtualTryOnController extends Controller
     ) {}
 
     /**
+     * Resolve the authenticated user from request (supporting Sanctum bearer token or session).
+     */
+    protected function resolveUser(Request $request): ?\App\Models\User
+    {
+        return $request->user() ?? auth('sanctum')->user();
+    }
+
+    /**
      * Get paginated virtual try-on results.
      */
     public function index(IndexProductVirtualTryOnApiRequest $request): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 10);
-        $user = $request->user();
+        $user = $this->resolveUser($request);
 
         $productId = $request->input('product_id') ?? $request->route('id') ?? $request->route('product_id');
 
@@ -97,13 +105,17 @@ class ProductVirtualTryOnController extends Controller
      */
     public function store(StoreProductVirtualTryOnApiRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $this->resolveUser($request);
         if (! $user) {
             return ApiResponse::error('Silakan login terlebih dahulu untuk menggunakan fitur Virtual Try-On.', 401);
         }
 
         try {
-            $tryOn = $this->tryOnService->createUserTryOn($request->validated(), $user);
+            $tryOn = $this->tryOnService->createUserTryOn(
+                $request->validated(),
+                $user,
+                $request->file('model_photo')
+            );
             $tryOn->load(['product', 'virtualModel', 'user']);
 
             return ApiResponse::success(
@@ -140,8 +152,8 @@ class ProductVirtualTryOnController extends Controller
 
         // Authorization check: if try-on belongs to a specific user, only the owner (or admin) can view
         if ($tryOn->user_id !== null) {
-            $user = $request->user();
-            if (! $user || ($user->id !== $tryOn->user_id && ! $user->can('view product virtual try ons'))) {
+            $user = $this->resolveUser($request);
+            if (! $user || ((int) $user->id !== (int) $tryOn->user_id && ! $user->can('view product virtual try ons'))) {
                 return ApiResponse::error('Anda tidak memiliki izin untuk melihat data Virtual Try-On ini.', 403);
             }
         }
@@ -164,8 +176,8 @@ class ProductVirtualTryOnController extends Controller
         }
 
         if ($tryOn->user_id !== null) {
-            $user = $request->user();
-            if (! $user || ($user->id !== $tryOn->user_id && ! $user->can('view product virtual try ons'))) {
+            $user = $this->resolveUser($request);
+            if (! $user || ((int) $user->id !== (int) $tryOn->user_id && ! $user->can('view product virtual try ons'))) {
                 return ApiResponse::error('Anda tidak memiliki izin untuk melihat progress ini.', 403);
             }
         }
@@ -199,8 +211,8 @@ class ProductVirtualTryOnController extends Controller
             return ApiResponse::error('Data Virtual Try-On tidak ditemukan.', 404);
         }
 
-        $user = $request->user();
-        if (! $user || ($user->id !== $tryOn->user_id && ! $user->can('create product virtual try ons'))) {
+        $user = $this->resolveUser($request);
+        if (! $user || ((int) $user->id !== (int) $tryOn->user_id && ! $user->can('create product virtual try ons'))) {
             return ApiResponse::error('Anda tidak memiliki izin untuk mencoba ulang generasi ini.', 403);
         }
 
@@ -227,7 +239,7 @@ class ProductVirtualTryOnController extends Controller
      */
     public function quota(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $this->resolveUser($request);
         if (! $user) {
             return ApiResponse::error('Silakan login terlebih dahulu.', 401);
         }

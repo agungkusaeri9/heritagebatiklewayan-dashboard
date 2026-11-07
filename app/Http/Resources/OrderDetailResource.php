@@ -18,10 +18,27 @@ class OrderDetailResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $distinctProductIds = $this->details->pluck('product_id')->filter()->unique()->values();
+        $reviews = $this->relationLoaded('reviews') ? $this->reviews : collect();
+        $reviewedProductIds = $reviews->pluck('product_id')->filter()->unique()->values();
+        $isReviewed = $distinctProductIds->isNotEmpty()
+            && $distinctProductIds->diff($reviewedProductIds)->isEmpty();
+
         return [
             'id' => $this->id,
             'order_number' => $this->order_number,
             'status' => $this->status,
+            'is_reviewed' => $isReviewed,
+            'reviewed_count' => $reviewedProductIds->count(),
+            'average_rating' => $reviews->isNotEmpty() ? round((float) $reviews->avg('rating'), 1) : null,
+            'reviews' => $reviews->map(fn ($rev) => [
+                'id' => $rev->id,
+                'order_id' => $rev->order_id,
+                'product_id' => $rev->product_id,
+                'rating' => (int) $rev->rating,
+                'comment' => $rev->comment,
+                'created_at' => $rev->created_at?->toIso8601String(),
+            ])->values(),
             'pricing' => [
                 'subtotal' => (float) $this->subtotal,
                 'shipping_fee' => (float) $this->shipping_fee,
@@ -69,17 +86,28 @@ class OrderDetailResource extends JsonResource
             ],
             'payment_proof' => $this->transaction?->payment_proof,
             'payment_proof_url' => $this->transaction?->payment_proof_url,
-            'items' => $this->details->map(fn ($detail) => [
-                'id' => $detail->id,
-                'product_id' => $detail->product_id,
-                'product_name' => $detail->product?->name,
-                'product_slug' => $detail->product?->slug,
-                'primary_image' => $detail->product?->primary_image_url,
-                'variant_info' => $detail->variant_info,
-                'price' => (float) $detail->price,
-                'quantity' => (int) $detail->quantity,
-                'total_price' => (float) $detail->total_price,
-            ]),
+            'items' => $this->details->map(function ($detail) use ($reviews) {
+                $itemReview = $reviews->firstWhere('product_id', $detail->product_id);
+
+                return [
+                    'id' => $detail->id,
+                    'product_id' => $detail->product_id,
+                    'product_name' => $detail->product?->name,
+                    'product_slug' => $detail->product?->slug,
+                    'primary_image' => $detail->product?->primary_image_url,
+                    'variant_info' => $detail->variant_info,
+                    'price' => (float) $detail->price,
+                    'quantity' => (int) $detail->quantity,
+                    'total_price' => (float) $detail->total_price,
+                    'is_reviewed' => $itemReview !== null,
+                    'review' => $itemReview ? [
+                        'id' => $itemReview->id,
+                        'rating' => (int) $itemReview->rating,
+                        'comment' => $itemReview->comment,
+                        'created_at' => $itemReview->created_at?->toIso8601String(),
+                    ] : null,
+                ];
+            }),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

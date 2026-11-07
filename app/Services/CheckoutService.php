@@ -17,6 +17,10 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class CheckoutService
 {
+    public function __construct(
+        protected OrderNotificationService $orderNotificationService
+    ) {}
+
     /**
      * Process checkout and create a new order.
      *
@@ -38,7 +42,7 @@ class CheckoutService
         [$courierId, $shippingName, $shippingFee] = $this->resolveShipping($data);
         $paymentMethodId = $this->resolvePaymentMethod($data);
 
-        return DB::transaction(function () use (
+        $order = DB::transaction(function () use (
             $customer,
             $itemsToProcess,
             $cartIdsToDelete,
@@ -132,6 +136,10 @@ class CheckoutService
                 'details.product.images',
             ]);
         });
+
+        $this->orderNotificationService->orderCreated($order);
+
+        return $order;
     }
 
     /**

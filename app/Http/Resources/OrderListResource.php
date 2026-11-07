@@ -19,6 +19,11 @@ class OrderListResource extends JsonResource
     public function toArray(Request $request): array
     {
         $totalItems = $this->details->sum('quantity');
+        $distinctProductIds = $this->details->pluck('product_id')->filter()->unique()->values();
+        $reviews = $this->relationLoaded('reviews') ? $this->reviews : collect();
+        $reviewedProductIds = $reviews->pluck('product_id')->filter()->unique()->values();
+        $isReviewed = $distinctProductIds->isNotEmpty()
+            && $distinctProductIds->diff($reviewedProductIds)->isEmpty();
 
         return [
             'id' => $this->id,
@@ -28,6 +33,17 @@ class OrderListResource extends JsonResource
             'shipping_fee' => (float) $this->shipping_fee,
             'total_amount' => (float) $this->total_amount,
             'total_items' => (int) $totalItems,
+            'is_reviewed' => $isReviewed,
+            'reviewed_count' => $reviewedProductIds->count(),
+            'average_rating' => $reviews->isNotEmpty() ? round((float) $reviews->avg('rating'), 1) : null,
+            'reviews' => $reviews->map(fn ($rev) => [
+                'id' => $rev->id,
+                'order_id' => $rev->order_id,
+                'product_id' => $rev->product_id,
+                'rating' => (int) $rev->rating,
+                'comment' => $rev->comment,
+                'created_at' => $rev->created_at?->toIso8601String(),
+            ])->values(),
             'shipping' => [
                 'courier_name' => $this->courier?->name,
                 'courier_code' => $this->courier?->code,

@@ -28,7 +28,7 @@ class UpdateUserLocationRequest extends FormRequest
             'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_if:source,gps'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_if:source,gps'],
             'address' => ['nullable', 'string', 'max:500'],
-            'label' => ['nullable', 'string', 'max:100'],
+            'label' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

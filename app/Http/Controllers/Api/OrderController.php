@@ -34,6 +34,7 @@ class OrderController extends Controller
                 'courier',
                 'transaction',
                 'details.product',
+                'reviews',
             ])
             ->latest('id');
 
@@ -91,6 +92,7 @@ class OrderController extends Controller
                 'subdistrict',
                 'transaction',
                 'details.product.images',
+                'reviews',
             ]);
 
         $order = is_numeric($identifier)

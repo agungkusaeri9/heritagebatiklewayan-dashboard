@@ -19,7 +19,7 @@ class ProductRepository implements ProductRepositoryInterface
         string $sortDirection = 'desc',
         int|string|null $category = null
     ): LengthAwarePaginator {
-        $query = Product::query()->with('category');
+        $query = Product::query()->with(['category', 'images', 'variantValues.variantType']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {

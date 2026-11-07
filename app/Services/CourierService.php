@@ -22,6 +22,7 @@ class CourierService
             $path = $data['logo_file']->store('couriers', 'public');
             $data['logo'] = $path;
         }
+        unset($data['logo_file']);
 
         return $this->courierRepository->create($data);
     }
@@ -43,6 +44,7 @@ class CourierService
                 Storage::disk('public')->delete($courier->logo);
             }
         }
+        unset($data['logo_file']);
 
         return $this->courierRepository->update($id, $data);
     }

@@ -220,7 +220,7 @@ class AppConfigController extends Controller
         $config = AppConfig::firstOrCreate(
             ['key' => 'geoapify_api_key'],
             [
-                'value' => null,
+                'value' => env('GEOAPIFY_API_KEY', 'a5eede7836f74f4aa012b9ff68d7b5ec'),
                 'description' => 'API Key untuk layanan Geocoding dan Peta Geoapify',
             ]
         );

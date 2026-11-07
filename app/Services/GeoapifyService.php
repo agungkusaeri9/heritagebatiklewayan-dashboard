@@ -27,7 +27,10 @@ class GeoapifyService
     public function getApiKey(): ?string
     {
         return Cache::store('file')->remember('geoapify_api_key', 86400, function () {
-            return AppConfig::getValue('geoapify_api_key') ?? env('GEOAPIFY_API_KEY');
+            $key = AppConfig::getValue('geoapify_api_key')
+                ?? env('GEOAPIFY_API_KEY', 'a5eede7836f74f4aa012b9ff68d7b5ec');
+
+            return ! empty($key) ? trim((string) $key) : 'a5eede7836f74f4aa012b9ff68d7b5ec';
         });
     }
 
@@ -106,5 +109,49 @@ class GeoapifyService
         }
 
         return $response->json() ?? [];
+    }
+
+    /**
+     * Reverse geocode latitude and longitude and return structured full address.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getFullAddress(float $lat, float $lon): ?array
+    {
+        $raw = $this->reverseGeocode($lat, $lon);
+        if (empty($raw)) {
+            return null;
+        }
+
+        $item = null;
+        if (! empty($raw['results']) && is_array($raw['results']) && isset($raw['results'][0])) {
+            $item = $raw['results'][0];
+        } elseif (! empty($raw['features']) && is_array($raw['features']) && isset($raw['features'][0]['properties'])) {
+            $item = $raw['features'][0]['properties'];
+        }
+
+        if (! is_array($item)) {
+            return null;
+        }
+
+        $formatted = $item['formatted']
+            ?? trim(($item['address_line1'] ?? '').', '.($item['address_line2'] ?? ''), ', ');
+
+        return [
+            'formatted_address' => $formatted ?: null,
+            'address_line1' => $item['address_line1'] ?? null,
+            'address_line2' => $item['address_line2'] ?? null,
+            'street' => $item['street'] ?? null,
+            'housenumber' => $item['housenumber'] ?? null,
+            'suburb' => $item['suburb'] ?? $item['quarter'] ?? $item['neighbourhood'] ?? null,
+            'district' => $item['district'] ?? $item['city_district'] ?? null,
+            'city' => $item['city'] ?? $item['county'] ?? $item['town'] ?? $item['village'] ?? null,
+            'state' => $item['state'] ?? null,
+            'postcode' => $item['postcode'] ?? null,
+            'country' => $item['country'] ?? null,
+            'country_code' => $item['country_code'] ?? null,
+            'latitude' => (float) ($item['lat'] ?? $lat),
+            'longitude' => (float) ($item['lon'] ?? $lon),
+        ];
     }
 }

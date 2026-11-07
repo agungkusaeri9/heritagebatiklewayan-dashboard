@@ -140,7 +140,7 @@ const form = useForm({
     name: '',
     code: '',
     description: '',
-    logo: null as File | null,
+    logo_file: null as File | null,
     is_active: true,
 });
 
@@ -149,7 +149,7 @@ const previewUrl = ref<string | null>(null);
 const handleLogoChange = (event: Event) => {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files[0]) {
-        form.logo = target.files[0];
+        form.logo_file = target.files[0];
         previewUrl.value = URL.createObjectURL(target.files[0]);
     }
 };
@@ -162,7 +162,7 @@ const openCreateModal = () => {
     form.name = '';
     form.code = '';
     form.description = '';
-    form.logo = null;
+    form.logo_file = null;
     form.is_active = true;
     form._method = 'POST';
     previewUrl.value = null;
@@ -178,7 +178,7 @@ const openEditModal = (method: Courier) => {
     form.code = method.code;
     form.description = method.description;
     form.is_active = method.is_active;
-    form.logo = null;
+    form.logo_file = null;
     form._method = 'PUT';
     previewUrl.value = method.logo ? `/storage/${method.logo}` : null;
     if (fileInput.value) fileInput.value.value = '';
@@ -459,7 +459,7 @@ const executeDelete = () => {
                             <div v-if="previewUrl" class="mt-2 w-32 h-16 border rounded bg-white p-1">
                                 <img :src="previewUrl" alt="Preview Logo" class="w-full h-full object-contain" />
                             </div>
-                            <span class="text-xs text-destructive" v-if="form.errors.logo">{{ form.errors.logo }}</span>
+                            <span class="text-xs text-destructive" v-if="form.errors.logo_file">{{ form.errors.logo_file }}</span>
                         </div>
                         <div class="flex items-center justify-between mt-2">
                             <Label for="is_active">Status Aktif</Label>

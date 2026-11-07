@@ -28,9 +28,25 @@ use App\Http\Controllers\Api\UserAccountController;
 use App\Http\Controllers\Api\UserLocationController;
 use App\Http\Controllers\Api\UserPasswordController;
 use App\Http\Controllers\Api\UserProfileController;
+use App\Http\Controllers\Api\WishlistController;
 use Illuminate\Support\Facades\Route;
 
+// Health check / Ping endpoint
+Route::get('ping', fn () => response()->json([
+    'success' => true,
+    'status' => 'ok',
+    'message' => 'pong',
+    'timestamp' => now()->toIso8601String(),
+]))->name('api.ping');
+
 Route::prefix('v1')->name('api.v1.')->group(function () {
+    Route::get('ping', fn () => response()->json([
+        'success' => true,
+        'status' => 'ok',
+        'message' => 'pong',
+        'timestamp' => now()->toIso8601String(),
+    ]))->name('ping');
+
     Route::prefix('auth')->name('auth.')->group(function () {
         // Guest auth routes with throttle
         Route::middleware('throttle:6,1')->group(function () {
@@ -126,6 +142,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('{id}', [CartController::class, 'destroy'])->whereNumber('id')->name('destroy');
     });
 
+    // Wishlists (scoped to authenticated user)
+    Route::middleware('auth:sanctum')->prefix('wishlist')->name('wishlist.')->group(function () {
+        Route::get('/', [WishlistController::class, 'index'])->name('index');
+        Route::post('/', [WishlistController::class, 'store'])->name('store');
+        Route::delete('{productId}', [WishlistController::class, 'destroy'])->whereNumber('productId')->name('destroy');
+    });
+
     // Banners
     Route::prefix('banners')->name('banners.')->group(function () {
         Route::get('/', [BannerController::class, 'index'])->name('index');
@@ -210,12 +233,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('privacy-policy', [StoreSettingController::class, 'privacyPolicy'])->name('privacy-policy');
     });
 
-    // Locations (Provinces, Cities, Subdistricts)
+    // Locations (Provinces, Cities, Subdistricts & Reverse Geocoding via Geoapify)
     Route::prefix('locations')->name('locations.')->group(function () {
+        Route::get('address', [LocationController::class, 'getAddress'])->name('address');
+        Route::get('reverse-geocode', [LocationController::class, 'getAddress'])->name('reverse-geocode');
         Route::get('provinces', [LocationController::class, 'provinces'])->name('provinces');
         Route::get('cities', [LocationController::class, 'cities'])->name('cities');
         Route::get('subdistricts', [LocationController::class, 'subdistricts'])->name('subdistricts');
     });
+    Route::get('get-address', [LocationController::class, 'getAddress'])->name('get-address');
     Route::get('provinces', [LocationController::class, 'provinces'])->name('provinces.index');
     Route::get('cities', [LocationController::class, 'cities'])->name('cities.index');
     Route::get('subdistricts', [LocationController::class, 'subdistricts'])->name('subdistricts.index');

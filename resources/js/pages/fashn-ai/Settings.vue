@@ -68,10 +68,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Pengaturan', href: '/fashn-ai/settings' },
 ];
 
+const toBoolean = (val: unknown, fallback: boolean): boolean => {
+    if (val === undefined || val === null || val === '') return fallback;
+    const s = String(val).trim().toLowerCase();
+    return s === '1' || s === 'true';
+};
+
 const form = useForm({
-    is_product_virtual_try_on: (props.configs?.is_product_virtual_try_on?.value ?? '1') === '1',
-    is_product_virtual_try_on_photo: (props.configs?.is_product_virtual_try_on_photo?.value ?? '1') === '1',
-    is_product_virtual_try_on_video: (props.configs?.is_product_virtual_try_on_video?.value ?? '0') === '1',
+    is_product_virtual_try_on: toBoolean(props.configs?.is_product_virtual_try_on?.value, true),
+    is_product_virtual_try_on_photo: toBoolean(props.configs?.is_product_virtual_try_on_photo?.value, true),
+    is_product_virtual_try_on_video: toBoolean(props.configs?.is_product_virtual_try_on_video?.value, false),
     video_duration: Number(props.configs?.fashn_video_duration?.value ?? 5),
     video_resolution: props.configs?.fashn_video_resolution?.value ?? '480p',
     virtual_try_on_daily_limit_per_user: Number(props.configs?.virtual_try_on_daily_limit_per_user?.value ?? 3),
@@ -157,8 +163,7 @@ const submit = () => {
                             </div>
                             <Switch
                                 id="is_product_virtual_try_on"
-                                :checked="form.is_product_virtual_try_on"
-                                @update:checked="form.is_product_virtual_try_on = $event"
+                                v-model="form.is_product_virtual_try_on"
                                 :disabled="form.processing"
                             />
                         </div>
@@ -176,8 +181,7 @@ const submit = () => {
                             </div>
                             <Switch
                                 id="is_product_virtual_try_on_photo"
-                                :checked="form.is_product_virtual_try_on_photo"
-                                @update:checked="form.is_product_virtual_try_on_photo = $event"
+                                v-model="form.is_product_virtual_try_on_photo"
                                 :disabled="form.processing || !form.is_product_virtual_try_on"
                             />
                         </div>
@@ -195,8 +199,7 @@ const submit = () => {
                             </div>
                             <Switch
                                 id="is_product_virtual_try_on_video"
-                                :checked="form.is_product_virtual_try_on_video"
-                                @update:checked="form.is_product_virtual_try_on_video = $event"
+                                v-model="form.is_product_virtual_try_on_video"
                                 :disabled="form.processing || !form.is_product_virtual_try_on"
                             />
                         </div>

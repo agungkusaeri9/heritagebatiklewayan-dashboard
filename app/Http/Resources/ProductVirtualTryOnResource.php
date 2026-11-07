@@ -18,6 +18,15 @@ class ProductVirtualTryOnResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $photoUrl = $this->photo_url;
+        if ($this->photo && ! \Illuminate\Support\Str::startsWith($this->photo, ['http://', 'https://'])) {
+            $photoUrl = $request->getSchemeAndHttpHost() . '/storage/' . ltrim($this->photo, '/');
+        }
+        $videoUrl = $this->video_url;
+        if ($this->video && ! \Illuminate\Support\Str::startsWith($this->video, ['http://', 'https://'])) {
+            $videoUrl = $request->getSchemeAndHttpHost() . '/storage/' . ltrim($this->video, '/');
+        }
+
         return [
             'id' => $this->id,
             'product_id' => $this->product_id,
@@ -27,14 +36,18 @@ class ProductVirtualTryOnResource extends JsonResource
                 'slug' => $this->product->slug,
                 'price' => (float) $this->product->price,
                 'sku' => $this->product->sku,
-                'primary_image_url' => $this->product->primary_image_url,
+                'primary_image_url' => ($this->product->primary_image && ! \Illuminate\Support\Str::startsWith($this->product->primary_image, ['http://', 'https://']))
+                    ? $request->getSchemeAndHttpHost() . '/storage/' . ltrim($this->product->primary_image, '/')
+                    : $this->product->primary_image_url,
             ]),
             'virtual_try_on_model_id' => $this->virtual_try_on_model_id,
             'virtual_model' => $this->whenLoaded('virtualModel', fn () => [
                 'id' => $this->virtualModel->id,
                 'name' => $this->virtualModel->name,
                 'gender' => $this->virtualModel->gender,
-                'photo_url' => $this->virtualModel->photo_url,
+                'photo_url' => ($this->virtualModel->photo && ! \Illuminate\Support\Str::startsWith($this->virtualModel->photo, ['http://', 'https://']))
+                    ? $request->getSchemeAndHttpHost() . '/storage/' . ltrim($this->virtualModel->photo, '/')
+                    : $this->virtualModel->photo_url,
             ]),
             'user_id' => $this->user_id,
             'user' => $this->whenLoaded('user', fn () => [
@@ -43,8 +56,8 @@ class ProductVirtualTryOnResource extends JsonResource
                 'email' => $this->user->email,
             ]),
             'gender' => $this->gender ?? $this->virtualModel?->gender,
-            'photo_url' => $this->photo_url,
-            'video_url' => $this->video_url,
+            'photo_url' => $photoUrl,
+            'video_url' => $videoUrl,
             'status' => $this->status,
             'progress' => (int) $this->progress,
             'step_label' => $this->step_label,

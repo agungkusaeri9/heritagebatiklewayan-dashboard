@@ -94,9 +94,9 @@ class ProductVirtualTryOnService
             ->count();
 
         return [
-            'is_feature_enabled' => (bool) AppConfig::getValue('is_product_virtual_try_on', true),
-            'is_photo_enabled' => (bool) AppConfig::getValue('is_product_virtual_try_on_photo', true),
-            'is_video_enabled' => (bool) AppConfig::getValue('is_product_virtual_try_on_video', false),
+            'is_feature_enabled' => filter_var(AppConfig::getValue('is_product_virtual_try_on', true), FILTER_VALIDATE_BOOLEAN),
+            'is_photo_enabled' => filter_var(AppConfig::getValue('is_product_virtual_try_on_photo', true), FILTER_VALIDATE_BOOLEAN),
+            'is_video_enabled' => filter_var(AppConfig::getValue('is_product_virtual_try_on_video', false), FILTER_VALIDATE_BOOLEAN),
             'daily_limit' => $dailyLimit,
             'daily_used' => $dailyUsed,
             'daily_remaining' => max(0, $dailyLimit - $dailyUsed),
@@ -113,9 +113,9 @@ class ProductVirtualTryOnService
      *
      * @throws \InvalidArgumentException
      */
-    public function createUserTryOn(array $data, User $user): ProductVirtualTryOn
+    public function createUserTryOn(array $data, User $user, ?UploadedFile $modelPhoto = null): ProductVirtualTryOn
     {
-        $isFeatureEnabled = (bool) AppConfig::getValue('is_product_virtual_try_on', true);
+        $isFeatureEnabled = filter_var(AppConfig::getValue('is_product_virtual_try_on', true), FILTER_VALIDATE_BOOLEAN);
         if (! $isFeatureEnabled) {
             throw new \InvalidArgumentException('Fitur Virtual Try-On saat ini sedang dinonaktifkan.');
         }
@@ -153,26 +153,40 @@ class ProductVirtualTryOnService
             throw new \InvalidArgumentException('Produk belum memiliki foto yang dapat digunakan untuk Virtual Try-On.');
         }
 
-        $modelId = (int) $data['virtual_try_on_model_id'];
-        $virtualModel = VirtualTryOnModel::active()->find($modelId);
-        if (! $virtualModel || empty($virtualModel->photo)) {
-            throw new \InvalidArgumentException('Model avatar mannequin tidak ditemukan atau tidak aktif.');
+        $virtualModel = null;
+        if ($modelPhoto instanceof UploadedFile) {
+            $storedPath = $modelPhoto->store('virtual-try-on-models/user-uploads', 'public');
+            $virtualModel = VirtualTryOnModel::create([
+                'name' => 'Foto Galeri - '.$user->name,
+                'gender' => $data['gender'] ?? 'unisex',
+                'photo' => $storedPath,
+                'is_active' => false,
+            ]);
+        } else {
+            $modelId = (int) ($data['virtual_try_on_model_id'] ?? 0);
+            $virtualModel = VirtualTryOnModel::active()->find($modelId);
+            if (! $virtualModel || empty($virtualModel->photo)) {
+                throw new \InvalidArgumentException('Model avatar mannequin tidak ditemukan atau tidak aktif.');
+            }
+
+            // Check if there is already an active job for this product & model
+            $pending = ProductVirtualTryOn::where('user_id', $user->id)
+                ->where('product_id', $productId)
+                ->where('virtual_try_on_model_id', $modelId)
+                ->whereIn('status', ['queued', 'processing'])
+                ->first();
+            if ($pending) {
+                throw new \InvalidArgumentException('Permintaan Virtual Try-On untuk produk dan model ini sedang diproses dalam antrean.');
+            }
         }
 
-        // Check if there is already an active job for this product & model
-        $pending = ProductVirtualTryOn::where('user_id', $user->id)
-            ->where('product_id', $productId)
-            ->where('virtual_try_on_model_id', $modelId)
-            ->whereIn('status', ['queued', 'processing'])
-            ->first();
-        if ($pending) {
-            throw new \InvalidArgumentException('Permintaan Virtual Try-On untuk produk dan model ini sedang diproses dalam antrean.');
-        }
+        $videoConfig = AppConfig::getValue('is_product_virtual_try_on_video', false);
+        $videoEnabled = filter_var($videoConfig, FILTER_VALIDATE_BOOLEAN);
+        $generateVideo = isset($data['generate_video'])
+            ? (filter_var($data['generate_video'], FILTER_VALIDATE_BOOLEAN) && $videoEnabled)
+            : $videoEnabled;
 
-        $videoEnabled = (bool) AppConfig::getValue('is_product_virtual_try_on_video', false);
-        $generateVideo = ! empty($data['generate_video']) && $videoEnabled;
-
-        return DB::transaction(function () use ($productId, $virtualModel, $user, $generateVideo) {
+        $tryOn = DB::transaction(function () use ($productId, $virtualModel, $user, $generateVideo) {
             $tryOn = $this->tryOnRepository->create([
                 'product_id' => $productId,
                 'virtual_try_on_model_id' => $virtualModel->id,
@@ -202,11 +216,38 @@ class ProductVirtualTryOnService
 
             return $tryOn;
         });
+
+        $this->triggerBackgroundQueueWorkerIfNeeded();
+
+        return $tryOn;
+    }
+
+    /**
+     * Trigger a non-blocking background queue worker process if queue driver is database.
+     */
+    private function triggerBackgroundQueueWorkerIfNeeded(): void
+    {
+        try {
+            if (config('queue.default') !== 'database') {
+                return;
+            }
+
+            $artisan = base_path('artisan');
+            if (PHP_OS_FAMILY === 'Windows') {
+                $cmd = 'start /B php "'.$artisan.'" queue:work --once --tries=1 --timeout=600 > NUL 2>&1';
+                @pclose(@popen($cmd, 'r'));
+            } else {
+                $cmd = 'php "'.$artisan.'" queue:work --once --tries=1 --timeout=600 > /dev/null 2>&1 &';
+                @exec($cmd);
+            }
+        } catch (\Throwable) {
+            // Ignore if background process spawning is restricted
+        }
     }
 
     public function retryGeneration(ProductVirtualTryOn $tryOn): bool
     {
-        return DB::transaction(function () use ($tryOn) {
+        $result = DB::transaction(function () use ($tryOn) {
             $this->tryOnRepository->update($tryOn, [
                 'status' => 'queued',
                 'progress' => 5,
@@ -224,6 +265,10 @@ class ProductVirtualTryOnService
 
             return true;
         });
+
+        $this->triggerBackgroundQueueWorkerIfNeeded();
+
+        return $result;
     }
 
     public function updateDefaultTryOn(ProductVirtualTryOn $tryOn, array $data, ?UploadedFile $photo = null, ?UploadedFile $video = null): bool

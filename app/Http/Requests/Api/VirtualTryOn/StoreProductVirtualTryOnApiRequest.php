@@ -24,7 +24,9 @@ class StoreProductVirtualTryOnApiRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'integer', 'exists:products,id'],
-            'virtual_try_on_model_id' => ['required', 'integer', 'exists:virtual_try_on_models,id'],
+            'virtual_try_on_model_id' => ['nullable', 'required_without:model_photo', 'integer', 'exists:virtual_try_on_models,id'],
+            'model_photo' => ['nullable', 'required_without:virtual_try_on_model_id', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+            'gender' => ['nullable', 'string', 'in:male,female,unisex'],
             'generate_video' => ['nullable', 'boolean'],
         ];
     }
@@ -39,6 +41,8 @@ class StoreProductVirtualTryOnApiRequest extends FormRequest
         return [
             'product_id' => 'produk',
             'virtual_try_on_model_id' => 'model avatar',
+            'model_photo' => 'foto galeri model',
+            'gender' => 'jenis kelamin model',
             'generate_video' => 'generasi video',
         ];
     }
