@@ -240,46 +240,41 @@ class AppConfigController extends Controller
     }
 
     /**
-     * Update Geoapify configuration.
+     * Show Firebase configuration page.
      */
-    public function updateGeoapify(Request $request): RedirectResponse
+    public function firebase(): Response
+    {
+        $config = AppConfig::firstOrCreate(
+            ['key' => 'firebase_service_account_json'],
+            [
+                'value' => null,
+                'description' => 'Konfigurasi kredensial Service Account JSON untuk Push Notification FCM',
+            ]
+        );
+
+        return Inertia::render('configurations/Firebase', [
+            'config' => $config,
+        ]);
+    }
+
+    /**
+     * Update Firebase configuration.
+     */
+    public function updateFirebase(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'api_key' => ['nullable', 'string', 'max:500'],
-            'base_url' => ['nullable', 'url', 'max:500'],
+            'service_account_json' => ['nullable', 'string'],
             'description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $this->appConfigService->setOrUpdate(
-            'geoapify_api_key',
-            $validated['api_key'] ?? null,
-            $validated['description'] ?? 'API Key untuk layanan Geocoding dan Peta Geoapify'
+            'firebase_service_account_json',
+            $validated['service_account_json'] ?? null,
+            $validated['description'] ?? 'Konfigurasi kredensial Service Account JSON untuk Push Notification FCM'
         );
 
-        $this->appConfigService->setOrUpdate(
-            'geoapify_base_url',
-            ! empty($validated['base_url']) ? rtrim($validated['base_url'], '/') : 'https://api.geoapify.com',
-            'Base URL endpoint API untuk layanan Geocoding dan Peta Geoapify'
-        );
+        Cache::forget('app_config_firebase_service_account_json');
 
-        // Clear and pre-warm Geoapify cache
-        $geoapify = app(GeoapifyService::class);
-        $geoapify->clearCache();
-        $geoapify->getBaseUrl();
-        $geoapify->getApiKey();
-
-        $this->appConfigService->setOrUpdate(
-            'geoapify_base_url',
-            ! empty($validated['base_url']) ? rtrim($validated['base_url'], '/') : 'https://api.geoapify.com',
-            'Base URL endpoint API untuk layanan Geocoding dan Peta Geoapify'
-        );
-
-        // Clear and pre-warm Geoapify cache
-        $geoapify = app(GeoapifyService::class);
-        $geoapify->clearCache();
-        $geoapify->getBaseUrl();
-        $geoapify->getApiKey();
-
-        return redirect()->back()->with('success', 'Konfigurasi Geoapify berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Konfigurasi Firebase berhasil diperbarui.');
     }
 }

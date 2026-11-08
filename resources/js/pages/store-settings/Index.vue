@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
     Tabs,
@@ -57,9 +59,18 @@ interface Subdistrict {
     subdistrict_name: string;
 }
 
+interface Courier {
+    id: number;
+    name: string;
+    code: string;
+    logo: string | null;
+    is_active: boolean;
+}
+
 interface Props {
     setting: StoreSetting;
     provinces: Province[];
+    couriers: Courier[];
 }
 
 const props = defineProps<Props>();
@@ -149,6 +160,19 @@ const submitForm = () => {
         },
     });
 };
+
+const togglingId = ref<number | null>(null);
+
+const toggleCourier = (courier: Courier) => {
+    if (togglingId.value !== null) return;
+
+    togglingId.value = courier.id;
+    router.post(`/couriers/${courier.id}/toggle`, {}, {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => (togglingId.value = null),
+    });
+};
 </script>
 
 <template>
@@ -172,9 +196,10 @@ const submitForm = () => {
         <div class="w-full">
             <form @submit.prevent="submitForm">
                 <Tabs defaultValue="general" class="w-full">
-                    <TabsList class="grid w-full grid-cols-2">
+                    <TabsList class="grid w-full grid-cols-3">
                         <TabsTrigger value="general">Informasi Umum</TabsTrigger>
                         <TabsTrigger value="contact">Kontak & Alamat</TabsTrigger>
+                        <TabsTrigger value="couriers">Kurir</TabsTrigger>
                     </TabsList>
 
                     <!-- TAB: Informasi Umum -->
@@ -428,6 +453,49 @@ const submitForm = () => {
                                         :class="{ 'border-destructive': form.errors.address }"
                                     />
                                     <p v-if="form.errors.address" class="text-sm text-destructive">{{ form.errors.address }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </TabsContent>
+
+                    <!-- TAB: Kurir -->
+                    <TabsContent value="couriers">
+                        <div class="rounded-xl border bg-card text-card-foreground shadow-sm mt-4 p-6 space-y-4">
+                            <h3 class="text-lg font-medium border-b pb-2">Kurir Pengiriman</h3>
+
+                            <p v-if="couriers.length === 0" class="text-sm text-muted-foreground">
+                                Belum ada kurir. Tambahkan kurir pada menu Kurir (RajaOngkir).
+                            </p>
+
+                            <div v-else class="divide-y rounded-lg border">
+                                <div
+                                    v-for="courier in couriers"
+                                    :key="courier.id"
+                                    class="flex items-center justify-between gap-4 px-4 py-3 transition-colors hover:bg-muted/40"
+                                >
+                                    <div class="flex min-w-0 items-center gap-3">
+                                        <div class="flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-white">
+                                            <img v-if="courier.logo" :src="`/storage/${courier.logo}`" :alt="courier.name" class="h-full w-full object-contain p-1" />
+                                            <ImageIcon v-else class="h-4 w-4 text-muted-foreground" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="truncate text-sm font-medium">{{ courier.name }}</p>
+                                            <p class="truncate text-xs text-muted-foreground">{{ courier.code }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex shrink-0 items-center gap-3">
+                                        <Badge :variant="courier.is_active ? 'default' : 'secondary'" class="w-20 justify-center">
+                                            {{ courier.is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </Badge>
+                                        <Loader2 v-if="togglingId === courier.id" class="h-4 w-4 animate-spin text-muted-foreground" />
+                                        <Switch
+                                            :checked="courier.is_active"
+                                            :disabled="togglingId === courier.id"
+                                            :aria-label="`Aktifkan ${courier.name}`"
+                                            @update:checked="toggleCourier(courier)"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AppConfigController;
+use App\Http\Controllers\AppVersionController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourierController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ProductVirtualTryOnController;
@@ -70,9 +72,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('privacy-policy-settings', [PrivacyPolicyController::class, 'index'])->name('privacy-policy.index');
     Route::post('privacy-policy-settings', [PrivacyPolicyController::class, 'update'])->name('privacy-policy.update');
 
+    // Landing Page Settings (Contoh Virtual Try-On)
+    Route::get('landing-page-settings', [LandingPageController::class, 'index'])->name('landing-page.index');
+    Route::post('landing-page-settings', [LandingPageController::class, 'update'])->name('landing-page.update');
+
     // FAQs
     Route::post('faqs/{faq}/toggle', [FaqController::class, 'toggle'])->name('faqs.toggle');
     Route::resource('faqs', FaqController::class);
+
+    // App Versions (Manajemen Aplikasi)
+    Route::get('app-versions/{app_version}/download', [AppVersionController::class, 'download'])->name('app-versions.download');
+    Route::post('app-versions/{app_version}/set-latest', [AppVersionController::class, 'setLatest'])->name('app-versions.set-latest');
+    Route::post('app-versions/{app_version}/toggle', [AppVersionController::class, 'toggle'])->name('app-versions.toggle');
+    Route::post('app-versions/{app_version}/toggle-force-update', [AppVersionController::class, 'toggleForceUpdate'])->name('app-versions.toggle-force-update');
+    Route::resource('app-versions', AppVersionController::class)->except(['create', 'show', 'edit']);
 
     // Notifications
     Route::post('notifications/{notification}/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
@@ -102,6 +115,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('configurations/fashn-ai', [AppConfigController::class, 'updateFashnAi'])->name('configurations.fashn-ai.update');
     Route::get('configurations/geoapify', [AppConfigController::class, 'geoapify'])->name('configurations.geoapify');
     Route::post('configurations/geoapify', [AppConfigController::class, 'updateGeoapify'])->name('configurations.geoapify.update');
+    Route::get('configurations/firebase', [AppConfigController::class, 'firebase'])->name('configurations.firebase');
+    Route::post('configurations/firebase', [AppConfigController::class, 'updateFirebase'])->name('configurations.firebase.update');
     Route::resource('app-configs', AppConfigController::class)->except(['create', 'show', 'edit']);
 
     Route::middleware(['role:super admin'])->group(function () {

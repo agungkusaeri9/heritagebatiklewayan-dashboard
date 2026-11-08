@@ -143,7 +143,9 @@ return [
     */
 
     'features' => [
-        Features::resetPasswords(),
+        // Fitur reset password (lupa kata sandi) dinonaktifkan untuk panel admin.
+        // Uncomment jika ingin mengaktifkan kembali.
+        // Features::resetPasswords(),
     ],
 
 ];

@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/collapsible';
 import {
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -28,7 +27,6 @@ const { isCurrentUrl } = useCurrentUrl();
 
 <template>
     <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel>Platform</SidebarGroupLabel>
         <SidebarMenu>
             <template v-for="item in items" :key="item.title">
                 <Collapsible
@@ -42,8 +40,15 @@ const { isCurrentUrl } = useCurrentUrl();
                             <SidebarMenuButton :tooltip="item.title">
                                 <component :is="item.icon" v-if="item.icon" />
                                 <span>{{ item.title }}</span>
+                                <span
+                                    v-if="item.badge"
+                                    class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white group-data-[collapsible=icon]:hidden"
+                                >
+                                    {{ item.badge > 99 ? '99+' : item.badge }}
+                                </span>
                                 <ChevronRight
-                                    class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                                    class="transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                                    :class="item.badge ? '' : 'ml-auto'"
                                 />
                             </SidebarMenuButton>
                         </CollapsibleTrigger>
@@ -73,6 +78,12 @@ const { isCurrentUrl } = useCurrentUrl();
                         <Link :href="item.href">
                             <component :is="item.icon" v-if="item.icon" />
                             <span>{{ item.title }}</span>
+                            <span
+                                v-if="item.badge"
+                                class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white group-data-[collapsible=icon]:hidden"
+                            >
+                                {{ item.badge > 99 ? '99+' : item.badge }}
+                            </span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

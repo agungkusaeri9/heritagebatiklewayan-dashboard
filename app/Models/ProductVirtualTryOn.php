@@ -26,11 +26,13 @@ class ProductVirtualTryOn extends Model
         'task_id_video',
         'generate_video',
         'error_message',
+        'is_landing_page',
     ];
 
     protected $casts = [
         'progress' => 'integer',
         'generate_video' => 'boolean',
+        'is_landing_page' => 'boolean',
     ];
 
     protected $appends = [

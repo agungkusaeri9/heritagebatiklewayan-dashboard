@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\AppVersionController;
 use App\Http\Controllers\Api\Auth\EmailVerificationController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+use App\Http\Controllers\Api\Auth\FcmTokenController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MeController;
 use App\Http\Controllers\Api\Auth\RefreshTokenController;
@@ -24,6 +26,7 @@ use App\Http\Controllers\Api\ProductReviewController;
 use App\Http\Controllers\Api\ProductVirtualTryOnController;
 use App\Http\Controllers\Api\ShippingCostController;
 use App\Http\Controllers\Api\StoreSettingController;
+use App\Http\Controllers\Api\LandingPageController;
 use App\Http\Controllers\Api\UserAccountController;
 use App\Http\Controllers\Api\UserLocationController;
 use App\Http\Controllers\Api\UserPasswordController;
@@ -69,6 +72,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('me', MeController::class)->name('me');
             Route::post('refresh-token', RefreshTokenController::class)->name('refresh-token');
             Route::post('email/resend-otp', [EmailVerificationController::class, 'sendOtp'])->name('email.resend-otp');
+            Route::post('fcm-token', [FcmTokenController::class, 'update'])->name('fcm-token');
         });
     });
 
@@ -233,7 +237,27 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('privacy-policy', [StoreSettingController::class, 'privacyPolicy'])->name('privacy-policy');
     });
 
+    // Landing Page Try-On Examples (contoh hasil try-on untuk homepage, max 3)
+    Route::get('landing-page/try-on-examples', [LandingPageController::class, 'tryOnExamples'])->name('landing-page.try-on-examples');
+
     // Locations (Provinces, Cities, Subdistricts & Reverse Geocoding via Geoapify)
+    // App Versions (Manajemen Aplikasi Android / iOS)
+    Route::prefix('app-versions')->name('app-versions.')->group(function () {
+        Route::get('/', [AppVersionController::class, 'index'])->name('index');
+        Route::get('latest', [AppVersionController::class, 'latest'])->name('latest');
+        Route::get('latest/download', [AppVersionController::class, 'downloadLatest'])->name('latest.download');
+        Route::get('check', [AppVersionController::class, 'latest'])->name('check');
+        Route::get('{id}/download', [AppVersionController::class, 'download'])->whereNumber('id')->name('download');
+        Route::get('{id}', [AppVersionController::class, 'show'])->whereNumber('id')->name('show');
+    });
+    Route::prefix('mobile-apps')->name('mobile-apps.')->group(function () {
+        Route::get('/', [AppVersionController::class, 'index'])->name('index');
+        Route::get('latest', [AppVersionController::class, 'latest'])->name('latest');
+        Route::get('latest/download', [AppVersionController::class, 'downloadLatest'])->name('latest.download');
+        Route::get('check', [AppVersionController::class, 'latest'])->name('check');
+        Route::get('{id}/download', [AppVersionController::class, 'download'])->whereNumber('id')->name('download');
+        Route::get('{id}', [AppVersionController::class, 'show'])->whereNumber('id')->name('show');
+    });
     Route::prefix('locations')->name('locations.')->group(function () {
         Route::get('address', [LocationController::class, 'getAddress'])->name('address');
         Route::get('reverse-geocode', [LocationController::class, 'getAddress'])->name('reverse-geocode');

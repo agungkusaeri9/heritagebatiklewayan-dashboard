@@ -21,6 +21,8 @@ class OrderController extends Controller
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
         $status = $request->input('status');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
 
         $query = Order::with(['customer', 'paymentMethod', 'courier'])->latest();
 
@@ -37,11 +39,19 @@ class OrderController extends Controller
             $query->where('status', $status);
         }
 
+        if ($dateFrom) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
         $orders = $query->paginate($perPage)->withQueryString();
 
         return Inertia::render('orders/Index', [
             'orders' => $orders,
-            'filters' => $request->only(['search', 'status', 'per_page']),
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to', 'per_page']),
         ]);
     }
 

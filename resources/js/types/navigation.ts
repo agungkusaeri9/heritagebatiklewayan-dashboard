@@ -14,4 +14,5 @@ export type NavItem = {
     items?: NavItem[];
     permission?: string | string[];
     role?: string | string[];
+    badge?: number;
 };

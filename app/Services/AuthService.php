@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
@@ -59,25 +60,45 @@ class AuthService
      */
     public function loginCustomer(array $credentials, string $deviceName = 'api'): array
     {
+        $sanitizedCredentials = $credentials;
+        if (isset($sanitizedCredentials['password'])) {
+            $sanitizedCredentials['password'] = '******';
+        }
+
         $user = User::with('customer')->firstWhere('email', $credentials['email']);
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            Log::warning('Login gagal: Kredensial tidak valid.', ['request' => $sanitizedCredentials]);
             throw new AuthenticationException('Email atau kata sandi salah.');
         }
 
         if ($user->is_deleted) {
+            Log::warning('Login ditolak: Akun telah dihapus.', ['request' => $sanitizedCredentials, 'user_id' => $user->id]);
             throw new AccessDeniedHttpException('Akun ini telah dinonaktifkan atau dihapus.');
         }
 
         if (! $user->hasRole(self::CUSTOMER_ROLE, self::API_GUARD)) {
+            Log::warning('Login ditolak: Bukan role customer.', ['request' => $sanitizedCredentials, 'user_id' => $user->id]);
             throw new AccessDeniedHttpException('Akun ini tidak memiliki akses sebagai customer.');
         }
 
         if (! $user->customer?->is_active || $user->customer?->is_deleted) {
+            Log::warning('Login ditolak: Akun customer tidak aktif.', ['request' => $sanitizedCredentials, 'user_id' => $user->id]);
             throw new AccessDeniedHttpException('Akun customer tidak aktif.');
         }
 
+        // Update fcm_token jika dikirim saat login
+        if (! empty($credentials['fcm_token'])) {
+            $user->update(['fcm_token' => $credentials['fcm_token']]);
+        }
+
         $token = $user->createToken($deviceName)->plainTextToken;
+
+        Log::info('Login berhasil.', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'request' => $sanitizedCredentials,
+        ]);
 
         return [
             'user' => $user->load('roles'),

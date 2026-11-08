@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Courier;
 use App\Models\Province;
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
@@ -26,6 +27,7 @@ class StoreSettingController extends Controller
         return Inertia::render('store-settings/Index', [
             'setting' => $setting,
             'provinces' => $provinces,
+            'couriers' => Courier::orderBy('name')->get(['id', 'name', 'code', 'logo', 'is_active']),
         ]);
     }
 

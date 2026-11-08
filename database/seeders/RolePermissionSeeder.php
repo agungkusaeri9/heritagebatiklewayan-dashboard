@@ -106,11 +106,21 @@ class RolePermissionSeeder extends Seeder
             'view privacy policy',
             'edit privacy policy',
 
+            // Landing Page (Contoh Virtual Try-On)
+            'view landing page settings',
+            'edit landing page settings',
+
             // FAQ (Tanya Jawab)
             'view faqs',
             'create faqs',
             'edit faqs',
             'delete faqs',
+
+            // Manajemen Aplikasi (App Versions)
+            'view app versions',
+            'create app versions',
+            'edit app versions',
+            'delete app versions',
 
             // Konfigurasi Aplikasi (App Configurations)
             'view app configs',
@@ -182,9 +192,15 @@ class RolePermissionSeeder extends Seeder
             'edit store settings',
             'view privacy policy',
             'edit privacy policy',
+            'view landing page settings',
+            'edit landing page settings',
             'view faqs',
             'create faqs',
             'edit faqs',
+            'view app versions',
+            'create app versions',
+            'edit app versions',
+            'delete app versions',
             'view app configs',
             'create app configs',
             'edit app configs',

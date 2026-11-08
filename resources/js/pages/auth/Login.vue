@@ -3,7 +3,6 @@ import { Form, Head } from '@inertiajs/vue3';
 import { Lock, User } from 'lucide-vue-next';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -20,7 +19,6 @@ defineOptions({
 
 defineProps<{
     status?: string;
-    canResetPassword: boolean;
 }>();
 </script>
 
@@ -63,16 +61,7 @@ defineProps<{
 
             <!-- Password Input -->
             <div class="grid gap-2">
-                <div class="flex items-center justify-between">
-                    <Label for="password" class="text-xs font-semibold">Kata Sandi</Label>
-                    <TextLink
-                        v-if="canResetPassword"
-                        href="/forgot-password"
-                        class="text-xs text-primary hover:underline"
-                    >
-                        Lupa kata sandi?
-                    </TextLink>
-                </div>
+                <Label for="password" class="text-xs font-semibold">Kata Sandi</Label>
                 <div class="relative">
                     <PasswordInput
                         id="password"

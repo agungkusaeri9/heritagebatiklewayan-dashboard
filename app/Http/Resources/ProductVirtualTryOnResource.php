@@ -64,6 +64,7 @@ class ProductVirtualTryOnResource extends JsonResource
             'generate_video' => (bool) $this->generate_video,
             'error_message' => $this->error_message,
             'is_default' => (bool) $this->is_default,
+            'is_landing_page' => (bool) $this->is_landing_page,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

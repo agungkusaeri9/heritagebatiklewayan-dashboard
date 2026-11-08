@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import {
     Database,
     LayoutGrid,
     Package,
-    User,
     Users,
     History,
     ShieldCheck,
     CreditCard,
     Truck,
-    MapPin,
     Settings,
     ShoppingBag,
     Bell,
@@ -22,7 +20,6 @@ import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
-import { usePermissions } from '@/composables/usePermissions';
 import {
     Sidebar,
     SidebarContent,
@@ -32,11 +29,14 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { usePermissions } from '@/composables/usePermissions';
 import type { NavItem } from '@/types';
 
 const { can, hasRole, isSuperAdmin } = usePermissions();
 
-const rawNavItems: NavItem[] = [
+const page = usePage<any>();
+
+const rawNavItems = computed<NavItem[]>(() => [
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -48,6 +48,7 @@ const rawNavItems: NavItem[] = [
         href: '/orders',
         icon: ShoppingBag,
         permission: 'view orders',
+        badge: page.props.pendingOrdersCount ?? 0,
     },
     {
         title: 'Banner Promosi',
@@ -105,13 +106,7 @@ const rawNavItems: NavItem[] = [
         icon: Database,
         items: [
             {
-                title: 'Pengguna (Admin)',
-                href: '/users',
-                icon: User,
-                permission: 'view users',
-            },
-            {
-                title: 'Pelanggan (Customer)',
+                title: 'Pelanggan',
                 href: '/customers',
                 icon: Users,
                 permission: 'view customers',
@@ -127,12 +122,6 @@ const rawNavItems: NavItem[] = [
                 href: '/couriers',
                 icon: Truck,
                 permission: 'view couriers',
-            },
-            {
-                title: 'Lokasi',
-                href: '/locations',
-                icon: MapPin,
-                permission: 'view locations',
             },
         ],
     },
@@ -195,6 +184,11 @@ const rawNavItems: NavItem[] = [
                 href: '/configurations/geoapify',
                 permission: 'view app configs',
             },
+            {
+                title: 'Firebase (FCM)',
+                href: '/configurations/firebase',
+                permission: 'view app configs',
+            },
         ],
     },
     {
@@ -213,9 +207,19 @@ const rawNavItems: NavItem[] = [
                 permission: 'view privacy policy',
             },
             {
+                title: 'Landing Page',
+                href: '/landing-page-settings',
+                permission: 'view landing page settings',
+            },
+            {
                 title: 'FAQ (Tanya Jawab)',
                 href: '/faqs',
                 permission: 'view faqs',
+            },
+            {
+                title: 'Manajemen Aplikasi',
+                href: '/app-versions',
+                permission: 'view app versions',
             },
         ],
     },
@@ -225,28 +229,40 @@ const rawNavItems: NavItem[] = [
         icon: History,
         permission: 'view activity logs',
     },
-];
+]);
 
 const checkItemAccess = (item: NavItem): boolean => {
-    if (isSuperAdmin.value) return true;
-    if (item.role && !hasRole(item.role)) return false;
-    if (item.permission && !can(item.permission)) return false;
+    if (isSuperAdmin.value) {
+return true;
+}
+
+    if (item.role && !hasRole(item.role)) {
+return false;
+}
+
+    if (item.permission && !can(item.permission)) {
+return false;
+}
+
     return true;
 };
 
 const mainNavItems = computed<NavItem[]>(() => {
-    return rawNavItems
+    return rawNavItems.value
         .map((item) => {
             if (item.items && item.items.length > 0) {
                 const filteredSubItems = item.items.filter((sub) => checkItemAccess(sub));
+
                 if (filteredSubItems.length === 0) {
                     return null;
                 }
+
                 return {
                     ...item,
                     items: filteredSubItems,
                 };
             }
+
             return checkItemAccess(item) ? item : null;
         })
         .filter((item): item is NavItem => item !== null);

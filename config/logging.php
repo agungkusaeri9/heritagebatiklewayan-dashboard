@@ -54,7 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
 
@@ -66,11 +66,11 @@ return [
         ],
 
         'daily' => [
-            'driver' => 'daily',
+            'driver' => 'custom',
+            'via' => App\Logging\DailyRotatingLogFactory::class,
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => env('LOG_DAILY_DAYS', 14),
-            'replace_placeholders' => true,
+            'days' => 14,
         ],
 
         'slack' => [

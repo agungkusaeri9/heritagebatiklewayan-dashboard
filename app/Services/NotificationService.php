@@ -15,7 +15,8 @@ class NotificationService
     public function __construct(
         protected NotificationRepositoryInterface $notificationRepository,
         protected NotificationSettingRepositoryInterface $settingRepository,
-        protected ActivityLogService $activityLogService
+        protected ActivityLogService $activityLogService,
+        protected FirebaseFcmService $firebaseFcmService
     ) {}
 
     public function getPaginatedNotifications(
@@ -81,6 +82,24 @@ class NotificationService
                 "Membuat notifikasi baru '{$notification->title}' untuk target {$notification->recipient_type}",
                 ['notification_id' => $notification->id]
             );
+
+            // Kirim Push Notification via FCM ke target user yang memiliki fcm_token
+            if (! empty($targetUserIds)) {
+                $tokens = User::whereIn('id', $targetUserIds)
+                    ->whereNotNull('fcm_token')
+                    ->where('fcm_token', '!=', '')
+                    ->pluck('fcm_token')
+                    ->all();
+
+                if (! empty($tokens)) {
+                    $this->firebaseFcmService->sendNotification(
+                        $tokens,
+                        $notification->title,
+                        $notification->message,
+                        ['notification_id' => (string) $notification->id]
+                    );
+                }
+            }
 
             return $notification;
         });

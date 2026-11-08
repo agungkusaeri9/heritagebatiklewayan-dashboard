@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import {
     Card,
     CardContent,
@@ -34,11 +33,11 @@ defineProps<{
                 :href="home()"
                 class="flex flex-col items-center gap-2 self-center transition-transform hover:scale-105"
             >
-                <div
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-md shadow-primary/20 ring-4 ring-primary/10"
-                >
-                    <AppLogoIcon class="size-6 fill-current" />
-                </div>
+                <img
+                    src="/images/logo.png"
+                    :alt="$page.props.name || 'Logo'"
+                    class="h-14 w-auto object-contain"
+                />
             </Link>
 
             <!-- Elevated Auth Card -->

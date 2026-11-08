@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import type { BreadcrumbItem } from '@/types';
 import { 
     Eye, 
     Search,
     ShoppingBag,
-    Filter
+    Filter,
+    X
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
     Select,
@@ -54,6 +56,8 @@ const props = defineProps<{
     filters: {
         search?: string;
         status?: string;
+        date_from?: string;
+        date_to?: string;
         per_page?: string;
     };
 }>();
@@ -65,8 +69,36 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || 'all');
+const dateFrom = ref(props.filters.date_from || '');
+const dateTo = ref(props.filters.date_to || '');
 const perPage = ref(props.filters.per_page || '10');
 const perPageOptions = ['10', '25', '50', '100'];
+
+const applyFilters = () => {
+    router.get(
+        '/orders',
+        {
+            search: search.value,
+            status: status.value,
+            date_from: dateFrom.value,
+            date_to: dateTo.value,
+            per_page: perPage.value,
+        },
+        { preserveState: true, preserveScroll: true, replace: true }
+    );
+};
+
+const hasActiveFilter = computed(
+    () => !!search.value || status.value !== 'all' || !!dateFrom.value || !!dateTo.value
+);
+
+const resetFilters = () => {
+    search.value = '';
+    status.value = 'all';
+    dateFrom.value = '';
+    dateTo.value = '';
+    applyFilters();
+};
 
 const formatCurrency = (amount: number | string) => {
     return new Intl.NumberFormat('id-ID', {
@@ -107,19 +139,9 @@ const getStatusLabel = (st: string) => {
 };
 
 let searchTimeout: ReturnType<typeof setTimeout>;
-watch([search, status, perPage], () => {
+watch(perPage, () => {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        router.get(
-            '/orders',
-            { 
-                search: search.value, 
-                status: status.value, 
-                per_page: perPage.value 
-            },
-            { preserveState: true, preserveScroll: true, replace: true }
-        );
-    }, 300);
+    searchTimeout = setTimeout(applyFilters, 300);
 });
 </script>
 
@@ -141,6 +163,87 @@ watch([search, status, perPage], () => {
                 </div>
             </div>
 
+            <!-- Filter Card -->
+            <div class="rounded-xl border bg-card p-4 shadow-xs">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="space-y-1.5">
+                        <Label for="filter-status" class="text-xs font-medium text-muted-foreground">Status Pesanan</Label>
+                        <Select v-model="status">
+                            <SelectTrigger id="filter-status" class="h-9 w-full bg-background text-sm">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Status</SelectItem>
+                                <SelectItem value="pending">Menunggu</SelectItem>
+                                <SelectItem value="processing">Diproses</SelectItem>
+                                <SelectItem value="success">Berhasil</SelectItem>
+                                <SelectItem value="failed">Gagal / Batal</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <Label for="filter-date-from" class="text-xs font-medium text-muted-foreground">Tanggal Mulai</Label>
+                        <Input
+                            id="filter-date-from"
+                            v-model="dateFrom"
+                            type="date"
+                            class="h-9 w-full bg-background text-sm"
+                            :max="dateTo || undefined"
+                        />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <Label for="filter-date-to" class="text-xs font-medium text-muted-foreground">Tanggal Akhir</Label>
+                        <Input
+                            id="filter-date-to"
+                            v-model="dateTo"
+                            type="date"
+                            class="h-9 w-full bg-background text-sm"
+                            :min="dateFrom || undefined"
+                        />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <Label for="filter-search" class="text-xs font-medium text-muted-foreground">Pencarian</Label>
+                        <div class="relative">
+                            <Search class="absolute left-2.5 top-3 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                id="filter-search"
+                                v-model="search"
+                                type="search"
+                                placeholder="No Pesanan / Pelanggan..."
+                                class="h-9 w-full bg-background pl-8 text-sm"
+                                @keyup.enter="applyFilters"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 flex items-center justify-end gap-2 border-t pt-4">
+                    <Button
+                        v-if="hasActiveFilter"
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        class="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                        @click="resetFilters"
+                    >
+                        <X class="h-3.5 w-3.5" />
+                        Reset
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        class="gap-1.5 text-xs"
+                        @click="applyFilters"
+                    >
+                        <Filter class="h-3.5 w-3.5" />
+                        Terapkan Filter
+                    </Button>
+                </div>
+            </div>
+
             <div class="rounded-xl border bg-card shadow-xs">
                 <div class="flex flex-col gap-4 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -156,33 +259,6 @@ watch([search, status, perPage], () => {
                             </SelectContent>
                         </Select>
                         <span>data</span>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <div class="flex items-center gap-2 border-r pr-2 mr-2">
-                            <Filter class="h-4 w-4 text-muted-foreground" />
-                            <Select v-model="status">
-                                <SelectTrigger class="h-8 w-[140px] bg-background text-xs">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Status</SelectItem>
-                                    <SelectItem value="pending">Menunggu</SelectItem>
-                                    <SelectItem value="processing">Diproses</SelectItem>
-                                    <SelectItem value="success">Berhasil</SelectItem>
-                                    <SelectItem value="failed">Gagal / Batal</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div class="relative w-full max-w-xs sm:w-64">
-                            <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                v-model="search"
-                                type="search"
-                                placeholder="Cari No Pesanan / Pelanggan..."
-                                class="h-8 w-full bg-background pl-8 text-xs"
-                            />
-                        </div>
                     </div>
                 </div>
 
@@ -253,7 +329,7 @@ watch([search, status, perPage], () => {
                                 :variant="link.active ? 'default' : 'outline'"
                                 size="sm"
                                 class="h-8 px-3 text-xs"
-                                @click="router.get(link.url, { search, status, per_page: perPage }, { preserveState: true })"
+                                @click="router.get(link.url, { search, status, date_from: dateFrom, date_to: dateTo, per_page: perPage }, { preserveState: true })"
                                 v-html="link.label"
                             />
                             <span v-else class="px-2 py-1 text-xs text-muted-foreground" v-html="link.label"></span>
