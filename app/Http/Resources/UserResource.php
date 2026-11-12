@@ -37,6 +37,8 @@ class UserResource extends JsonResource
             'avatar' => $avatar,
             'avatar_url' => $avatar ? (filter_var($avatar, FILTER_VALIDATE_URL) ? $avatar : url($avatar)) : null,
             'is_profile_complete' => $isComplete,
+            'is_email_verified' => $this->hasVerifiedEmail(),
+            'email_verified_at' => $this->email_verified_at?->toISOString(),
             'roles' => $this->relationLoaded('roles') ? $this->roles->pluck('name') : null,
             'created_at' => $this->created_at?->toISOString(),
         ];

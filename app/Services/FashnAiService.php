@@ -317,42 +317,64 @@ class FashnAiService
      *
      * @throws \Exception
      */
-    public function runTryOnMax(string $modelImage, string $productImage): array
-    {
-        $apiKey = $this->getApiKey();
-        if (empty($apiKey)) {
-            throw new \Exception('API Key Fashn AI belum dikonfigurasikan. Silakan isi API Key di menu Konfigurasi -> Fashn AI.');
+
+        public function runTryOnMax(
+            string $modelImage,
+            string $productImage
+        ): array {
+            $apiKey = $this->getApiKey();
+
+            if (empty($apiKey)) {
+                throw new \Exception(
+                    'API Key Fashn AI belum dikonfigurasikan.'
+                );
+            }
+
+            $baseUrl = $this->getBaseUrl();
+            $prompt = 'The fashion model performs a smooth, continuous 360-degree rotation while standing in place, showcasing the outfit from all angles: front view, left side view, back view, and right side view. The model rotates naturally and slowly, completing one full rotation. Keep the camera stationary and maintain the exact same clothing design, colors, fabric texture, fit, body proportions, and facial identity throughout the video. Professional fashion catalog presentation with consistent studio lighting.';
+
+            $response = Http::withToken($apiKey)
+                ->timeout(90)
+                ->post($baseUrl.'/v1/run', [
+                    'model_name' => 'tryon-max',
+                    'inputs' => [
+                        'model_image' => $modelImage,
+                        'product_image' => $productImage,
+                        'prompt' => $prompt,
+                        'resolution' => '2k',
+                        'generation_mode' => 'balanced',
+                        'num_images' => 1,
+                        'output_format' => 'png',
+                    ],
+                ]);
+
+            if (! $response->successful()) {
+                $errorMsg = $response->json('error.message')
+                    ?? $response->body()
+                    ?? 'Gagal menghubungi Fashn AI API.';
+
+                Log::error('Fashn AI runTryOnMax failed: '.$errorMsg, [
+                    'status' => $response->status(),
+                ]);
+
+                throw new \Exception(
+                    'Fashn AI Error ('.$response->status().'): '.$errorMsg
+                );
+            }
+
+            $result = $response->json();
+
+            if (! empty($result['error'])) {
+                $msg = is_array($result['error'])
+                    ? ($result['error']['message'] ?? json_encode($result['error']))
+                    : $result['error'];
+
+                throw new \Exception('Fashn AI Task Error: '.$msg);
+            }
+
+            return $result;
         }
 
-        $baseUrl = $this->getBaseUrl();
-
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer '.$apiKey,
-            'Content-Type' => 'application/json',
-        ])->timeout(45)->post($baseUrl.'/v1/run', [
-            'model_name' => 'tryon-max',
-            'inputs' => [
-                'model_image' => $modelImage,
-                'product_image' => $productImage,
-            ],
-        ]);
-
-        if (! $response->successful()) {
-            $errorMsg = $response->json('error.message') ?? $response->body() ?? 'Gagal menghubungi Fashn AI API (tryon-max).';
-            Log::error('Fashn AI runTryOnMax failed: '.$errorMsg, [
-                'status' => $response->status(),
-            ]);
-            throw new \Exception('Fashn AI Error ('.$response->status().'): '.$errorMsg);
-        }
-
-        $result = $response->json();
-        if (! empty($result['error'])) {
-            $msg = is_array($result['error']) ? ($result['error']['message'] ?? json_encode($result['error'])) : $result['error'];
-            throw new \Exception('Fashn AI Task Error (tryon-max): '.$msg);
-        }
-
-        return $result;
-    }
 
     /**
      * Run face-to-model generation task.

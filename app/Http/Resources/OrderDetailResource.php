@@ -28,6 +28,7 @@ class OrderDetailResource extends JsonResource
             'id' => $this->id,
             'order_number' => $this->order_number,
             'status' => $this->status,
+            'store_whatsapp' => \App\Models\StoreSetting::first()?->whatsapp,
             'is_reviewed' => $isReviewed,
             'reviewed_count' => $reviewedProductIds->count(),
             'average_rating' => $reviews->isNotEmpty() ? round((float) $reviews->avg('rating'), 1) : null,
