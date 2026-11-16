@@ -11,10 +11,22 @@ class StoreProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (in_array($this->input('category_id'), ['', 'none'], true)) {
+            $this->merge(['category_id' => null]);
+        }
+
+        if (in_array($this->input('store_id'), ['', 'none'], true)) {
+            $this->merge(['store_id' => null]);
+        }
+    }
+
     public function rules(): array
     {
         return [
             'category_id' => ['nullable', 'exists:categories,id'],
+            'store_id' => ['nullable', 'exists:stores,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug'],
             'description' => ['nullable', 'string'],

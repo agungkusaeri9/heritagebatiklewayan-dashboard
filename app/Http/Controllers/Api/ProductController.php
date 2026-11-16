@@ -32,6 +32,7 @@ class ProductController extends Controller
         $category = $request->input('category_slug')
             ?? $request->input('category_id')
             ?? $request->input('category');
+        $storeId = $request->filled('store_id') ? (int) $request->input('store_id') : null;
 
         $products = $this->productRepository->getPaginatedProducts(
             perPage: $perPage,
@@ -40,6 +41,7 @@ class ProductController extends Controller
             sortColumn: $sort,
             sortDirection: $direction,
             category: $category,
+            storeId: $storeId,
         );
 
         return ApiResponse::paginate(

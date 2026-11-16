@@ -12,141 +12,11 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Seed permissions first
+        $this->call(PermissionSeeder::class);
+
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-
-        // Comprehensive list of permissions grouped by module
-        $permissions = [
-            // Dashboard
-            'view dashboard',
-
-            // Manajemen Pengguna (Admin Users)
-            'view users',
-            'create users',
-            'edit users',
-            'delete users',
-
-            // Pelanggan (Customers)
-            'view customers',
-            'edit customers',
-            'delete customers',
-
-            // Peran & Hak Akses (Roles & Permissions)
-            'view roles',
-            'create roles',
-            'edit roles',
-            'delete roles',
-            'view permissions',
-
-            // Produk (Products)
-            'view products',
-            'create products',
-            'edit products',
-            'delete products',
-            'import products',
-
-            // Kategori Produk (Categories)
-            'view categories',
-            'create categories',
-            'edit categories',
-            'delete categories',
-
-            // Tipe & Nilai Varian (Variant Types)
-            'view variant types',
-            'create variant types',
-            'edit variant types',
-            'delete variant types',
-
-            // Pesanan (Orders)
-            'view orders',
-            'edit orders',
-            'update order status',
-            'update order payment',
-            'update order shipping',
-
-            // Banner Promosi (Banners)
-            'view banners',
-            'create banners',
-            'edit banners',
-            'delete banners',
-            'toggle banners',
-
-            // Metode Pembayaran (Payment Methods)
-            'view payment methods',
-            'create payment methods',
-            'edit payment methods',
-            'delete payment methods',
-
-            // Kurir (Couriers)
-            'view couriers',
-            'create couriers',
-            'edit couriers',
-            'delete couriers',
-            'toggle couriers',
-
-            // Lokasi Wilayah (Locations)
-            'view locations',
-
-            // Notifikasi (Notifications)
-            'view notifications',
-            'create notifications',
-            'delete notifications',
-            'manage notification settings',
-
-            // Ulasan Produk (Product Reviews)
-            'view product reviews',
-            'toggle product reviews',
-            'delete product reviews',
-
-            // Pengaturan Toko (Store Settings)
-            'view store settings',
-            'edit store settings',
-
-            // Kebijakan & Privasi (Privacy Policy)
-            'view privacy policy',
-            'edit privacy policy',
-
-            // Landing Page (Contoh Virtual Try-On)
-            'view landing page settings',
-            'edit landing page settings',
-
-            // FAQ (Tanya Jawab)
-            'view faqs',
-            'create faqs',
-            'edit faqs',
-            'delete faqs',
-
-            // Manajemen Aplikasi (App Versions)
-            'view app versions',
-            'create app versions',
-            'edit app versions',
-            'delete app versions',
-
-            // Konfigurasi Aplikasi (App Configurations)
-            'view app configs',
-            'create app configs',
-            'edit app configs',
-            'delete app configs',
-
-            // Model Virtual Try-On (Fashn AI)
-            'view virtual try on models',
-            'create virtual try on models',
-            'edit virtual try on models',
-            'delete virtual try on models',
-
-            // Produk Virtual Try-On (Fashn AI)
-            'view product virtual try ons',
-            'create product virtual try ons',
-            'edit product virtual try ons',
-            'delete product virtual try ons',
-
-            // Log Aktivitas (Activity Logs)
-            'view activity logs',
-        ];
-
-        foreach ($permissions as $permission) {
-            Permission::findOrCreate($permission, 'web');
-        }
 
         // Create Super Admin role and sync all permissions
         $superAdminRole = Role::findOrCreate('super admin', 'web');
@@ -162,6 +32,7 @@ class RolePermissionSeeder extends Seeder
             'view customers',
             'edit customers',
             'view products',
+            'filter products by store',
             'create products',
             'edit products',
             'import products',
@@ -190,6 +61,10 @@ class RolePermissionSeeder extends Seeder
             'toggle product reviews',
             'view store settings',
             'edit store settings',
+            'view stores',
+            'create stores',
+            'edit stores',
+            'delete stores',
             'view privacy policy',
             'edit privacy policy',
             'view landing page settings',
@@ -216,6 +91,27 @@ class RolePermissionSeeder extends Seeder
             'view activity logs',
         ];
         $adminRole->syncPermissions($adminPermissions);
+
+        // Create Admin Store (Seller) role (access own store profile, NOT master stores list)
+        $adminStoreRole = Role::findOrCreate('admin store', 'web');
+        $adminStorePermissions = [
+            'view dashboard',
+            'view store profile',
+            'edit store profile',
+            'view products',
+            'view products by store',
+            'create products',
+            'edit products',
+            'delete products',
+            'import products',
+            'view categories',
+            'view variant types',
+            'view product reviews',
+            'toggle product reviews',
+            'view product virtual try ons',
+            'create product virtual try ons',
+        ];
+        $adminStoreRole->syncPermissions($adminStorePermissions);
 
         // Create Customer role
         Role::findOrCreate('customer', 'web');

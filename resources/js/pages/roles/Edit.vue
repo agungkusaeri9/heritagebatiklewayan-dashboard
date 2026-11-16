@@ -122,6 +122,12 @@ const getModuleMeta = (permName: string): ModuleMeta => {
     if (permName.includes('store setting')) {
         return { title: 'Pengaturan Toko', description: 'Profil toko, logo & kontak', icon: Store };
     }
+    if (permName.includes('store profile')) {
+        return { title: 'Profile Toko', description: 'Kelola profil toko oleh admin store', icon: Store };
+    }
+    if (permName.includes('store')) {
+        return { title: 'Toko (Stores)', description: 'Kelola data toko dan seller', icon: Store };
+    }
     if (permName.includes('privacy') || permName.includes('policy')) {
         return { title: 'Kebijakan & Privasi', description: 'Syarat ketentuan & kebijakan', icon: FileText };
     }
@@ -136,6 +142,18 @@ const getModuleMeta = (permName: string): ModuleMeta => {
 
 // Formats individual action inside each module
 const formatAction = (permName: string) => {
+    if (permName === 'filter products by store') {
+        return {
+            label: 'Filter by Store',
+            badgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900',
+        };
+    }
+    if (permName === 'view products by store') {
+        return {
+            label: 'Lihat Produk per Toko (Where Store)',
+            badgeColor: 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-900',
+        };
+    }
     if (permName.startsWith('view ')) {
         return {
             label: 'Lihat (View)',

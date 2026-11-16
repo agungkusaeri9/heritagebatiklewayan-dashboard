@@ -17,9 +17,10 @@ class ProductRepository implements ProductRepositoryInterface
         ?string $status = null,
         string $sortColumn = 'created_at',
         string $sortDirection = 'desc',
-        int|string|null $category = null
+        int|string|null $category = null,
+        int|array|null $storeId = null
     ): LengthAwarePaginator {
-        $query = Product::query()->with(['category', 'images', 'variantValues.variantType']);
+        $query = Product::query()->with(['store', 'category', 'images', 'variantValues.variantType']);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -43,6 +44,18 @@ class ProductRepository implements ProductRepositoryInterface
             }
         }
 
+        if ($storeId !== null) {
+            if (is_array($storeId)) {
+                if (empty($storeId)) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->whereIn('store_id', array_map('intval', $storeId));
+                }
+            } elseif ($storeId !== '' && $storeId !== 'all') {
+                $query->where('store_id', (int) $storeId);
+            }
+        }
+
         $allowedSortColumns = ['name', 'price', 'stock', 'is_active', 'created_at'];
         if (in_array($sortColumn, $allowedSortColumns)) {
             $query->orderBy($sortColumn, $sortDirection === 'asc' ? 'asc' : 'desc');
@@ -58,7 +71,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function findById(int $id): ?Product
     {
-        return Product::with(['category', 'images', 'variantValues.variantType'])->find($id);
+        return Product::with(['store', 'category', 'images', 'variantValues.variantType'])->find($id);
     }
 
     /**
@@ -66,7 +79,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function findBySlug(string $slug): ?Product
     {
-        return Product::with(['category', 'images', 'variantValues.variantType'])
+        return Product::with(['store', 'category', 'images', 'variantValues.variantType'])
             ->where('slug', $slug)
             ->first();
     }
@@ -98,8 +111,21 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Count total products.
      */
-    public function countProducts(): int
+    public function countProducts(int|array|null $storeId = null): int
     {
-        return Product::count();
+        $query = Product::query();
+
+        if ($storeId !== null) {
+            if (is_array($storeId)) {
+                if (empty($storeId)) {
+                    return 0;
+                }
+                $query->whereIn('store_id', array_map('intval', $storeId));
+            } else {
+                $query->where('store_id', (int) $storeId);
+            }
+        }
+
+        return $query->count();
     }
 }

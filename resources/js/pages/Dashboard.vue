@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { 
-    Users, 
-    ShoppingBag, 
-    Package, 
-    CreditCard, 
-    TrendingUp,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Eye
+import { Head, Link, router } from '@inertiajs/vue3';
+import {
+    Users,
+    ShoppingBag,
+    Package,
+    CreditCard,
+    Eye,
+    Sparkles,
+    Store as StoreIcon,
+    MessageCircle,
+    Phone,
+    Plus,
 } from 'lucide-vue-next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,9 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { router } from '@inertiajs/vue3';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { usePermissions } from '@/composables/usePermissions';
 import { computed } from 'vue';
 
 // Chart.js imports
@@ -54,6 +53,17 @@ ChartJS.register(
   Legend
 );
 
+const { can } = usePermissions();
+
+interface StoreProfileSummary {
+    id: number;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    whatsapp: string | null;
+    logo_url: string | null;
+}
+
 const props = defineProps<{
     currentFilter: string;
     availableYears: number[];
@@ -62,6 +72,7 @@ const props = defineProps<{
         totalRevenue: number;
         totalCustomers: number;
         totalProducts: number;
+        totalVirtualTryOns?: number;
     };
     chartData: {
         labels: string[];
@@ -70,6 +81,7 @@ const props = defineProps<{
         status: number[]; // [pending, processing, success, failed]
     };
     recentOrders: any[];
+    storeProfile?: StoreProfileSummary | null;
 }>();
 
 const updateFilter = (filter: string | number) => {
@@ -213,7 +225,7 @@ const statusChartData = computed(() => ({
                 </p>
             </div>
             
-            <div class="flex items-center gap-2 w-full sm:w-auto">
+            <div v-if="can('view orders')" class="flex items-center gap-2 w-full sm:w-auto">
                 <Tabs :model-value="!currentFilter.startsWith('year-') ? currentFilter : ''" @update:model-value="updateFilter" class="flex-1 sm:flex-initial">
                     <TabsList class="grid w-full grid-cols-3 sm:flex">
                         <TabsTrigger value="today">Hari Ini</TabsTrigger>
@@ -234,8 +246,11 @@ const statusChartData = computed(() => ({
         </div>
 
         <!-- Summary Cards -->
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+        <div
+            v-if="can('view orders') || can('view customers') || can(['view products', 'view products by store']) || can('view product virtual try ons')"
+            class="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+        >
+            <Card v-if="can('view orders')">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
                     <CreditCard class="h-4 w-4 text-muted-foreground" />
@@ -246,7 +261,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card v-if="can('view orders')">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Total Pesanan</CardTitle>
                     <ShoppingBag class="h-4 w-4 text-muted-foreground" />
@@ -257,7 +272,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card v-if="can('view customers')">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Total Pelanggan</CardTitle>
                     <Users class="h-4 w-4 text-muted-foreground" />
@@ -268,7 +283,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card v-if="can(['view products', 'view products by store'])">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Produk Aktif</CardTitle>
                     <Package class="h-4 w-4 text-muted-foreground" />
@@ -278,10 +293,67 @@ const statusChartData = computed(() => ({
                     <p class="text-xs text-muted-foreground mt-1">Total jenis produk</p>
                 </CardContent>
             </Card>
+
+            <Card v-if="can('view product virtual try ons') && !can('view orders')">
+                <CardHeader class="flex flex-row items-center justify-between pb-2">
+                    <CardTitle class="text-sm font-medium text-muted-foreground">Virtual Try-On</CardTitle>
+                    <Sparkles class="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div class="text-2xl font-bold">{{ summary.totalVirtualTryOns || 0 }}</div>
+                    <p class="text-xs text-muted-foreground mt-1">Total try-on produk toko</p>
+                </CardContent>
+            </Card>
         </div>
 
+        <!-- Store Profile & Checkout WhatsApp Quick Card -->
+        <Card v-if="can('view store profile') && storeProfile">
+            <CardHeader class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted/40">
+                        <img
+                            v-if="storeProfile.logo_url"
+                            :src="storeProfile.logo_url"
+                            :alt="storeProfile.name"
+                            class="h-full w-full object-cover"
+                        />
+                        <StoreIcon v-else class="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                        <CardTitle>{{ storeProfile.name }}</CardTitle>
+                        <CardDescription>
+                            Pesanan pelanggan diarahkan langsung ke nomor WhatsApp toko Anda.
+                        </CardDescription>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <Button v-if="can('edit store profile')" variant="outline" size="sm" as-child>
+                        <Link href="/store-profile">Kelola Profile Toko</Link>
+                    </Button>
+                    <Button v-if="can('create products')" size="sm" as-child>
+                        <Link href="/products/create">
+                            <Plus class="mr-1.5 h-4 w-4" />
+                            Tambah Produk
+                        </Link>
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div class="flex flex-wrap gap-6 text-sm text-muted-foreground">
+                    <div class="flex items-center gap-2">
+                        <MessageCircle class="h-4 w-4 text-emerald-600" />
+                        <span><strong class="font-medium text-foreground">WhatsApp Checkout:</strong> {{ storeProfile.whatsapp || '-' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Phone class="h-4 w-4 text-muted-foreground" />
+                        <span><strong class="font-medium text-foreground">Telepon:</strong> {{ storeProfile.phone || '-' }}</span>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+
         <!-- Charts Row -->
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div v-if="can('view orders')" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             
             <!-- Revenue Line Chart -->
             <Card class="lg:col-span-2">
@@ -310,7 +382,7 @@ const statusChartData = computed(() => ({
             </Card>
         </div>
 
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div v-if="can('view orders')" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             
             <!-- Orders Bar Chart -->
             <Card class="lg:col-span-1">

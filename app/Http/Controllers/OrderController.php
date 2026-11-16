@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\User;
 use App\Services\OrderNotificationService;
+use App\Services\StoreService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,11 +15,32 @@ class OrderController extends Controller
         protected OrderNotificationService $orderNotificationService
     ) {}
 
+    private function authorizeOrderAccess(?User $user, string $permission): void
+    {
+        if (! $user) {
+            abort(403);
+        }
+
+        if ($user->hasRole('super admin')) {
+            return;
+        }
+
+        if ($user->hasRole(StoreService::ADMIN_STORE_ROLE) && ! $user->hasRole('admin')) {
+            abort(403, 'Role Admin Store tidak memiliki akses ke halaman Pesanan.');
+        }
+
+        if ($user->roles()->exists() && ! $user->can($permission)) {
+            abort(403, 'Anda tidak memiliki izin untuk mengakses fitur Pesanan.');
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorizeOrderAccess($request->user(), 'view orders');
+
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
         $status = $request->input('status');
@@ -55,8 +78,10 @@ class OrderController extends Controller
         ]);
     }
 
-    public function show(Order $order)
+    public function show(Request $request, Order $order)
     {
+        $this->authorizeOrderAccess($request->user(), 'view orders');
+
         $order->load(['customer', 'paymentMethod', 'courier', 'province', 'city', 'subdistrict', 'details.product', 'transaction']);
 
         return Inertia::render('orders/Show', [
@@ -66,6 +91,8 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        $this->authorizeOrderAccess($request->user(), 'update order status');
+
         $request->validate([
             'status' => 'required|in:pending,processing,success,failed',
         ]);
@@ -79,6 +106,8 @@ class OrderController extends Controller
 
     public function updatePaymentStatus(Request $request, Order $order)
     {
+        $this->authorizeOrderAccess($request->user(), 'update order payment');
+
         $request->validate([
             'payment_status' => 'required|in:pending,paid,failed',
         ]);
@@ -93,6 +122,8 @@ class OrderController extends Controller
 
     public function updateShipping(Request $request, Order $order)
     {
+        $this->authorizeOrderAccess($request->user(), 'update order shipping');
+
         $validated = $request->validate([
             'shipping_name' => 'nullable|string|max:255',
             'tracking_number' => 'nullable|string|max:255',

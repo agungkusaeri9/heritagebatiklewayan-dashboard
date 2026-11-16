@@ -8,6 +8,8 @@ use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Imports\ProductsImport;
 use App\Models\Product;
+use App\Models\Store;
+use App\Models\User;
 use App\Repositories\Contracts\CategoryRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductReviewRepositoryInterface;
@@ -28,38 +30,129 @@ class ProductController extends Controller
         protected ProductReviewRepositoryInterface $productReviewRepository
     ) {}
 
+    private function canFilterByStore(?User $user): bool
+    {
+        return $user !== null && ($user->hasRole('super admin') || $user->can('filter products by store'));
+    }
+
+    private function isScopedByStore(?User $user): bool
+    {
+        if (! $user || $user->hasRole('super admin')) {
+            return false;
+        }
+
+        if ($user->hasRole('admin store') && ! $user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->can('filter products by store')) {
+            return false;
+        }
+
+        return $user->can('view products by store');
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function getOwnedStoreIds(User $user): array
+    {
+        return Store::query()
+            ->where('user_id', $user->id)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, array{id: int, name: string}>
+     */
+    private function getStoreOptions(?User $user): \Illuminate\Support\Collection
+    {
+        $query = Store::query()->select(['id', 'name'])->orderBy('name');
+
+        if ($user && $this->isScopedByStore($user)) {
+            $query->where('user_id', $user->id);
+        }
+
+        return $query->get()->map(fn (Store $store) => [
+            'id' => $store->id,
+            'name' => $store->name,
+        ]);
+    }
+
     public function index(IndexProductRequest $request)
     {
+        $user = $request->user();
+        $canFilterByStore = $this->canFilterByStore($user);
+        $isScopedByStore = $this->isScopedByStore($user);
+
+        $storeFilter = null;
+        if ($isScopedByStore && $user) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            $storeFilter = count($ownedStoreIds) === 1 ? $ownedStoreIds[0] : $ownedStoreIds;
+        } elseif ($canFilterByStore && $request->filled('store_id')) {
+            $storeFilter = (int) $request->input('store_id');
+        }
+
         $products = $this->productRepository->getPaginatedProducts(
             $request->input('per_page', 10),
             $request->input('search'),
             $request->input('status'),
             $request->input('sort', 'created_at'),
-            $request->input('direction', 'desc')
+            $request->input('direction', 'desc'),
+            null,
+            $storeFilter
         );
 
         return Inertia::render('products/Index', [
             'products' => $products,
-            'filters' => $request->only(['search', 'status', 'sort', 'direction', 'per_page']),
+            'stores' => $canFilterByStore ? $this->getStoreOptions($user) : [],
+            'filters' => [
+                ...$request->only(['search', 'status', 'sort', 'direction', 'per_page']),
+                'store_id' => $canFilterByStore ? $request->input('store_id') : null,
+            ],
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $user = $request->user();
         $categories = $this->categoryRepository->getAllActive();
+        $stores = $this->getStoreOptions($user);
 
         // Load all variant types with their values for selection
         $variantTypes = $this->variantTypeRepository->getAllActive();
 
+        $defaultStoreId = null;
+        if ($user && $this->isScopedByStore($user)) {
+            $defaultStoreId = $stores->first()['id'] ?? null;
+        }
+
         return Inertia::render('products/Create', [
             'categories' => $categories,
+            'stores' => $stores,
+            'defaultStoreId' => $defaultStoreId,
             'variantTypes' => $variantTypes,
         ]);
     }
 
     public function store(StoreProductRequest $request)
     {
+        $user = $request->user();
         $validated = $request->validated();
+
+        if ($user && $this->isScopedByStore($user)) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            if (empty($ownedStoreIds)) {
+                return back()->with('error', 'Akun Anda belum terhubung dengan toko mana pun.')->withInput();
+            }
+
+            $requestedStoreId = isset($validated['store_id']) ? (int) $validated['store_id'] : null;
+            $validated['store_id'] = ($requestedStoreId && in_array($requestedStoreId, $ownedStoreIds, true))
+                ? $requestedStoreId
+                : $ownedStoreIds[0];
+        }
 
         $variantValues = $validated['variant_values'] ?? [];
         $images = $validated['gallery_images'] ?? [];
@@ -77,7 +170,15 @@ class ProductController extends Controller
 
     public function show(Request $request, Product $product)
     {
-        $product->load(['category', 'images', 'variantValues.variantType']);
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            if (! in_array((int) $product->store_id, $ownedStoreIds, true)) {
+                abort(403, 'Anda hanya dapat melihat produk milik toko Anda sendiri.');
+            }
+        }
+
+        $product->load(['store', 'category', 'images', 'variantValues.variantType']);
 
         $perPage = (int) $request->input('review_per_page', 10);
         if (! in_array($perPage, [5, 10, 15, 20, 50])) {
@@ -113,6 +214,10 @@ class ProductController extends Controller
                     'id' => $product->category->id,
                     'name' => $product->category->name,
                 ] : null,
+                'store' => $product->store ? [
+                    'id' => $product->store->id,
+                    'name' => $product->store->name,
+                ] : null,
                 'images' => $product->images->map(fn ($img) => [
                     'id' => $img->id,
                     'url' => $img->image_url,
@@ -136,11 +241,20 @@ class ProductController extends Controller
         ]);
     }
 
-    public function edit(Product $product)
+    public function edit(Request $request, Product $product)
     {
-        $product->load(['category', 'images', 'variantValues']);
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            if (! in_array((int) $product->store_id, $ownedStoreIds, true)) {
+                abort(403, 'Anda hanya dapat mengedit produk milik toko Anda sendiri.');
+            }
+        }
+
+        $product->load(['store', 'category', 'images', 'variantValues']);
 
         $categories = $this->categoryRepository->getAllActive();
+        $stores = $this->getStoreOptions($user);
         $variantTypes = $this->variantTypeRepository->getAllActive();
 
         return Inertia::render('products/Edit', [
@@ -149,6 +263,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'category_id' => $product->category_id,
+                'store_id' => $product->store_id,
                 'description' => $product->description,
                 'primary_image_url' => $product->primary_image_url,
                 'price' => $product->price,
@@ -165,13 +280,27 @@ class ProductController extends Controller
                 'variant_values' => $product->variantValues->pluck('id'),
             ],
             'categories' => $categories,
+            'stores' => $stores,
             'variantTypes' => $variantTypes,
         ]);
     }
 
     public function update(UpdateProductRequest $request, Product $product)
     {
+        $user = $request->user();
         $validated = $request->validated();
+
+        if ($user && $this->isScopedByStore($user)) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            if (! in_array((int) $product->store_id, $ownedStoreIds, true)) {
+                abort(403, 'Anda hanya dapat memperbarui produk milik toko Anda sendiri.');
+            }
+
+            $requestedStoreId = isset($validated['store_id']) ? (int) $validated['store_id'] : null;
+            $validated['store_id'] = ($requestedStoreId && in_array($requestedStoreId, $ownedStoreIds, true))
+                ? $requestedStoreId
+                : $product->store_id;
+        }
 
         $variantValues = $validated['variant_values'] ?? [];
         $newImages = $validated['gallery_images'] ?? [];
@@ -188,8 +317,16 @@ class ProductController extends Controller
         }
     }
 
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            if (! in_array((int) $product->store_id, $ownedStoreIds, true)) {
+                abort(403, 'Anda hanya dapat menghapus produk milik toko Anda sendiri.');
+            }
+        }
+
         try {
             $this->productService->deleteProduct($product);
 
@@ -207,8 +344,18 @@ class ProductController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
         ]);
 
+        $defaultStoreId = null;
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            if (empty($ownedStoreIds)) {
+                return back()->with('error', 'Akun Anda belum terhubung dengan toko mana pun.');
+            }
+            $defaultStoreId = $ownedStoreIds[0];
+        }
+
         try {
-            $import = new ProductsImport;
+            $import = new ProductsImport($defaultStoreId);
             Excel::import($import, $request->file('file'));
 
             return back()->with('success', "Berhasil mengimpor {$import->getImportedCount()} produk dari Excel/CSV.");

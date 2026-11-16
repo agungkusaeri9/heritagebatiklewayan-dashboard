@@ -111,8 +111,12 @@ class VirtualTryOnModelController extends Controller
         }
     }
 
-    public function destroy(VirtualTryOnModel $virtualTryOnModel): RedirectResponse
+    public function destroy(Request $request, VirtualTryOnModel $virtualTryOnModel): RedirectResponse
     {
+        if (! $request->user()?->can('delete virtual try on models')) {
+            abort(403, 'Anda tidak memiliki hak akses untuk menghapus model.');
+        }
+
         try {
             $this->modelService->deleteModel($virtualTryOnModel);
 

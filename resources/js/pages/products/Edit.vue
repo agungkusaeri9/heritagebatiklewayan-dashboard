@@ -22,6 +22,11 @@ interface Category {
     name: string;
 }
 
+interface StoreOption {
+    id: number;
+    name: string;
+}
+
 interface VariantValue {
     id: number;
     value: string;
@@ -44,6 +49,7 @@ interface Product {
     name: string;
     slug: string;
     category_id: number | null;
+    store_id: number | null;
     description: string | null;
     primary_image_url: string | null;
     price: string;
@@ -59,6 +65,7 @@ interface Product {
 interface Props {
     product: Product;
     categories: Category[];
+    stores: StoreOption[];
     variantTypes: VariantType[];
 }
 
@@ -76,6 +83,7 @@ const form = useForm({
     name: props.product.name,
     slug: props.product.slug,
     category_id: props.product.category_id?.toString() || '',
+    store_id: props.product.store_id?.toString() || 'none',
     description: props.product.description || '',
     price: parseFloat(props.product.price).toString(), // format as string without .00
     stock: props.product.stock.toString(),
@@ -165,6 +173,7 @@ const toggleVariantValue = (id: number) => {
 const submit = () => {
     form.transform((data) => ({
         ...data,
+        store_id: data.store_id === 'none' || data.store_id === '' ? null : data.store_id,
         is_active: data.is_active === 'true' ? true : false,
     })).post(`/products/${props.product.id}`);
 };
@@ -221,14 +230,30 @@ const submit = () => {
                             </div>
 
                             <div class="grid gap-1.5">
-                                <Label for="slug">Slug URL</Label>
-                                <Input
-                                    id="slug"
-                                    v-model="form.slug"
-                                    :class="{ 'border-destructive': form.errors.slug }"
-                                />
-                                <p v-if="form.errors.slug" class="text-xs text-destructive">{{ form.errors.slug }}</p>
+                                <Label for="store_id">Toko</Label>
+                                <Select v-model="form.store_id" :disabled="stores.length <= 1 && Boolean(product.store_id)">
+                                    <SelectTrigger id="store_id">
+                                        <SelectValue placeholder="Pilih Toko (Opsional)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Tanpa Toko</SelectItem>
+                                        <SelectItem v-for="s in stores" :key="s.id" :value="s.id.toString()">
+                                            {{ s.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="form.errors.store_id" class="text-xs text-destructive">{{ form.errors.store_id }}</p>
                             </div>
+                        </div>
+
+                        <div class="grid gap-1.5">
+                            <Label for="slug">Slug URL</Label>
+                            <Input
+                                id="slug"
+                                v-model="form.slug"
+                                :class="{ 'border-destructive': form.errors.slug }"
+                            />
+                            <p v-if="form.errors.slug" class="text-xs text-destructive">{{ form.errors.slug }}</p>
                         </div>
 
                         <div class="grid gap-1.5">

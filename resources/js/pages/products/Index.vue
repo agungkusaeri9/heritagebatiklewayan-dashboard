@@ -39,6 +39,7 @@ import {
     Package,
     Plus,
     Search,
+    Store as StoreIcon,
     Trash2,
     ChevronLeft,
     ChevronRight,
@@ -72,6 +73,15 @@ interface Product {
     category?: {
         name: string;
     };
+    store?: {
+        id: number;
+        name: string;
+    } | null;
+}
+
+interface StoreOption {
+    id: number;
+    name: string;
 }
 
 interface PaginationData {
@@ -87,9 +97,11 @@ interface PaginationData {
 
 interface Props {
     products: PaginationData;
+    stores: StoreOption[];
     filters: {
         search?: string;
         status?: string;
+        store_id?: string | number | null;
         sort?: string;
         direction?: string;
         per_page?: string;
@@ -106,6 +118,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || 'all');
+const storeId = ref(props.filters.store_id?.toString() || 'all');
 const perPage = ref(props.filters.per_page?.toString() || '10');
 const isLoading = ref(false);
 
@@ -115,6 +128,7 @@ const buildQuery = () => {
     const query: Record<string, string> = {};
     if (search.value) query.search = search.value;
     if (status.value !== 'all') query.status = status.value;
+    if (storeId.value !== 'all') query.store_id = storeId.value;
     if (perPage.value !== '10') query.per_page = perPage.value;
     
     // Maintain sorting if exists
@@ -140,7 +154,7 @@ watch(search, (newVal, oldVal) => {
     }
 });
 
-watch([status, perPage], () => {
+watch([status, storeId, perPage], () => {
     fetchProducts();
 });
 
@@ -246,7 +260,28 @@ const submitImport = () => {
                         />
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <div
+                        v-if="can('filter products by store')"
+                        class="flex items-center gap-2 border-r pr-2 mr-1"
+                    >
+                        <StoreIcon class="h-4 w-4 text-muted-foreground" />
+                        <Select v-model="storeId">
+                            <SelectTrigger class="h-9 w-[160px] bg-background">
+                                <SelectValue placeholder="Semua Toko" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Toko</SelectItem>
+                                <SelectItem
+                                    v-for="s in stores"
+                                    :key="s.id"
+                                    :value="s.id.toString()"
+                                >
+                                    {{ s.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div class="flex items-center gap-2 border-r pr-2 mr-2">
                         <Filter class="h-4 w-4 text-muted-foreground" />
                         <Select v-model="status">
@@ -309,8 +344,13 @@ const submitImport = () => {
                             <td class="p-4 align-middle text-left">
                                 <div class="flex flex-col">
                                     <span class="font-medium">{{ product.name }}</span>
-                                    <div class="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                                    <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mt-0.5">
                                         <span>{{ product.category?.name || 'Tanpa Kategori' }}</span>
+                                        <span v-if="product.store" class="flex items-center gap-1 text-foreground/80">
+                                            <span class="h-1 w-1 rounded-full bg-muted-foreground/30"></span>
+                                            <StoreIcon class="h-3 w-3 text-primary" />
+                                            {{ product.store.name }}
+                                        </span>
                                         <span v-if="product.sku" class="flex items-center gap-1">
                                             <span class="h-1 w-1 rounded-full bg-muted-foreground/30"></span>
                                             SKU: {{ product.sku }}

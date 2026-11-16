@@ -19,7 +19,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $filter = $request->query('filter', 'this_week');
-        $data = $this->dashboardService->getDashboardData($filter);
+        $data = $this->dashboardService->getDashboardData($filter, $request->user());
 
         $data['currentFilter'] = $filter;
 

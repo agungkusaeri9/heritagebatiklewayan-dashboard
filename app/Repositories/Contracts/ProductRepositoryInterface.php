@@ -16,7 +16,8 @@ interface ProductRepositoryInterface
         ?string $status = null,
         string $sortColumn = 'created_at',
         string $sortDirection = 'desc',
-        int|string|null $category = null
+        int|string|null $category = null,
+        int|array|null $storeId = null
     ): LengthAwarePaginator;
 
     /**
@@ -47,5 +48,5 @@ interface ProductRepositoryInterface
     /**
      * Count total products.
      */
-    public function countProducts(): int;
+    public function countProducts(int|array|null $storeId = null): int;
 }

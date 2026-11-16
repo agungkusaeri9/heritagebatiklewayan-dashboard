@@ -22,6 +22,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ProductVirtualTryOnController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StoreController;
+use App\Http\Controllers\StoreProfileController;
 use App\Http\Controllers\StoreSettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VariantTypeController;
@@ -38,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('couriers/{courier}/toggle', [CourierController::class, 'toggle'])->name('couriers.toggle');
     Route::resource('couriers', CourierController::class)->except(['create', 'show', 'edit']);
+    Route::resource('stores', StoreController::class)->except(['show']);
+    Route::get('store-profile', [StoreProfileController::class, 'index'])->name('store-profile.index');
+    Route::match(['put', 'post'], 'store-profile', [StoreProfileController::class, 'update'])->name('store-profile.update');
     Route::resource('categories', CategoryController::class);
     Route::post('banners/{banner}/toggle', [BannerController::class, 'toggle'])->name('banners.toggle');
     Route::resource('banners', BannerController::class)->except(['show']);

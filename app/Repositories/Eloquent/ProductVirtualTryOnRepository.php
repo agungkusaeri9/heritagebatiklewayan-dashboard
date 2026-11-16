@@ -12,10 +12,21 @@ class ProductVirtualTryOnRepository implements ProductVirtualTryOnRepositoryInte
     {
         return ProductVirtualTryOn::query()
             ->with([
-                'product:id,name,slug,price,primary_image,sku',
+                'product:id,store_id,name,slug,price,primary_image,sku',
                 'virtualModel:id,name,gender,photo',
                 'user:id,name,email',
             ])
+            ->when(array_key_exists('store_ids', $filters), function ($query) use ($filters) {
+                $storeIds = $filters['store_ids'];
+                if (empty($storeIds)) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->whereHas('product', fn ($pq) => $pq->whereIn('store_id', array_map('intval', $storeIds)));
+                }
+            })
+            ->when(! empty($filters['store_id']) && $filters['store_id'] !== 'all', function ($query) use ($filters) {
+                $query->whereHas('product', fn ($pq) => $pq->where('store_id', (int) $filters['store_id']));
+            })
             ->when($filters['search'] ?? null, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->whereHas('product', function ($pq) use ($search) {
@@ -62,7 +73,7 @@ class ProductVirtualTryOnRepository implements ProductVirtualTryOnRepositoryInte
     public function findById(int $id): ?ProductVirtualTryOn
     {
         return ProductVirtualTryOn::with([
-            'product:id,name,slug,price,primary_image,sku',
+            'product:id,store_id,name,slug,price,primary_image,sku',
             'virtualModel:id,name,gender,photo',
             'user:id,name,email',
         ])->find($id);

@@ -29,6 +29,7 @@ import {
     ScanFace,
     ShoppingBag,
     Star,
+    Store as StoreIcon,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -60,6 +61,10 @@ interface Product {
         id: number;
         name: string;
     };
+    store?: {
+        id: number;
+        name: string;
+    } | null;
     images: ProductImage[];
     variants: Variant[];
 }
@@ -259,6 +264,10 @@ const toggleVisibility = (review: ProductReviewItem) => {
                         <span class="flex items-center gap-1.5">
                             <Layers class="h-4 w-4" />
                             {{ product.category?.name || 'Tanpa Kategori' }}
+                        </span>
+                        <span class="flex items-center gap-1.5" v-if="product.store">
+                            <StoreIcon class="h-4 w-4 text-primary" />
+                            {{ product.store.name }}
                         </span>
                         <span class="flex items-center gap-1.5" v-if="product.sku">
                             <Box class="h-4 w-4" />

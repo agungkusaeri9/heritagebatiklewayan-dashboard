@@ -16,6 +16,10 @@ class ProductsImport implements ToCollection, WithHeadingRow
 {
     private $importedCount = 0;
 
+    public function __construct(
+        private ?int $defaultStoreId = null
+    ) {}
+
     public function collection(Collection $rows)
     {
         DB::beginTransaction();
@@ -49,8 +53,14 @@ class ProductsImport implements ToCollection, WithHeadingRow
                     $counter++;
                 }
 
+                $storeId = $this->defaultStoreId;
+                if ($storeId === null && isset($row['store_id']) && is_numeric($row['store_id'])) {
+                    $storeId = (int) $row['store_id'];
+                }
+
                 $product = Product::create([
                     'category_id' => $categoryId,
+                    'store_id' => $storeId,
                     'name' => $row['name'],
                     'slug' => $slug,
                     'description' => $row['description'] ?? null,

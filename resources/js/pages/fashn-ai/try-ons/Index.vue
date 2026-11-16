@@ -125,16 +125,23 @@ interface ModelOption {
     photo_url: string | null;
 }
 
+interface StoreOption {
+    id: number;
+    name: string;
+}
+
 interface Props {
     tryOns: Pagination;
     filters: {
         search?: string;
+        store_id?: string;
         product_id?: string;
         user_id?: string;
         user_type?: string;
         model_id?: string;
         per_page?: string;
     };
+    stores: StoreOption[];
     products: ProductOption[];
     activeModels: ModelOption[];
     users: Array<{ id: number; name: string; email: string }>;
@@ -150,6 +157,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const filterState = reactive({
     search: props.filters.search || '',
+    store_id: props.filters.store_id ? String(props.filters.store_id) : 'all',
     user_type: props.filters.user_type || 'all',
     product_id: props.filters.product_id ? String(props.filters.product_id) : 'all',
     user_id: props.filters.user_id ? String(props.filters.user_id) : 'all',
@@ -158,6 +166,7 @@ const filterState = reactive({
 
 const buildQuery = () => ({
     search: filterState.search || undefined,
+    store_id: filterState.store_id === 'all' ? undefined : filterState.store_id,
     user_type: filterState.user_type === 'all' ? undefined : filterState.user_type,
     product_id: filterState.product_id === 'all' ? undefined : filterState.product_id,
     user_id: filterState.user_id === 'all' ? undefined : filterState.user_id,
@@ -172,6 +181,13 @@ const debouncedSearch = useDebounceFn(() => {
 }, 300);
 
 watch(
+    () => filterState.store_id,
+    () => {
+        filterState.product_id = 'all';
+    }
+);
+
+watch(
     () => ({ ...filterState }),
     () => {
         debouncedSearch();
@@ -180,6 +196,7 @@ watch(
 
 const resetFilters = () => {
     filterState.search = '';
+    filterState.store_id = 'all';
     filterState.user_type = 'all';
     filterState.product_id = 'all';
     filterState.user_id = 'all';
@@ -188,6 +205,7 @@ const resetFilters = () => {
 const hasActiveFilters = computed(() => {
     return (
         filterState.search !== '' ||
+        filterState.store_id !== 'all' ||
         filterState.user_type !== 'all' ||
         filterState.product_id !== 'all' ||
         filterState.user_id !== 'all'
@@ -469,7 +487,10 @@ const perPageOptions = ['10', '20', '30', '50'];
                 </Button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div
+                class="grid grid-cols-1 gap-3 sm:grid-cols-2"
+                :class="can('filter products by store') ? 'lg:grid-cols-5' : 'lg:grid-cols-4'"
+            >
                 <!-- Search Input -->
                 <div class="relative">
                     <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -496,6 +517,23 @@ const perPageOptions = ['10', '20', '30', '50'];
                         <SelectItem value="all">Semua Sumber</SelectItem>
                         <SelectItem value="without_user">Model Default Produk (Tanpa User)</SelectItem>
                         <SelectItem value="with_user">Dicoba Pengguna (Customer)</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <!-- Filter Toko (Khusus user dengan permission filter products by store) -->
+                <Select v-if="can('filter products by store')" v-model="filterState.store_id">
+                    <SelectTrigger class="w-full h-9 text-sm truncate">
+                        <SelectValue placeholder="Pilih Toko" />
+                    </SelectTrigger>
+                    <SelectContent class="max-h-60">
+                        <SelectItem value="all">Semua Toko</SelectItem>
+                        <SelectItem
+                            v-for="s in stores"
+                            :key="s.id"
+                            :value="String(s.id)"
+                        >
+                            {{ s.name }}
+                        </SelectItem>
                     </SelectContent>
                 </Select>
 

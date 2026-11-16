@@ -15,6 +15,13 @@ class IndexProductRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if (in_array($this->input('store_id'), ['', 'all'], true)) {
+            $this->merge(['store_id' => null]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -25,6 +32,7 @@ class IndexProductRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'string', 'in:all,active,inactive'],
+            'store_id' => ['nullable', 'integer', 'exists:stores,id'],
             'sort' => ['nullable', 'string', 'in:name,price,stock,is_active,created_at'],
             'direction' => ['nullable', 'string', 'in:asc,desc'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],

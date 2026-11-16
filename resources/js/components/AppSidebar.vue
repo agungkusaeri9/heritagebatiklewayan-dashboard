@@ -15,6 +15,7 @@ import {
     Smartphone,
     SlidersHorizontal,
     Sparkles,
+    Store as StoreIcon,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -51,6 +52,18 @@ const rawNavItems = computed<NavItem[]>(() => [
         badge: page.props.pendingOrdersCount ?? 0,
     },
     {
+        title: 'Toko',
+        href: '/stores',
+        icon: StoreIcon,
+        permission: 'view stores',
+    },
+    {
+        title: 'Profile Toko',
+        href: '/store-profile',
+        icon: StoreIcon,
+        permission: 'view store profile',
+    },
+    {
         title: 'Banner Promosi',
         href: '/banners',
         icon: Smartphone,
@@ -64,7 +77,7 @@ const rawNavItems = computed<NavItem[]>(() => [
             {
                 title: 'Semua Produk',
                 href: '/products',
-                permission: 'view products',
+                permission: ['view products', 'view products by store'],
             },
             {
                 title: 'Kategori Produk',

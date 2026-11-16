@@ -50,6 +50,7 @@ class ProductResource extends JsonResource
             'is_virtual_try_on' => (bool) $this->is_virtual_try_on,
             'is_active' => (bool) $this->is_active,
             'primary_image_url' => $this->primary_image_url,
+            'store_id' => $this->store_id,
             'category' => CategoryResource::make($this->whenLoaded('category')),
             'store' => $store ? [
                 'id' => $store->id,

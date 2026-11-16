@@ -17,6 +17,7 @@ use App\Repositories\Contracts\ProductRepositoryInterface;
 use App\Repositories\Contracts\ProductReviewRepositoryInterface;
 use App\Repositories\Contracts\ProductVirtualTryOnRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\Contracts\StoreRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\Contracts\VariantTypeRepositoryInterface;
 use App\Repositories\Contracts\VirtualTryOnModelRepositoryInterface;
@@ -35,6 +36,7 @@ use App\Repositories\Eloquent\ProductRepository;
 use App\Repositories\Eloquent\ProductReviewRepository;
 use App\Repositories\Eloquent\ProductVirtualTryOnRepository;
 use App\Repositories\Eloquent\RoleRepository;
+use App\Repositories\Eloquent\StoreRepository;
 use App\Repositories\Eloquent\UserRepository;
 use App\Repositories\Eloquent\VariantTypeRepository;
 use App\Repositories\Eloquent\VirtualTryOnModelRepository;
@@ -72,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AppConfigRepositoryInterface::class, AppConfigRepository::class);
         $this->app->bind(VirtualTryOnModelRepositoryInterface::class, VirtualTryOnModelRepository::class);
         $this->app->bind(ProductVirtualTryOnRepositoryInterface::class, ProductVirtualTryOnRepository::class);
+        $this->app->bind(StoreRepositoryInterface::class, StoreRepository::class);
     }
 
     /**

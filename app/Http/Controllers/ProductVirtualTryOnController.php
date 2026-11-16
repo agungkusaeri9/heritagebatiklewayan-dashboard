@@ -6,11 +6,14 @@ use App\Http\Requests\ProductVirtualTryOn\IndexProductVirtualTryOnRequest;
 use App\Http\Requests\ProductVirtualTryOn\StoreProductVirtualTryOnRequest;
 use App\Models\Product;
 use App\Models\ProductVirtualTryOn;
+use App\Models\Store;
 use App\Models\User;
 use App\Models\VirtualTryOnModel;
 use App\Services\ProductVirtualTryOnService;
+use App\Services\StoreService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,14 +24,74 @@ class ProductVirtualTryOnController extends Controller
         private ProductVirtualTryOnService $tryOnService
     ) {}
 
+    private function canFilterByStore(?User $user): bool
+    {
+        return $user !== null && ($user->hasRole('super admin') || $user->can('filter products by store'));
+    }
+
+    private function isScopedByStore(?User $user): bool
+    {
+        if (! $user || $user->hasRole('super admin')) {
+            return false;
+        }
+
+        if ($user->hasRole(StoreService::ADMIN_STORE_ROLE) && ! $user->hasRole('admin')) {
+            return true;
+        }
+
+        if ($user->can('filter products by store')) {
+            return false;
+        }
+
+        return $user->can('view products by store');
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function getOwnedStoreIds(User $user): array
+    {
+        return Store::query()
+            ->where('user_id', $user->id)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     public function index(IndexProductVirtualTryOnRequest $request): Response
     {
-        $tryOns = $this->tryOnService->getTryOns($request->filters(), $request->perPage());
+        $user = $request->user();
+        $canFilterByStore = $this->canFilterByStore($user);
+        $isScopedByStore = $this->isScopedByStore($user);
 
-        $products = Product::select('id', 'name', 'sku', 'primary_image', 'price')
+        $filters = $request->filters();
+        $ownedStoreIds = [];
+
+        if ($isScopedByStore && $user) {
+            $ownedStoreIds = $this->getOwnedStoreIds($user);
+            $filters['store_ids'] = $ownedStoreIds;
+            unset($filters['store_id']);
+        } elseif (! $canFilterByStore) {
+            $filters['store_id'] = 'all';
+        }
+
+        $tryOns = $this->tryOnService->getTryOns($filters, $request->perPage());
+
+        $productsQuery = Product::select('id', 'store_id', 'name', 'sku', 'primary_image', 'price')
             ->with(['virtualTryOns' => fn ($q) => $q->whereNull('user_id')->where('status', '!=', 'failed')->select('id', 'product_id', 'gender', 'status')])
-            ->orderBy('name')
-            ->get()
+            ->orderBy('name');
+
+        if ($isScopedByStore) {
+            if (empty($ownedStoreIds)) {
+                $productsQuery->whereRaw('1 = 0');
+            } else {
+                $productsQuery->whereIn('store_id', $ownedStoreIds);
+            }
+        } elseif ($canFilterByStore && ! empty($filters['store_id']) && $filters['store_id'] !== 'all') {
+            $productsQuery->where('store_id', (int) $filters['store_id']);
+        }
+
+        $products = $productsQuery->get()
             ->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
@@ -53,6 +116,10 @@ class ProductVirtualTryOnController extends Controller
         $users = User::select('id', 'name', 'email')
             ->orderBy('name')
             ->get();
+
+        $stores = $canFilterByStore
+            ? Store::query()->select(['id', 'name'])->orderBy('name')->get()->map(fn (Store $s) => ['id' => $s->id, 'name' => $s->name])
+            : [];
 
         return Inertia::render('fashn-ai/try-ons/Index', [
             'tryOns' => $tryOns->through(fn ($item) => [
@@ -94,7 +161,11 @@ class ProductVirtualTryOnController extends Controller
                 'is_default' => (bool) $item->is_default,
                 'created_at' => $item->created_at ? $item->created_at->toISOString() : null,
             ]),
-            'filters' => $request->filters(),
+            'filters' => [
+                ...$request->filters(),
+                'store_id' => $canFilterByStore ? $request->input('store_id', 'all') : 'all',
+            ],
+            'stores' => $stores,
             'products' => $products,
             'activeModels' => $activeModels,
             'users' => $users,
@@ -103,8 +174,18 @@ class ProductVirtualTryOnController extends Controller
 
     public function store(StoreProductVirtualTryOnRequest $request): RedirectResponse
     {
+        $user = $request->user();
+
         try {
             $data = $request->validated();
+
+            if ($user && $this->isScopedByStore($user)) {
+                $ownedStoreIds = $this->getOwnedStoreIds($user);
+                $product = Product::select(['id', 'store_id'])->find((int) $data['product_id']);
+                if (! $product || ! in_array((int) $product->store_id, $ownedStoreIds, true)) {
+                    abort(403, 'Anda hanya dapat membuat virtual try-on untuk produk milik toko Anda sendiri.');
+                }
+            }
 
             $this->tryOnService->createDefaultTryOn($data);
 
@@ -113,16 +194,27 @@ class ProductVirtualTryOnController extends Controller
         } catch (\InvalidArgumentException $e) {
             return back()->with('error', $e->getMessage())->withInput();
         } catch (\Throwable $e) {
+            if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                throw $e;
+            }
             Log::error('Gagal menambahkan model default try-on: '.$e->getMessage(), ['exception' => $e]);
 
             return back()->with('error', 'Gagal memproses generasi model default: '.$e->getMessage())->withInput();
         }
     }
 
-    public function retry(ProductVirtualTryOn $productVirtualTryOn): RedirectResponse
+    public function retry(Request $request, ProductVirtualTryOn $productVirtualTryOn): RedirectResponse
     {
-        if (! request()->user()?->can('create product virtual try ons')) {
+        if (! $request->user()?->can('create product virtual try ons')) {
             abort(403);
+        }
+
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $productVirtualTryOn->loadMissing('product:id,store_id');
+            if (! in_array((int) $productVirtualTryOn->product?->store_id, $this->getOwnedStoreIds($user), true)) {
+                abort(403, 'Anda hanya dapat mencoba ulang virtual try-on produk milik toko Anda sendiri.');
+            }
         }
 
         try {
@@ -137,8 +229,16 @@ class ProductVirtualTryOnController extends Controller
         }
     }
 
-    public function show(ProductVirtualTryOn $productVirtualTryOn): JsonResponse|Response
+    public function show(Request $request, ProductVirtualTryOn $productVirtualTryOn): JsonResponse|Response
     {
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $productVirtualTryOn->loadMissing('product:id,store_id');
+            if (! in_array((int) $productVirtualTryOn->product?->store_id, $this->getOwnedStoreIds($user), true)) {
+                abort(403, 'Anda hanya dapat melihat hasil virtual try-on produk milik toko Anda sendiri.');
+            }
+        }
+
         if (request()->wantsJson()) {
             return response()->json([
                 'id' => $productVirtualTryOn->id,
@@ -194,8 +294,16 @@ class ProductVirtualTryOnController extends Controller
         ]);
     }
 
-    public function destroy(ProductVirtualTryOn $productVirtualTryOn): RedirectResponse
+    public function destroy(Request $request, ProductVirtualTryOn $productVirtualTryOn): RedirectResponse
     {
+        $user = $request->user();
+        if ($user && $this->isScopedByStore($user)) {
+            $productVirtualTryOn->loadMissing('product:id,store_id');
+            if (! in_array((int) $productVirtualTryOn->product?->store_id, $this->getOwnedStoreIds($user), true)) {
+                abort(403, 'Anda hanya dapat menghapus hasil virtual try-on produk milik toko Anda sendiri.');
+            }
+        }
+
         try {
             $this->tryOnService->deleteTryOn($productVirtualTryOn);
 

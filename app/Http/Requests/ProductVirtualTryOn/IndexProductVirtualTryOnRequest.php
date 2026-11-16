@@ -15,6 +15,7 @@ class IndexProductVirtualTryOnRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:255'],
+            'store_id' => ['nullable'],
             'product_id' => ['nullable'],
             'user_id' => ['nullable'],
             'model_id' => ['nullable'],
@@ -28,6 +29,7 @@ class IndexProductVirtualTryOnRequest extends FormRequest
     {
         return [
             'search' => $this->input('search'),
+            'store_id' => $this->input('store_id', 'all'),
             'product_id' => $this->input('product_id', 'all'),
             'user_id' => $this->input('user_id', 'all'),
             'model_id' => $this->input('model_id', 'all'),

@@ -27,6 +27,7 @@ class IndexProductApiRequest extends FormRequest
             'category' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'category_slug' => ['nullable', 'string', 'max:255'],
+            'store_id' => ['nullable', 'integer', 'exists:stores,id'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort' => ['nullable', 'string', 'in:created_at,price,name,stock'],
             'direction' => ['nullable', 'string', 'in:asc,desc'],

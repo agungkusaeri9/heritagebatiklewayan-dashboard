@@ -22,6 +22,11 @@ interface Category {
     name: string;
 }
 
+interface StoreOption {
+    id: number;
+    name: string;
+}
+
 interface VariantValue {
     id: number;
     value: string;
@@ -35,6 +40,8 @@ interface VariantType {
 
 interface Props {
     categories: Category[];
+    stores: StoreOption[];
+    defaultStoreId?: number | null;
     variantTypes: VariantType[];
 }
 
@@ -51,6 +58,7 @@ const form = useForm({
     name: '',
     slug: '',
     category_id: '' as string | number,
+    store_id: props.defaultStoreId?.toString() || 'none',
     description: '',
     price: '',
     stock: '',
@@ -147,6 +155,7 @@ const submit = () => {
     // However, @inertiajs/vue3 handles it properly using dot notation array for files.
     form.transform((data) => ({
         ...data,
+        store_id: data.store_id === 'none' || data.store_id === '' ? null : data.store_id,
         is_active: data.is_active === 'true' ? true : false,
     })).post('/products');
 };
@@ -203,15 +212,31 @@ const submit = () => {
                             </div>
 
                             <div class="grid gap-1.5">
-                                <Label for="slug">Slug URL</Label>
-                                <Input
-                                    id="slug"
-                                    v-model="form.slug"
-                                    placeholder="auto-generate dari nama"
-                                    :class="{ 'border-destructive': form.errors.slug }"
-                                />
-                                <p v-if="form.errors.slug" class="text-xs text-destructive">{{ form.errors.slug }}</p>
+                                <Label for="store_id">Toko</Label>
+                                <Select v-model="form.store_id" :disabled="Boolean(defaultStoreId) && stores.length <= 1">
+                                    <SelectTrigger id="store_id">
+                                        <SelectValue placeholder="Pilih Toko (Opsional)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem v-if="!defaultStoreId" value="none">Tanpa Toko</SelectItem>
+                                        <SelectItem v-for="s in stores" :key="s.id" :value="s.id.toString()">
+                                            {{ s.name }}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p v-if="form.errors.store_id" class="text-xs text-destructive">{{ form.errors.store_id }}</p>
                             </div>
+                        </div>
+
+                        <div class="grid gap-1.5">
+                            <Label for="slug">Slug URL</Label>
+                            <Input
+                                id="slug"
+                                v-model="form.slug"
+                                placeholder="auto-generate dari nama"
+                                :class="{ 'border-destructive': form.errors.slug }"
+                            />
+                            <p v-if="form.errors.slug" class="text-xs text-destructive">{{ form.errors.slug }}</p>
                         </div>
 
                         <div class="grid gap-1.5">
