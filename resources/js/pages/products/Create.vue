@@ -50,8 +50,8 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Produk', href: '#' },
-    { title: 'Semua Produk', href: '/products' },
-    { title: 'Tambah Produk', href: '/products/create' },
+    { title: 'Semua Produk', href: '/dashboard/products' },
+    { title: 'Tambah Produk', href: '/dashboard/products/create' },
 ];
 
 const form = useForm({
@@ -157,7 +157,7 @@ const submit = () => {
         ...data,
         store_id: data.store_id === 'none' || data.store_id === '' ? null : data.store_id,
         is_active: data.is_active === 'true' ? true : false,
-    })).post('/products');
+    })).post('/dashboard/products');
 };
 </script>
 
@@ -441,7 +441,7 @@ const submit = () => {
                         <Package v-else class="h-4 w-4" />
                         Simpan Produk
                     </Button>
-                    <Link href="/products">
+                    <Link href="/dashboard/products">
                         <Button type="button" variant="outline" class="w-full">Batal</Button>
                     </Link>
                 </div>

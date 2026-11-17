@@ -87,7 +87,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Fashn AI', href: '#' },
-    { title: 'Model Virtual Try-On', href: '/virtual-try-on-models' },
+    { title: 'Model Virtual Try-On', href: '/dashboard/virtual-try-on-models' },
 ];
 
 const filterState = reactive({
@@ -105,7 +105,7 @@ const buildQuery = () => ({
 });
 
 const debouncedSearch = useDebounceFn(() => {
-    router.get('/virtual-try-on-models', buildQuery(), {
+    router.get('/dashboard/virtual-try-on-models', buildQuery(), {
         preserveState: true,
         replace: true,
     });
@@ -245,7 +245,7 @@ const generateWithAi = async () => {
 
     try {
         const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '';
-        const response = await fetch('/virtual-try-on-models/generate-ai', {
+        const response = await fetch('/dashboard/virtual-try-on-models/generate-ai', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -288,7 +288,7 @@ const submitForm = () => {
             updateData.append('generated_photo_path', form.generated_photo_path);
         }
 
-        router.post(`/virtual-try-on-models/${editingModel.value.id}`, updateData, {
+        router.post(`/dashboard/virtual-try-on-models/${editingModel.value.id}`, updateData, {
             preserveScroll: true,
             onSuccess: () => {
                 isFormDialogOpen.value = false;
@@ -301,7 +301,7 @@ const submitForm = () => {
             },
         });
     } else {
-        form.post('/virtual-try-on-models', {
+        form.post('/dashboard/virtual-try-on-models', {
             preserveScroll: true,
             onSuccess: () => {
                 isFormDialogOpen.value = false;
@@ -324,7 +324,7 @@ const confirmDelete = (model: VirtualTryOnModel) => {
 const executeDelete = () => {
     if (!modelToDelete.value) return;
 
-    router.delete(`/virtual-try-on-models/${modelToDelete.value.id}`, {
+    router.delete(`/dashboard/virtual-try-on-models/${modelToDelete.value.id}`, {
         preserveScroll: true,
         onSuccess: () => {
             isDeleteDialogOpen.value = false;

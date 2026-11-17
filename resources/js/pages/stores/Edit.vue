@@ -46,7 +46,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Toko', href: '/stores' },
+    { title: 'Toko', href: '/dashboard/stores' },
     { title: `Edit: ${props.store.name}`, href: '#' },
 ];
 
@@ -101,7 +101,7 @@ const formatDateTime = (value: string | null) => {
 };
 
 const submit = () => {
-    form.post(`/stores/${props.store.id}`);
+    form.post(`/dashboard/stores/${props.store.id}`);
 };
 </script>
 
@@ -369,7 +369,7 @@ const submit = () => {
 
                     <div class="flex justify-end gap-4 border-t pt-4">
                         <Button type="button" variant="outline" as-child>
-                            <Link href="/stores">Batal</Link>
+                            <Link href="/dashboard/stores">Batal</Link>
                         </Button>
                         <Button type="submit" :disabled="form.processing">
                             {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}

@@ -68,7 +68,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Fashn AI', href: '#' },
-    { title: 'Product Virtual Try-On', href: '/product-virtual-try-ons' },
+    { title: 'Product Virtual Try-On', href: '/dashboard/product-virtual-try-ons' },
     { title: `Detail #${props.tryOn.id}`, href: '#' },
 ];
 
@@ -77,7 +77,7 @@ const isRetrying = ref(false);
 
 const handleRetry = () => {
     isRetrying.value = true;
-    router.post(`/product-virtual-try-ons/${props.tryOn.id}/retry`, {}, {
+    router.post(`/dashboard/product-virtual-try-ons/${props.tryOn.id}/retry`, {}, {
         onFinish: () => {
             isRetrying.value = false;
         },
@@ -114,7 +114,7 @@ const formatDate = (dateString: string | null) => {
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <Button variant="outline" size="icon" as-child>
-                    <Link href="/product-virtual-try-ons">
+                    <Link href="/dashboard/product-virtual-try-ons">
                         <ArrowLeft class="h-4 w-4" />
                     </Link>
                 </Button>

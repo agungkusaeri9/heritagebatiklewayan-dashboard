@@ -141,7 +141,7 @@ const togglingReviewId = ref<number | null>(null);
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Produk', href: '/products' },
+    { title: 'Produk', href: '/dashboard/products' },
     { title: props.product.name, href: '#' },
 ]);
 
@@ -227,7 +227,7 @@ const handlePageChange = (page: number) => {
 const toggleVisibility = (review: ProductReviewItem) => {
     togglingReviewId.value = review.id;
     router.post(
-        `/reviews/${review.id}/toggle`,
+        `/dashboard/reviews/${review.id}/toggle`,
         {},
         {
             preserveScroll: true,
@@ -289,13 +289,13 @@ const toggleVisibility = (review: ProductReviewItem) => {
 
             <div class="flex shrink-0 items-center gap-2">
                 <Button variant="outline" as-child class="bg-background">
-                    <Link href="/products">
+                    <Link href="/dashboard/products">
                         <ArrowLeft class="mr-2 h-4 w-4" />
                         Kembali
                     </Link>
                 </Button>
                 <Button as-child>
-                    <Link :href="`/products/${product.id}/edit`">
+                    <Link :href="`/dashboard/products/${product.id}/edit`">
                         <Edit class="mr-2 h-4 w-4" />
                         Edit Produk
                     </Link>

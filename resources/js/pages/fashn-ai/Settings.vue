@@ -65,7 +65,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Fashn AI', href: '#' },
-    { title: 'Pengaturan', href: '/fashn-ai/settings' },
+    { title: 'Pengaturan', href: '/dashboard/fashn-ai/settings' },
 ];
 
 const toBoolean = (val: unknown, fallback: boolean): boolean => {
@@ -85,7 +85,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post('/fashn-ai/settings', {
+    form.post('/dashboard/fashn-ai/settings', {
         preserveScroll: true,
     });
 };
@@ -380,7 +380,7 @@ const submit = () => {
                         </div>
 
                         <Link
-                            href="/configurations/fashn-ai"
+                            href="/dashboard/configurations/fashn-ai"
                             class="inline-flex items-center gap-1.5 text-xs font-medium text-purple-700 hover:text-purple-900 dark:text-purple-300 dark:hover:text-purple-100 underline pt-1"
                         >
                             <KeyRound class="h-3.5 w-3.5" />
@@ -397,7 +397,7 @@ const submit = () => {
                     </CardHeader>
                     <CardContent class="space-y-2 text-xs">
                         <Link
-                            href="/virtual-try-on-models"
+                            href="/dashboard/virtual-try-on-models"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">
@@ -407,7 +407,7 @@ const submit = () => {
                             <ExternalLink class="h-3.5 w-3.5 text-muted-foreground" />
                         </Link>
                         <Link
-                            href="/product-virtual-try-ons"
+                            href="/dashboard/product-virtual-try-ons"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">
@@ -417,7 +417,7 @@ const submit = () => {
                             <ExternalLink class="h-3.5 w-3.5 text-muted-foreground" />
                         </Link>
                         <Link
-                            href="/configurations/fashn-ai"
+                            href="/dashboard/configurations/fashn-ai"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">
@@ -427,7 +427,7 @@ const submit = () => {
                             <ExternalLink class="h-3.5 w-3.5 text-muted-foreground" />
                         </Link>
                         <Link
-                            href="/configurations"
+                            href="/dashboard/configurations"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">

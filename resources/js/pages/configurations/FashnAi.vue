@@ -51,7 +51,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Konfigurasi', href: '#' },
-    { title: 'Fashn AI', href: '/configurations/fashn-ai' },
+    { title: 'Fashn AI', href: '/dashboard/configurations/fashn-ai' },
 ];
 
 const showKey = ref(false);
@@ -66,7 +66,7 @@ const form = useForm({
 const isConfigured = computed(() => !!form.api_key && form.api_key.trim().length > 0);
 
 const submit = () => {
-    form.post('/configurations/fashn-ai', {
+    form.post('/dashboard/configurations/fashn-ai', {
         preserveScroll: true,
     });
 };
@@ -274,7 +274,7 @@ const copyKey = async (text: string) => {
                         </p>
                         <div class="rounded-md border border-purple-200 bg-white/80 p-3 dark:border-purple-900/60 dark:bg-purple-950/50">
                             <Link
-                                href="/fashn-ai/settings"
+                                href="/dashboard/fashn-ai/settings"
                                 class="inline-flex items-center gap-1.5 font-semibold text-purple-700 hover:text-purple-900 dark:text-purple-300 dark:hover:text-purple-100"
                             >
                                 <Wand2 class="h-4 w-4" />
@@ -292,7 +292,7 @@ const copyKey = async (text: string) => {
                     </CardHeader>
                     <CardContent class="space-y-2 text-xs">
                         <Link
-                            href="/fashn-ai/settings"
+                            href="/dashboard/fashn-ai/settings"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">
@@ -302,7 +302,7 @@ const copyKey = async (text: string) => {
                             <ExternalLink class="h-3.5 w-3.5 text-muted-foreground" />
                         </Link>
                         <Link
-                            href="/product-virtual-try-ons"
+                            href="/dashboard/product-virtual-try-ons"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">
@@ -312,7 +312,7 @@ const copyKey = async (text: string) => {
                             <ExternalLink class="h-3.5 w-3.5 text-muted-foreground" />
                         </Link>
                         <Link
-                            href="/configurations"
+                            href="/dashboard/configurations"
                             class="flex items-center justify-between rounded-md border p-2.5 transition-colors hover:bg-muted"
                         >
                             <span class="flex items-center gap-2 font-medium">

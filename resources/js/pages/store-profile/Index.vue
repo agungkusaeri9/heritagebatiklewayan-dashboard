@@ -39,7 +39,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Profile Toko', href: '/store-profile' },
+    { title: 'Profile Toko', href: '/dashboard/store-profile' },
 ];
 
 const form = useForm({
@@ -93,7 +93,7 @@ const submit = () => {
         return;
     }
 
-    form.post('/store-profile');
+    form.post('/dashboard/store-profile');
 };
 </script>
 
@@ -124,7 +124,7 @@ const submit = () => {
                     </p>
                 </div>
                 <Button v-if="can('view stores')" variant="outline" as-child class="mt-2">
-                    <Link href="/stores">Kelola Data Toko</Link>
+                    <Link href="/dashboard/stores">Kelola Data Toko</Link>
                 </Button>
             </CardContent>
         </Card>

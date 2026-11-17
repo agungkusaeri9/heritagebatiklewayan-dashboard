@@ -74,7 +74,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Produk', href: '#' },
-    { title: 'Semua Produk', href: '/products' },
+    { title: 'Semua Produk', href: '/dashboard/products' },
     { title: 'Edit Produk', href: '#' },
 ];
 
@@ -175,7 +175,7 @@ const submit = () => {
         ...data,
         store_id: data.store_id === 'none' || data.store_id === '' ? null : data.store_id,
         is_active: data.is_active === 'true' ? true : false,
-    })).post(`/products/${props.product.id}`);
+    })).post(`/dashboard/products/${props.product.id}`);
 };
 </script>
 
@@ -476,7 +476,7 @@ const submit = () => {
                         <Package v-else class="h-4 w-4" />
                         Simpan Perubahan
                     </Button>
-                    <Link href="/products">
+                    <Link href="/dashboard/products">
                         <Button type="button" variant="outline" class="w-full">Batal</Button>
                     </Link>
                 </div>

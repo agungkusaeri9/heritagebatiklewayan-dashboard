@@ -10,6 +10,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\FashnAiSettingController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
@@ -17,10 +18,10 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PrivacyPolicyController;
-use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\ProductVirtualTryOnController;
+use App\Http\Controllers\PublicLandingController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreProfileController;
@@ -30,10 +31,11 @@ use App\Http\Controllers\VariantTypeController;
 use App\Http\Controllers\VirtualTryOnModelController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login')->name('home');
+Route::get('/', [PublicLandingController::class, 'index'])->name('home');
+Route::get('sitemap.xml', [PublicLandingController::class, 'sitemap'])->name('sitemap');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->prefix('dashboard')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::resource('customers', CustomerController::class)->except(['create', 'store']);
     Route::resource('payment-methods', PaymentMethodController::class)->except(['create', 'show', 'edit']);

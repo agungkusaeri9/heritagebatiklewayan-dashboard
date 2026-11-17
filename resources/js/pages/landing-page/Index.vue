@@ -31,7 +31,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Pengaturan', href: '#' },
-    { title: 'Landing Page', href: '/landing-page-settings' },
+    { title: 'Landing Page', href: '/dashboard/landing-page-settings' },
 ];
 
 const form = useForm<{ examples: number[] }>({
@@ -77,7 +77,7 @@ const moveDown = (index: number) => {
 };
 
 const submitForm = () => {
-    form.post('/landing-page-settings', { preserveScroll: true });
+    form.post('/dashboard/landing-page-settings', { preserveScroll: true });
 };
 </script>
 

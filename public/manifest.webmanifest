@@ -1,0 +1,10 @@
+{
+	"name": "Arbatik — Toko Online Batik & AI Virtual Try-On",
+	"short_name": "Arbatik",
+	"description": "Aplikasi toko online busana batik autentik Indonesia dengan fitur AI Virtual Try-On berbasis Foto & Video 5 Detik.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#704F38",
+	"theme_color": "#704F38",
+	"lang": "id-ID"
+}

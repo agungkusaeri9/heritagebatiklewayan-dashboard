@@ -152,7 +152,7 @@ const props = defineProps<Props>();
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Fashn AI', href: '#' },
-    { title: 'Product Virtual Try-On', href: '/product-virtual-try-ons' },
+    { title: 'Product Virtual Try-On', href: '/dashboard/product-virtual-try-ons' },
 ];
 
 const filterState = reactive({
@@ -174,7 +174,7 @@ const buildQuery = () => ({
 });
 
 const debouncedSearch = useDebounceFn(() => {
-    router.get('/product-virtual-try-ons', buildQuery(), {
+    router.get('/dashboard/product-virtual-try-ons', buildQuery(), {
         preserveState: true,
         replace: true,
     });
@@ -339,7 +339,7 @@ const openCreateDialog = () => {
 };
 
 const submitCreate = () => {
-    createForm.post('/product-virtual-try-ons', {
+    createForm.post('/dashboard/product-virtual-try-ons', {
         preserveScroll: true,
         onSuccess: () => {
             isCreateDialogOpen.value = false;
@@ -354,7 +354,7 @@ const retryingId = ref<number | null>(null);
 
 const handleRetry = (item: ProductVirtualTryOn) => {
     retryingId.value = item.id;
-    router.post(`/product-virtual-try-ons/${item.id}/retry`, {}, {
+    router.post(`/dashboard/product-virtual-try-ons/${item.id}/retry`, {}, {
         preserveScroll: true,
         onFinish: () => {
             retryingId.value = null;
@@ -386,7 +386,7 @@ const confirmDelete = (item: ProductVirtualTryOn) => {
 const executeDelete = () => {
     if (!itemToDelete.value) return;
 
-    router.delete(`/product-virtual-try-ons/${itemToDelete.value.id}`, {
+    router.delete(`/dashboard/product-virtual-try-ons/${itemToDelete.value.id}`, {
         preserveScroll: true,
         onSuccess: () => {
             isDeleteDialogOpen.value = false;

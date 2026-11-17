@@ -84,7 +84,7 @@ const props = defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Toko', href: '/stores' },
+    { title: 'Toko', href: '/dashboard/stores' },
 ];
 
 const filterState = reactive({
@@ -94,7 +94,7 @@ const filterState = reactive({
 
 const debouncedSearch = useDebounceFn(() => {
     router.get(
-        '/stores',
+        '/dashboard/stores',
         { ...filterState },
         { preserveState: true, replace: true },
     );
@@ -121,7 +121,7 @@ const confirmDelete = (store: StoreItem) => {
 
 const executeDelete = () => {
     if (storeToDelete.value) {
-        router.delete(`/stores/${storeToDelete.value.id}`, {
+        router.delete(`/dashboard/stores/${storeToDelete.value.id}`, {
             onSuccess: () => {
                 isDeleteDialogOpen.value = false;
                 storeToDelete.value = null;
@@ -166,7 +166,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
             </div>
 
             <Button v-if="can('create stores')" as-child class="shrink-0">
-                <Link href="/stores/create">
+                <Link href="/dashboard/stores/create">
                     <Plus class="mr-2 h-4 w-4" />
                     Tambah Toko
                 </Link>
@@ -351,7 +351,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                                         as-child
                                         title="Edit Toko"
                                     >
-                                        <Link :href="`/stores/${store.id}/edit`">
+                                        <Link :href="`/dashboard/stores/${store.id}/edit`">
                                             <Edit class="h-4 w-4" />
                                         </Link>
                                     </Button>
