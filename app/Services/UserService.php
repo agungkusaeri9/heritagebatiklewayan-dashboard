@@ -7,6 +7,7 @@ use App\Repositories\Contracts\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class UserService
@@ -43,7 +44,7 @@ class UserService
             }
 
             if (! empty($roles)) {
-                $user->syncRoles($roles);
+                $user->syncRoles($this->resolveRoles($roles));
             }
 
             $this->activityLogService->log(
@@ -80,8 +81,8 @@ class UserService
                 throw new \Exception('Gagal memperbarui data pengguna ke database.');
             }
 
-            // Selalu sync roles - pastikan $roles adalah array murni
-            $existingUser->syncRoles(array_values($roles));
+            // Selalu sync roles - pastikan $roles adalah array murni dan mendukung multi-guard
+            $existingUser->syncRoles($this->resolveRoles(array_values($roles)));
 
             $this->activityLogService->log(
                 'Update User',
@@ -127,5 +128,23 @@ class UserService
 
             return true;
         });
+    }
+
+    /**
+     * Resolve role models by name across supported user guards (web and api).
+     *
+     * @param  array<int, string>  $roleNames
+     * @return array<int, Role>
+     */
+    private function resolveRoles(array $roleNames): array
+    {
+        if ($roleNames === []) {
+            return [];
+        }
+
+        return Role::query()
+            ->whereIn('name', array_values($roleNames))
+            ->get()
+            ->all();
     }
 }

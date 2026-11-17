@@ -32,10 +32,11 @@ class DashboardService
     {
         $isUnrestrictedDefault = $user === null || $user->hasRole('super admin') || ! $user->roles()->exists();
         $isAdminStoreOnly = $user !== null && $user->hasRole(StoreService::ADMIN_STORE_ROLE) && ! $user->hasRole('admin');
+        $hasFullAdminDashboard = $isUnrestrictedDefault || $user->can('view admin dashboard');
 
-        $canViewOrders = ($isUnrestrictedDefault || $user->can('view orders')) && ! $isAdminStoreOnly;
-        $canViewCustomers = $isUnrestrictedDefault || $user->can('view customers');
-        $canViewProducts = $isUnrestrictedDefault || $user->can('view products') || $user->can('view products by store');
+        $canViewOrders = ($hasFullAdminDashboard || $user->can('view orders')) && ! $isAdminStoreOnly;
+        $canViewCustomers = $hasFullAdminDashboard || $user->can('view customers');
+        $canViewProducts = $hasFullAdminDashboard || $user->can('view products') || $user->can('view products by store');
         $canViewStoreProfile = $user !== null && ($user->hasRole('super admin') || $user->can('view store profile'));
         $canViewTryOns = $user !== null && ($user->hasRole('super admin') || $user->can('view product virtual try ons'));
 

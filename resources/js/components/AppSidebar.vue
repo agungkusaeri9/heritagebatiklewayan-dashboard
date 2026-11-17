@@ -52,24 +52,6 @@ const rawNavItems = computed<NavItem[]>(() => [
         badge: page.props.pendingOrdersCount ?? 0,
     },
     {
-        title: 'Toko',
-        href: '/dashboard/stores',
-        icon: StoreIcon,
-        permission: 'view stores',
-    },
-    {
-        title: 'Profile Toko',
-        href: '/dashboard/store-profile',
-        icon: StoreIcon,
-        permission: 'view store profile',
-    },
-    {
-        title: 'Banner Promosi',
-        href: '/dashboard/banners',
-        icon: Smartphone,
-        permission: 'view banners',
-    },
-    {
         title: 'Produk',
         href: '#',
         icon: Package,
@@ -114,6 +96,41 @@ const rawNavItems = computed<NavItem[]>(() => [
         ],
     },
     {
+        title: 'Banner Promosi',
+        href: '/dashboard/banners',
+        icon: Smartphone,
+        permission: 'view banners',
+    },
+    {
+        title: 'Toko',
+        href: '/dashboard/stores',
+        icon: StoreIcon,
+        permission: 'view stores',
+    },
+    {
+        title: 'Profile Toko',
+        href: '/dashboard/store-profile',
+        icon: StoreIcon,
+        permission: 'view store profile',
+    },
+    {
+        title: 'Notifikasi',
+        href: '#',
+        icon: Bell,
+        items: [
+            {
+                title: 'Daftar Notifikasi',
+                href: '/dashboard/notifications',
+                permission: 'view notifications',
+            },
+            {
+                title: 'Template Pengaturan',
+                href: '/dashboard/notification-settings',
+                permission: 'manage notification settings',
+            },
+        ],
+    },
+    {
         title: 'Data Master',
         href: '#',
         icon: Database,
@@ -123,6 +140,12 @@ const rawNavItems = computed<NavItem[]>(() => [
                 href: '/dashboard/customers',
                 icon: Users,
                 permission: 'view customers',
+            },
+            {
+                title: 'Pengguna',
+                href: '/dashboard/users',
+                icon: Users,
+                permission: 'view users',
             },
             {
                 title: 'Metode Pembayaran',
@@ -156,19 +179,34 @@ const rawNavItems = computed<NavItem[]>(() => [
         ],
     },
     {
-        title: 'Notifikasi',
+        title: 'Pengaturan',
         href: '#',
-        icon: Bell,
+        icon: Settings,
         items: [
             {
-                title: 'Daftar Notifikasi',
-                href: '/dashboard/notifications',
-                permission: 'view notifications',
+                title: 'Pengaturan Toko',
+                href: '/dashboard/store-settings',
+                permission: 'view store settings',
             },
             {
-                title: 'Template Pengaturan',
-                href: '/dashboard/notification-settings',
-                permission: 'manage notification settings',
+                title: 'Landing Page',
+                href: '/dashboard/landing-page-settings',
+                permission: 'view landing page settings',
+            },
+            {
+                title: 'FAQ (Tanya Jawab)',
+                href: '/dashboard/faqs',
+                permission: 'view faqs',
+            },
+            {
+                title: 'Kebijakan & Privasi',
+                href: '/dashboard/privacy-policy-settings',
+                permission: 'view privacy policy',
+            },
+            {
+                title: 'Manajemen Aplikasi',
+                href: '/dashboard/app-versions',
+                permission: 'view app versions',
             },
         ],
     },
@@ -201,38 +239,6 @@ const rawNavItems = computed<NavItem[]>(() => [
                 title: 'Firebase (FCM)',
                 href: '/dashboard/configurations/firebase',
                 permission: 'view app configs',
-            },
-        ],
-    },
-    {
-        title: 'Pengaturan',
-        href: '#',
-        icon: Settings,
-        items: [
-            {
-                title: 'Pengaturan Toko',
-                href: '/dashboard/store-settings',
-                permission: 'view store settings',
-            },
-            {
-                title: 'Kebijakan & Privasi',
-                href: '/dashboard/privacy-policy-settings',
-                permission: 'view privacy policy',
-            },
-            {
-                title: 'Landing Page',
-                href: '/dashboard/landing-page-settings',
-                permission: 'view landing page settings',
-            },
-            {
-                title: 'FAQ (Tanya Jawab)',
-                href: '/dashboard/faqs',
-                permission: 'view faqs',
-            },
-            {
-                title: 'Manajemen Aplikasi',
-                href: '/dashboard/app-versions',
-                permission: 'view app versions',
             },
         ],
     },

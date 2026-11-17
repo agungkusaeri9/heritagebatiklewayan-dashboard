@@ -169,6 +169,9 @@ class NotificationTest extends TestCase
         $this->assertDatabaseHas('notification_settings', [
             'code' => 'NEW_PROMO_CODE',
             'name' => 'Promo Diskon Baru',
+            'push_enabled' => true,
+            'email_enabled' => false,
+            'whatsapp_enabled' => false,
         ]);
 
         $setting = NotificationSetting::where('code', 'NEW_PROMO_CODE')->first();

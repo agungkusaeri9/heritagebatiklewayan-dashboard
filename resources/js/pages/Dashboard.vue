@@ -225,7 +225,7 @@ const statusChartData = computed(() => ({
                 </p>
             </div>
             
-            <div v-if="can('view orders')" class="flex items-center gap-2 w-full sm:w-auto">
+            <div v-if="can(['view orders', 'view admin dashboard'])" class="flex items-center gap-2 w-full sm:w-auto">
                 <Tabs :model-value="!currentFilter.startsWith('year-') ? currentFilter : ''" @update:model-value="updateFilter" class="flex-1 sm:flex-initial">
                     <TabsList class="grid w-full grid-cols-3 sm:flex">
                         <TabsTrigger value="today">Hari Ini</TabsTrigger>
@@ -247,10 +247,10 @@ const statusChartData = computed(() => ({
 
         <!-- Summary Cards -->
         <div
-            v-if="can('view orders') || can('view customers') || can(['view products', 'view products by store']) || can('view product virtual try ons')"
-            class="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+            v-if="can(['view orders', 'view admin dashboard', 'view customers', 'view products', 'view products by store', 'view product virtual try ons'])"
+            :class="can(['view orders', 'view admin dashboard']) ? 'grid gap-4 md:grid-cols-2 lg:grid-cols-4' : 'grid gap-4 md:grid-cols-2 lg:grid-cols-3'"
         >
-            <Card v-if="can('view orders')">
+            <Card v-if="can(['view orders', 'view admin dashboard'])">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Total Pendapatan</CardTitle>
                     <CreditCard class="h-4 w-4 text-muted-foreground" />
@@ -261,7 +261,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card v-if="can('view orders')">
+            <Card v-if="can(['view orders', 'view admin dashboard'])">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Total Pesanan</CardTitle>
                     <ShoppingBag class="h-4 w-4 text-muted-foreground" />
@@ -272,7 +272,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card v-if="can('view customers')">
+            <Card v-if="can(['view customers', 'view admin dashboard'])">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Total Pelanggan</CardTitle>
                     <Users class="h-4 w-4 text-muted-foreground" />
@@ -283,7 +283,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card v-if="can(['view products', 'view products by store'])">
+            <Card v-if="can(['view products', 'view products by store', 'view admin dashboard'])">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Produk Aktif</CardTitle>
                     <Package class="h-4 w-4 text-muted-foreground" />
@@ -294,7 +294,7 @@ const statusChartData = computed(() => ({
                 </CardContent>
             </Card>
 
-            <Card v-if="can('view product virtual try ons') && !can('view orders')">
+            <Card v-if="can('view product virtual try ons') && !can(['view orders', 'view admin dashboard'])">
                 <CardHeader class="flex flex-row items-center justify-between pb-2">
                     <CardTitle class="text-sm font-medium text-muted-foreground">Virtual Try-On</CardTitle>
                     <Sparkles class="h-4 w-4 text-muted-foreground" />
@@ -353,7 +353,7 @@ const statusChartData = computed(() => ({
         </Card>
 
         <!-- Charts Row -->
-        <div v-if="can('view orders')" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div v-if="can(['view orders', 'view admin dashboard'])" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             
             <!-- Revenue Line Chart -->
             <Card class="lg:col-span-2">
@@ -382,7 +382,7 @@ const statusChartData = computed(() => ({
             </Card>
         </div>
 
-        <div v-if="can('view orders')" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div v-if="can(['view orders', 'view admin dashboard'])" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             
             <!-- Orders Bar Chart -->
             <Card class="lg:col-span-1">
@@ -404,7 +404,7 @@ const statusChartData = computed(() => ({
                         <CardTitle>Pesanan Terbaru</CardTitle>
                         <CardDescription>5 transaksi terakhir yang masuk.</CardDescription>
                     </div>
-                    <Button variant="outline" size="sm" as-child>
+                    <Button v-if="can('view orders')" variant="outline" size="sm" as-child>
                         <Link href="/dashboard/orders">Lihat Semua</Link>
                     </Button>
                 </CardHeader>
@@ -417,12 +417,12 @@ const statusChartData = computed(() => ({
                                     <th class="h-10 px-4 text-left font-medium">Pelanggan</th>
                                     <th class="h-10 px-4 text-left font-medium">Nominal</th>
                                     <th class="h-10 px-4 text-center font-medium">Status</th>
-                                    <th class="h-10 px-4 text-right font-medium">Aksi</th>
+                                    <th v-if="can('view orders')" class="h-10 px-4 text-right font-medium">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
                                 <tr v-if="recentOrders.length === 0">
-                                    <td colspan="5" class="p-4 text-center text-muted-foreground">Belum ada pesanan masuk.</td>
+                                    <td :colspan="can('view orders') ? 5 : 4" class="p-4 text-center text-muted-foreground">Belum ada pesanan masuk.</td>
                                 </tr>
                                 <tr v-for="order in recentOrders" :key="order.id" class="transition-colors hover:bg-muted/50">
                                     <td class="p-4 align-middle font-medium text-primary">
@@ -440,7 +440,7 @@ const statusChartData = computed(() => ({
                                             {{ getStatusLabel(order.status) }}
                                         </Badge>
                                     </td>
-                                    <td class="p-4 align-middle text-right">
+                                    <td v-if="can('view orders')" class="p-4 align-middle text-right">
                                         <Button as-child variant="ghost" size="icon" class="h-8 w-8">
                                             <Link :href="`/dashboard/orders/${order.id}`">
                                                 <Eye class="h-4 w-4" />

@@ -31,6 +31,12 @@ class UserController extends Controller
                 'roles' => $user->roles->pluck('name')->toArray(),
             ]),
             'filters' => $request->filters(),
+            'roles' => $this->roleService->getAllRoles()
+                ->map(fn ($role): array => [
+                    'id' => $role->id,
+                    'name' => $role->name,
+                ])
+                ->values(),
         ]);
     }
 

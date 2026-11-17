@@ -27,7 +27,12 @@ class NotificationSettingController extends Controller
 
     public function store(StoreNotificationSettingRequest $request): RedirectResponse
     {
-        $this->settingService->createSetting($request->validated());
+        $payload = array_merge($request->validated(), [
+            'email_enabled' => false,
+            'whatsapp_enabled' => false,
+        ]);
+
+        $this->settingService->createSetting($payload);
 
         return redirect()->route('notification-settings.index')
             ->with('success', 'Template pengaturan notifikasi berhasil ditambahkan.');
@@ -35,7 +40,12 @@ class NotificationSettingController extends Controller
 
     public function update(UpdateNotificationSettingRequest $request, NotificationSetting $notificationSetting): RedirectResponse
     {
-        $this->settingService->updateSetting($notificationSetting, $request->validated());
+        $payload = array_merge($request->validated(), [
+            'email_enabled' => false,
+            'whatsapp_enabled' => false,
+        ]);
+
+        $this->settingService->updateSetting($notificationSetting, $payload);
 
         return redirect()->route('notification-settings.index')
             ->with('success', 'Template pengaturan notifikasi berhasil diperbarui.');

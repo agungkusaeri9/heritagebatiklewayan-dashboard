@@ -16,6 +16,7 @@ class PermissionSeeder extends Seeder
     public const PERMISSIONS = [
         // Dashboard
         'view dashboard',
+        'view admin dashboard',
 
         // Manajemen Pengguna (Admin Users)
         'view users',

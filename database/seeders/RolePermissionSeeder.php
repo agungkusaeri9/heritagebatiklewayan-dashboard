@@ -26,9 +26,6 @@ class RolePermissionSeeder extends Seeder
         $adminRole = Role::findOrCreate('admin', 'web');
         $adminPermissions = [
             'view dashboard',
-            'view users',
-            'create users',
-            'edit users',
             'view customers',
             'edit customers',
             'view products',
@@ -42,16 +39,10 @@ class RolePermissionSeeder extends Seeder
             'view variant types',
             'create variant types',
             'edit variant types',
-            'view orders',
-            'edit orders',
-            'update order status',
-            'update order payment',
-            'update order shipping',
             'view banners',
             'create banners',
             'edit banners',
             'toggle banners',
-            'view payment methods',
             'view couriers',
             'view locations',
             'view notifications',
@@ -59,8 +50,6 @@ class RolePermissionSeeder extends Seeder
             'manage notification settings',
             'view product reviews',
             'toggle product reviews',
-            'view store settings',
-            'edit store settings',
             'view stores',
             'create stores',
             'edit stores',
@@ -76,10 +65,6 @@ class RolePermissionSeeder extends Seeder
             'create app versions',
             'edit app versions',
             'delete app versions',
-            'view app configs',
-            'create app configs',
-            'edit app configs',
-            'delete app configs',
             'view virtual try on models',
             'create virtual try on models',
             'edit virtual try on models',
@@ -88,7 +73,6 @@ class RolePermissionSeeder extends Seeder
             'create product virtual try ons',
             'edit product virtual try ons',
             'delete product virtual try ons',
-            'view activity logs',
         ];
         $adminRole->syncPermissions($adminPermissions);
 
@@ -113,8 +97,7 @@ class RolePermissionSeeder extends Seeder
         ];
         $adminStoreRole->syncPermissions($adminStorePermissions);
 
-        // Create Customer role
-        Role::findOrCreate('customer', 'web');
+        // Create Customer role (API guard only so role name remains unique)
         Role::findOrCreate('customer', 'api');
 
         // Assign super admin role to the superadmin user or first user

@@ -142,6 +142,12 @@ const getModuleMeta = (permName: string): ModuleMeta => {
 
 // Formats individual action inside each module
 const formatAction = (permName: string) => {
+    if (permName === 'view admin dashboard') {
+        return {
+            label: 'Dashboard Admin Lengkap',
+            badgeColor: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900',
+        };
+    }
     if (permName === 'filter products by store') {
         return {
             label: 'Filter by Store',

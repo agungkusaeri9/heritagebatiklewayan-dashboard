@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import {
     Edit,
     Plus,
@@ -13,8 +14,9 @@ import {
 } from 'lucide-vue-next';
 import { ref, watch, reactive } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Dialog,
     DialogContent,
@@ -23,6 +25,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -30,12 +33,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useDebounceFn } from '@vueuse/core';
-import type { BreadcrumbItem } from '@/types';
 import { usePermissions } from '@/composables/usePermissions';
+import type { BreadcrumbItem } from '@/types';
 
 const { can } = usePermissions();
 
@@ -45,6 +44,11 @@ interface User {
     username: string;
     created_at: string;
     roles: string[];
+}
+
+interface RoleOption {
+    id: number;
+    name: string;
 }
 
 interface Props {
@@ -59,8 +63,10 @@ interface Props {
     };
     filters: {
         search?: string;
+        role?: string;
         per_page?: string;
     };
+    roles: RoleOption[];
 }
 
 const props = defineProps<Props>();
@@ -72,14 +78,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const filterState = reactive({
     search: props.filters.search || '',
+    role: props.filters.role || 'all',
     per_page: props.filters.per_page || '10',
 });
 
-// Search functionality
+const buildQueryParams = () => ({
+    search: filterState.search || undefined,
+    role: filterState.role !== 'all' ? filterState.role : undefined,
+    per_page: filterState.per_page,
+});
+
+// Search & filter functionality
 const debouncedSearch = useDebounceFn(() => {
     router.get(
         '/dashboard/users',
-        { ...filterState },
+        buildQueryParams(),
         { preserveState: true, replace: true },
     );
 }, 300);
@@ -182,24 +195,45 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                     <span>data</span>
                 </div>
 
-                <div class="relative w-full max-w-xs sm:w-64">
-                    <Search
-                        class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground"
-                    />
-                    <Input
-                        v-model="filterState.search"
-                        type="search"
-                        placeholder="Cari pengguna..."
-                        class="h-8 pr-8 pl-8 text-xs"
-                    />
-                    <button
-                        v-if="filterState.search"
-                        type="button"
-                        class="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
-                        @click="clearSearch"
-                    >
-                        <X class="h-4 w-4" />
-                    </button>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div class="w-full sm:w-44">
+                        <Select v-model="filterState.role">
+                            <SelectTrigger class="h-8 text-xs capitalize" aria-label="Filter peran pengguna">
+                                <SelectValue placeholder="Semua Peran" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Peran</SelectItem>
+                                <SelectItem
+                                    v-for="role in roles"
+                                    :key="role.id"
+                                    :value="role.name"
+                                    class="capitalize"
+                                >
+                                    {{ role.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div class="relative w-full max-w-xs sm:w-64">
+                        <Search
+                            class="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground"
+                        />
+                        <Input
+                            v-model="filterState.search"
+                            type="search"
+                            placeholder="Cari pengguna..."
+                            class="h-8 pr-8 pl-8 text-xs"
+                        />
+                        <button
+                            v-if="filterState.search"
+                            type="button"
+                            class="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+                            @click="clearSearch"
+                        >
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -325,7 +359,11 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                                     </div>
                                     <p class="font-medium text-foreground">Data pengguna tidak ditemukan</p>
                                     <p class="text-xs">
-                                        {{ filterState.search ? 'Coba ubah kata kunci pencarian Anda.' : 'Belum ada data pengguna yang terdaftar.' }}
+                                        {{
+                                            filterState.search || filterState.role !== 'all'
+                                                ? 'Coba ubah kata kunci pencarian atau filter peran Anda.'
+                                                : 'Belum ada data pengguna yang terdaftar.'
+                                        }}
                                     </p>
                                 </div>
                             </td>
@@ -353,7 +391,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                             size="icon"
                             class="h-8 w-8"
                             :disabled="!link.url"
-                            @click="link.url && router.get(link.url, { ...filterState }, { preserveState: true })"
+                            @click="link.url && router.get(link.url, buildQueryParams(), { preserveState: true })"
                             aria-label="Halaman sebelumnya"
                         >
                             <ChevronLeft class="h-4 w-4" />
@@ -365,7 +403,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                             size="icon"
                             class="h-8 w-8"
                             :disabled="!link.url"
-                            @click="link.url && router.get(link.url, { ...filterState }, { preserveState: true })"
+                            @click="link.url && router.get(link.url, buildQueryParams(), { preserveState: true })"
                             aria-label="Halaman berikutnya"
                         >
                             <ChevronRight class="h-4 w-4" />
@@ -384,7 +422,7 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                             size="sm"
                             class="h-8 min-w-8 px-2.5 text-xs font-medium"
                             :disabled="!link.url"
-                            @click="link.url && router.get(link.url, { ...filterState }, { preserveState: true })"
+                            @click="link.url && router.get(link.url, buildQueryParams(), { preserveState: true })"
                         >
                             {{ link.label }}
                         </Button>

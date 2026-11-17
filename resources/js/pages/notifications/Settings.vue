@@ -1,4 +1,22 @@
 <script setup lang="ts">
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import {
+    Bell,
+    Check,
+    ChevronLeft,
+    Edit,
+    Loader2,
+    MoreVertical,
+    Plus,
+    Search,
+    Shield,
+    Smartphone,
+    Trash2,
+    User,
+    UserCheck,
+    Users,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import {
     AlertDialog,
@@ -31,26 +49,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import type { BreadcrumbItem } from '@/types';
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import {
-    Bell,
-    Check,
-    ChevronLeft,
-    Edit,
-    Loader2,
-    Mail,
-    MessageSquare,
-    MoreVertical,
-    Plus,
-    Search,
-    Shield,
-    Smartphone,
-    Trash2,
-    User,
-    UserCheck,
-    Users,
-} from 'lucide-vue-next';
-import { computed, ref } from 'vue';
 
 interface NotificationSetting {
     id: number;
@@ -130,8 +128,8 @@ const openEditModal = (setting: NotificationSetting) => {
     form.description = setting.description || '';
     form.recipient_type = setting.recipient_type;
     form.push_enabled = setting.push_enabled === true || Number(setting.push_enabled) === 1;
-    form.email_enabled = setting.email_enabled === true || Number(setting.email_enabled) === 1;
-    form.whatsapp_enabled = setting.whatsapp_enabled === true || Number(setting.whatsapp_enabled) === 1;
+    form.email_enabled = false;
+    form.whatsapp_enabled = false;
     form.is_active = setting.is_active === true || Number(setting.is_active) === 1;
     isModalOpen.value = true;
 };
@@ -221,7 +219,7 @@ const getRecipientBadge = (type: string) => {
                     <div>
                         <h1 class="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Template Pengaturan Notifikasi</h1>
                         <p class="text-sm text-muted-foreground">
-                            Kelola template kode, default target penerima, dan aktivasi saluran pengiriman (Push, Email, WhatsApp).
+                            Kelola template kode, default target penerima, dan aktivasi saluran pengiriman (Push Notification).
                         </p>
                     </div>
                 </div>
@@ -291,7 +289,7 @@ const getRecipientBadge = (type: string) => {
                                 </Badge>
                             </td>
                             <td class="p-4 align-middle text-center">
-                                <div class="flex items-center justify-center gap-1.5">
+                                <div class="flex items-center justify-center">
                                     <Badge
                                         :variant="Boolean(Number(setting.push_enabled) === 1 || setting.push_enabled === true) ? 'default' : 'secondary'"
                                         class="text-[10px] h-5 px-1.5"
@@ -300,24 +298,6 @@ const getRecipientBadge = (type: string) => {
                                     >
                                         <Smartphone class="h-3 w-3 mr-1" />
                                         Push
-                                    </Badge>
-                                    <Badge
-                                        :variant="Boolean(Number(setting.email_enabled) === 1 || setting.email_enabled === true) ? 'default' : 'secondary'"
-                                        class="text-[10px] h-5 px-1.5"
-                                        :class="Boolean(Number(setting.email_enabled) === 1 || setting.email_enabled === true) ? 'bg-emerald-600 text-white' : 'opacity-50'"
-                                        title="Email Broadcast"
-                                    >
-                                        <Mail class="h-3 w-3 mr-1" />
-                                        Email
-                                    </Badge>
-                                    <Badge
-                                        :variant="Boolean(Number(setting.whatsapp_enabled) === 1 || setting.whatsapp_enabled === true) ? 'default' : 'secondary'"
-                                        class="text-[10px] h-5 px-1.5"
-                                        :class="Boolean(Number(setting.whatsapp_enabled) === 1 || setting.whatsapp_enabled === true) ? 'bg-emerald-600 text-white' : 'opacity-50'"
-                                        title="WhatsApp Gateway"
-                                    >
-                                        <MessageSquare class="h-3 w-3 mr-1" />
-                                        WA
                                     </Badge>
                                 </div>
                             </td>
@@ -469,30 +449,6 @@ const getRecipientBadge = (type: string) => {
                                     </div>
                                 </div>
                                 <Switch :checked="form.push_enabled" @update:checked="(val: boolean) => form.push_enabled = val" />
-                            </div>
-
-                            <!-- Email -->
-                            <div class="flex items-center justify-between rounded-lg border p-2.5 bg-card">
-                                <div class="flex items-center gap-2.5">
-                                    <Mail class="h-4 w-4 text-emerald-600" />
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-semibold text-foreground">Email Broadcast</span>
-                                        <span class="text-[11px] text-muted-foreground">Kirim email ke alamat user</span>
-                                    </div>
-                                </div>
-                                <Switch :checked="form.email_enabled" @update:checked="(val: boolean) => form.email_enabled = val" />
-                            </div>
-
-                            <!-- WhatsApp -->
-                            <div class="flex items-center justify-between rounded-lg border p-2.5 bg-card">
-                                <div class="flex items-center gap-2.5">
-                                    <MessageSquare class="h-4 w-4 text-emerald-600" />
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-semibold text-foreground">WhatsApp Gateway</span>
-                                        <span class="text-[11px] text-muted-foreground">Pesan WhatsApp ke nomor handphone</span>
-                                    </div>
-                                </div>
-                                <Switch :checked="form.whatsapp_enabled" @update:checked="(val: boolean) => form.whatsapp_enabled = val" />
                             </div>
                         </div>
                     </div>

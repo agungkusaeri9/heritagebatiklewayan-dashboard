@@ -1,4 +1,18 @@
 <script setup lang="ts">
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import {
+    Check,
+    ChevronLeft,
+    Loader2,
+    Search,
+    Send,
+    Shield,
+    Smartphone,
+    User,
+    UserCheck,
+    Users,
+} from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,25 +29,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import type { BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import {
-    Bell,
-    Check,
-    CheckCheck,
-    ChevronLeft,
-    Info,
-    Loader2,
-    Mail,
-    MessageSquare,
-    Send,
-    Shield,
-    Smartphone,
-    User,
-    UserCheck,
-    Users,
-    Search,
-} from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
 
 interface NotificationSetting {
     id: number;
@@ -415,42 +410,12 @@ const submit = () => {
                                     <span class="text-[11px] text-muted-foreground">Notifikasi lonceng & tabel inbox</span>
                                 </div>
                             </div>
-                            <Badge variant="default" class="bg-emerald-600 text-white text-[10px] h-5">
-                                Aktif
-                            </Badge>
-                        </div>
-
-                        <div class="flex items-center justify-between rounded-lg border p-3">
-                            <div class="flex items-center gap-2.5">
-                                <Mail class="h-4 w-4 text-primary" />
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-semibold">Email Broadcast</span>
-                                    <span class="text-[11px] text-muted-foreground">Kirim email ke inbox user</span>
-                                </div>
-                            </div>
                             <Badge
-                                :variant="selectedSetting?.email_enabled ? 'default' : 'secondary'"
+                                :variant="selectedSetting ? (selectedSetting.push_enabled ? 'default' : 'secondary') : 'default'"
                                 class="text-[10px] h-5"
-                                :class="selectedSetting?.email_enabled ? 'bg-emerald-600 text-white' : ''"
+                                :class="(!selectedSetting || selectedSetting.push_enabled) ? 'bg-emerald-600 text-white' : ''"
                             >
-                                {{ selectedSetting?.email_enabled ? 'Aktif' : 'Nonaktif' }}
-                            </Badge>
-                        </div>
-
-                        <div class="flex items-center justify-between rounded-lg border p-3">
-                            <div class="flex items-center gap-2.5">
-                                <MessageSquare class="h-4 w-4 text-primary" />
-                                <div class="flex flex-col">
-                                    <span class="text-xs font-semibold">WhatsApp Gateway</span>
-                                    <span class="text-[11px] text-muted-foreground">Pesan instan ke nomor HP</span>
-                                </div>
-                            </div>
-                            <Badge
-                                :variant="selectedSetting?.whatsapp_enabled ? 'default' : 'secondary'"
-                                class="text-[10px] h-5"
-                                :class="selectedSetting?.whatsapp_enabled ? 'bg-emerald-600 text-white' : ''"
-                            >
-                                {{ selectedSetting?.whatsapp_enabled ? 'Aktif' : 'Nonaktif' }}
+                                {{ selectedSetting ? (selectedSetting.push_enabled ? 'Aktif' : 'Nonaktif') : 'Aktif' }}
                             </Badge>
                         </div>
                     </CardContent>
