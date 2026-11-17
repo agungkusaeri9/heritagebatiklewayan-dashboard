@@ -39,6 +39,7 @@ class UpdateStoreRequest extends FormRequest
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:30'],
             'whatsapp' => ['required', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:500'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:2048'],
             'description' => ['nullable', 'string'],
         ];
@@ -65,6 +66,7 @@ class UpdateStoreRequest extends FormRequest
             'email' => 'email toko',
             'phone' => 'nomor telepon',
             'whatsapp' => 'nomor WhatsApp',
+            'address' => 'alamat toko',
             'logo' => 'logo toko',
             'description' => 'deskripsi toko',
             'seller_name' => 'nama lengkap seller',

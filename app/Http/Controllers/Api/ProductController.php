@@ -109,7 +109,7 @@ class ProductController extends Controller
         $limit = (int) $request->input('limit', 10);
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'images', 'variantValues.variantType'])
+            ->with(['store', 'category', 'images', 'variantValues.variantType'])
             ->orderByRaw('is_virtual_try_on DESC, id DESC')
             ->limit($limit)
             ->get();
@@ -128,7 +128,7 @@ class ProductController extends Controller
         $limit = (int) $request->input('limit', 10);
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'images', 'variantValues.variantType'])
+            ->with(['store', 'category', 'images', 'variantValues.variantType'])
             ->withCount('reviews')
             ->orderBy('stock', 'asc') // or sold count / reviews
             ->orderBy('id', 'desc')

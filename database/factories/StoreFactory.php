@@ -24,6 +24,7 @@ class StoreFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->numerify('0271######'),
             'whatsapp' => fake()->numerify('62812########'),
+            'address' => fake()->streetAddress().', Laweyan, Surakarta',
             'logo' => null,
             'description' => fake()->paragraph(),
         ];

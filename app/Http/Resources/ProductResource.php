@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\OrderDetail;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -31,7 +32,30 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $store = static::resolveStoreSetting();
+        $productStore = $this->relationLoaded('store')
+            ? $this->store
+            : ($this->store_id ? $this->store : null);
+
+        $storeData = null;
+        if ($productStore instanceof Store) {
+            $storeData = StoreResource::make($productStore)->resolve($request);
+        } else {
+            $fallbackStore = static::resolveStoreSetting();
+            if ($fallbackStore) {
+                $storeData = [
+                    'id' => $fallbackStore->id,
+                    'name' => $fallbackStore->name,
+                    'logo_url' => $fallbackStore->logo_url,
+                    'description' => $fallbackStore->description,
+                    'address' => $fallbackStore->address,
+                    'phone' => $fallbackStore->phone,
+                    'whatsapp' => $fallbackStore->whatsapp,
+                    'email' => $fallbackStore->email,
+                    'website' => $fallbackStore->website,
+                ];
+            }
+        }
+
         $soldCount = (int) OrderDetail::query()
             ->where('product_id', $this->id)
             ->whereHas('order', fn ($q) => $q->whereIn('status', ['processing', 'success', 'completed']))
@@ -52,17 +76,7 @@ class ProductResource extends JsonResource
             'primary_image_url' => $this->primary_image_url,
             'store_id' => $this->store_id,
             'category' => CategoryResource::make($this->whenLoaded('category')),
-            'store' => $store ? [
-                'id' => $store->id,
-                'name' => $store->name,
-                'logo_url' => $store->logo_url,
-                'description' => $store->description,
-                'address' => $store->address,
-                'phone' => $store->phone,
-                'whatsapp' => $store->whatsapp,
-                'email' => $store->email,
-                'website' => $store->website,
-            ] : null,
+            'store' => $storeData,
             'gallery_images' => $this->whenLoaded('images', fn () => $this->images->map(fn ($img) => [
                 'id' => $img->id,
                 'image_url' => $img->image_url,

@@ -32,6 +32,7 @@ interface StoreDetail {
     email: string | null;
     phone: string | null;
     whatsapp: string | null;
+    address: string | null;
     logo: string | null;
     logo_url: string | null;
     description: string | null;
@@ -56,6 +57,7 @@ const form = useForm({
     email: props.store.email || '',
     phone: props.store.phone || '',
     whatsapp: props.store.whatsapp || '',
+    address: props.store.address || '',
     logo: null as File | null,
     description: props.store.description || '',
     seller_name: props.store.user?.name || '',
@@ -243,6 +245,19 @@ const submit = () => {
                                 {{ form.errors.whatsapp }}
                             </p>
                         </div>
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label for="address">Alamat Toko</Label>
+                        <Textarea
+                            id="address"
+                            v-model="form.address"
+                            rows="2"
+                            placeholder="Contoh: Jl. Sidoluhur No. 32, Kampung Batik Laweyan, Surakarta"
+                        />
+                        <p v-if="form.errors.address" class="text-xs text-destructive">
+                            {{ form.errors.address }}
+                        </p>
                     </div>
 
                     <div class="grid gap-2">

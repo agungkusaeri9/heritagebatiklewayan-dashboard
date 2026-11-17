@@ -59,7 +59,7 @@ class PublicLandingController extends Controller
 
         $products = Product::query()
             ->where('is_active', true)
-            ->with(['category', 'images', 'variantValues.variantType'])
+            ->with(['store', 'category', 'images', 'variantValues.variantType'])
             ->withCount('reviews')
             ->orderBy('stock', 'asc')
             ->orderBy('id', 'desc')

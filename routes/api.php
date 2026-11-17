@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductReviewController;
 use App\Http\Controllers\Api\ProductVirtualTryOnController;
 use App\Http\Controllers\Api\ShippingCostController;
+use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\StoreSettingController;
 use App\Http\Controllers\Api\LandingPageController;
 use App\Http\Controllers\Api\UserAccountController;
@@ -161,6 +162,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // Categories
     Route::prefix('categories')->name('categories.')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
+    });
+
+    // Stores
+    Route::prefix('stores')->name('stores.')->group(function () {
+        Route::get('/', [StoreController::class, 'index'])->name('index');
+        Route::get('{id}', [StoreController::class, 'show'])->whereNumber('id')->name('show');
     });
 
     // Products

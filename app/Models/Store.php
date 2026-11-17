@@ -20,6 +20,7 @@ class Store extends Model
         'email',
         'phone',
         'whatsapp',
+        'address',
         'logo',
         'description',
     ];

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\VariantValue;
 use Illuminate\Database\Seeder;
 
@@ -22,6 +23,7 @@ class ProductSeeder extends Seeder
         $catCouple = Category::where('slug', 'batik-couple-sarimbit')->first();
 
         $variantValues = VariantValue::all();
+        $stores = Store::orderBy('id')->get();
 
         $products = [
             [
@@ -110,11 +112,21 @@ class ProductSeeder extends Seeder
             ],
         ];
 
-        foreach ($products as $prodData) {
+        foreach ($products as $index => $prodData) {
+            $assignedStore = $stores->isNotEmpty()
+                ? $stores[$index % $stores->count()]
+                : null;
+
             $product = Product::firstOrCreate(
                 ['slug' => $prodData['slug']],
-                $prodData
+                array_merge($prodData, [
+                    'store_id' => $assignedStore?->id,
+                ])
             );
+
+            if ($product->store_id === null && $assignedStore !== null) {
+                $product->update(['store_id' => $assignedStore->id]);
+            }
 
             // Sync random variant values if not attached
             if ($variantValues->isNotEmpty() && $product->variantValues()->count() === 0) {

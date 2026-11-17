@@ -21,6 +21,7 @@ class StoreRepository implements StoreRepositoryInterface
                         ->orWhere('email', 'like', "%{$search}%")
                         ->orWhere('phone', 'like', "%{$search}%")
                         ->orWhere('whatsapp', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%")
                         ->orWhereHas('user', function ($uq) use ($search) {
                             $uq->where('name', 'like', "%{$search}%")

@@ -56,6 +56,7 @@ interface StoreItem {
     email: string | null;
     phone: string | null;
     whatsapp: string | null;
+    address: string | null;
     logo: string | null;
     logo_url: string | null;
     description: string | null;
@@ -284,6 +285,9 @@ const perPageOptions = ['10', '20', '30', '40', '50', '100'];
                             <td class="max-w-[260px] p-3.5 align-middle">
                                 <div class="flex flex-col gap-1">
                                     <span class="font-semibold text-foreground">{{ store.name }}</span>
+                                    <span v-if="store.address" class="line-clamp-1 text-xs font-medium text-muted-foreground">
+                                        {{ store.address }}
+                                    </span>
                                     <p class="line-clamp-2 text-xs text-muted-foreground">
                                         {{ store.description || '-' }}
                                     </p>

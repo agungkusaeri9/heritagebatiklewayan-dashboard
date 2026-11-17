@@ -53,6 +53,7 @@ class StoreService
                 'email' => $data['email'] ?? null,
                 'phone' => $data['phone'],
                 'whatsapp' => $data['whatsapp'],
+                'address' => $data['address'] ?? null,
                 'description' => $data['description'] ?? null,
             ];
 
@@ -111,6 +112,7 @@ class StoreService
                 'email' => $data['email'] ?? null,
                 'phone' => $data['phone'],
                 'whatsapp' => $data['whatsapp'],
+                'address' => $data['address'] ?? null,
                 'description' => $data['description'] ?? null,
             ];
 
@@ -122,7 +124,7 @@ class StoreService
                 $storeData['logo'] = $newPath;
             }
 
-            $oldData = $existingStore->only(['name', 'email', 'phone', 'whatsapp', 'user_id']);
+            $oldData = $existingStore->only(['name', 'email', 'phone', 'whatsapp', 'address', 'user_id']);
 
             $updated = $this->storeRepository->update($existingStore, $storeData);
             if (! $updated) {
@@ -137,7 +139,7 @@ class StoreService
                 [
                     'store_id' => $freshStore->id,
                     'old' => $oldData,
-                    'new' => $freshStore->only(['name', 'email', 'phone', 'whatsapp', 'user_id']),
+                    'new' => $freshStore->only(['name', 'email', 'phone', 'whatsapp', 'address', 'user_id']),
                 ]
             );
 

@@ -51,6 +51,7 @@ class StoreProfileController extends Controller
                 'email' => $store->email,
                 'phone' => $store->phone,
                 'whatsapp' => $store->whatsapp,
+                'address' => $store->address,
                 'logo' => $store->logo,
                 'logo_url' => $store->logo_url,
                 'description' => $store->description,

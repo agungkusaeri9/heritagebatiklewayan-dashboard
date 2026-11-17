@@ -32,13 +32,17 @@ class DatabaseSeeder extends Seeder
             $sa->assignRole($superAdminRole);
         }
 
-        // 3. Seed locations (provinces, cities, subdistricts from RajaOngkir) and other core data
+        // 3. Seed Admin role user
+        $this->call(AdminSeeder::class);
+
+        // 4. Seed locations (provinces, cities, subdistricts from RajaOngkir) and other core data
         $this->call([
             LocationSeeder::class,
             CourierSeeder::class,
             PaymentMethodSeeder::class,
             CategorySeeder::class,
             VariantTypeSeeder::class,
+            StoreSeeder::class,
             ProductSeeder::class,
             CustomerSeeder::class,
             OrderSeeder::class,
